@@ -744,3 +744,252 @@ msgstr "Users"
 
 msgid "الإعدادات المتقدمة"
 msgstr "Advanced Settings"
+
+msgid "إجراءات"
+msgstr "Actions"
+
+msgid "النوع"
+msgstr "Type"
+
+msgid "سعر الوحدة"
+msgstr "Unit Price"
+
+msgid "عودة"
+msgstr "Back"
+
+msgid "المجموع الفرعي"
+msgstr "Subtotal"
+
+msgid "رقم الهاتف"
+msgstr "Phone Number"
+
+msgid "الاسم (عربي)"
+msgstr "Name (Arabic)"
+
+msgid "الاسم (إنجليزي)"
+msgstr "Name (English)"
+
+msgid "مسح"
+msgstr "Clear"
+
+msgid "المرجع"
+msgstr "Reference"
+
+msgid "تأكيد الحذف"
+msgstr "Confirm Deletion"
+
+msgid "العودة"
+msgstr "Return"
+
+msgid "الخامة"
+msgstr "Material"
+
+msgid "الشركة"
+msgstr "Company"
+
+msgid "رقم عرض السعر"
+msgstr "Quote Number"
+
+msgid "الترتيب"
+msgstr "Order"
+
+msgid "آخر تحديث"
+msgstr "Last Updated"
+
+msgid "تم بواسطة"
+msgstr "Created By"
+
+msgid "الخصم %"
+msgstr "Discount %"
+
+msgid "ملخص المبالغ"
+msgstr "Amount Summary"
+
+msgid "نقدي"
+msgstr "Cash"
+
+msgid "البيان"
+msgstr "Description"
+
+msgid "بواسطة"
+msgstr "By"
+
+msgid "لا توجد بيانات"
+msgstr "No Data"
+
+msgid "تاريخ الإنشاء"
+msgstr "Created Date"
+
+msgid "الطريقة"
+msgstr "Method"
+
+msgid "بحث..."
+msgstr "Search..."
+
+msgid "الشحن"
+msgstr "Shipping"
+
+msgid "إجمالي المبيعات"
+msgstr "Total Sales"
+
+msgid "الدور"
+msgstr "Role"
+
+msgid "طلب عرض سعر"
+msgstr "Quote Request"
+
+msgid "هل تريد الحذف؟"
+msgstr "Are you sure you want to delete?"
+
+msgid "كشف حساب"
+msgstr "Account Statement"
+
+msgid "المدفوعات"
+msgstr "Payments"
+
+msgid "الكل"
+msgstr "All"
+
+msgid "رقم الدفعة"
+msgstr "Batch Number"
+
+msgid "الكاشير"
+msgstr "Cashier"
+
+msgid "الحساب"
+msgstr "Account"
+
+msgid "الرصيد"
+msgstr "Balance"
+
+msgid "مرحل"
+msgstr "Posted"
+
+msgid "مدين"
+msgstr "Debit"
+
+msgid "دائن"
+msgstr "Credit"
+
+msgid "جميع الحالات"
+msgstr "All Statuses"
+
+msgid "تاريخ التسجيل"
+msgstr "Registration Date"
+
+msgid "عرض السعر"
+msgstr "Quote"
+
+msgid "العودة للرئيسية"
+msgstr "Back to Home"
+
+msgid "البنود"
+msgstr "Items"
+
+msgid "سجل النشاطات"
+msgstr "Activity Log"
+
+msgid "من"
+msgstr "From"
+
+msgid "الشخص المسؤول"
+msgstr "Contact Person"
+
+msgid "لا توجد طلبات"
+msgstr "No Orders"
+
+msgid "كل الموظفين"
+msgstr "All Employees"
+
+msgid "السابق"
+msgstr "Previous"
+
+msgid "التالي"
+msgstr "Next"
+
+msgid "--- اختر ---"
+msgstr "--- Select ---"
+
+msgid "جميع الخامات"
+msgstr "All Materials"
+
+msgid "الدفعة"
+msgstr "Batch"
+
+msgid "إضافة بند"
+msgstr "Add Item"
+
+msgid "مفتوحة"
+msgstr "Open"
+
+msgid "الباقي"
+msgstr "Remaining"
+
+msgid "طباعة الإيصال"
+msgstr "Print Receipt"
+
+msgid "مكتملة"
+msgstr "Completed"
+
+msgid "مسترجعة"
+msgstr "Returned"
+
+msgid "ملغاة"
+msgstr "Cancelled"
+
+msgid "صلاحية حتى"
+msgstr "Valid Until"
+
+msgid "رقم الأمر"
+msgstr "Order Number"
+
+msgid "معلومات القيد"
+msgstr "Entry Info"
+
+msgid "تفاصيل القيد"
+msgstr "Entry Details"
+
+msgid "متوازن"
+msgstr "Balanced"
+
+msgid "إجمالي المصروفات"
+msgstr "Total Expenses"
+
+msgid "إجمالي"
+msgstr "Total"
+
+msgid "تعيين كلمة مرور جديدة"
+msgstr "Set New Password"
+
+msgid "تأكيد كلمة المرور"
+msgstr "Confirm Password"
+
+msgid "تم الإرسال"
+msgstr "Sent"
+
+msgid "العودة إلى تسجيل الدخول"
+msgstr "Back to Login"
+
+msgid "استعادة كلمة المرور"
+msgstr "Reset Password"
+
+msgid "هذا الإجراء لا يمكن التراجع عنه."
+msgstr "This action cannot be undone."
+
+msgid "نعم، احذف"
+msgstr "Yes, Delete"
+
+msgid "الصلاحيات"
+msgstr "Permissions"
+
+msgid "رقم القيد"
+msgstr "Entry Number"
+
+msgid "لا توجد قيود بعد."
+msgstr "No entries yet."
+
+msgid "قيد جديد"
+msgstr "New Entry"
+
+msgid "جديد"
+msgstr "New"

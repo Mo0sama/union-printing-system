@@ -128,14 +128,17 @@ class Order(models.Model):
     def __str__(self):
         return f'{self.order_number} - {self.customer}'
 
+    @property
+    def calculated_discount_amount(self):
+        if self.discount_type == 'percentage':
+            return self.subtotal * (self.discount_value / 100)
+        elif self.discount_type == 'fixed':
+            return self.discount_value
+        return 0
+
     def calculate_totals(self):
         self.subtotal = sum(item.total for item in self.items.all())
-        if self.discount_type == 'percentage':
-            discount_amount = self.subtotal * (self.discount_value / 100)
-        elif self.discount_type == 'fixed':
-            discount_amount = self.discount_value
-        else:
-            discount_amount = 0
+        discount_amount = self.calculated_discount_amount
         after_discount = self.subtotal - discount_amount
         self.tax_amount = after_discount * (self.tax_percentage / 100)
         self.total = after_discount + self.tax_amount + self.shipping_cost

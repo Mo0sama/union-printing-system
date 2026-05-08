@@ -108,7 +108,7 @@
                 <td colspan="7" class="text-start">{% trans 'الخصم' %}
                     {% if order.discount_type == 'percentage' %}({{ order.discount_value }}%){% endif %}
                 </td>
-                <td class="text-start">-{{ order.discount_value|currency }}</td>
+                <td class="text-start">-{{ order.calculated_discount_amount|floatformat:2 }}</td>
             </tr>
             {% endif %}
             <tr>

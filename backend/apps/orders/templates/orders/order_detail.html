@@ -281,7 +281,7 @@
                                 ({{ order.discount_value }}%)
                                 {% endif %}
                             </td>
-                            <td class="text-start text-danger">-{{ order.discount_value|currency }}</td>
+                            <td class="text-start text-danger">-{{ order.calculated_discount_amount|floatformat:2 }}</td>
                         </tr>
                         {% endif %}
                         <tr>

@@ -15,7 +15,9 @@
             <h2>{{ company.company_name }}</h2>
             <p>
                 {{ company.address|default:'' }}<br>
-                {{ company.phone|default:'' }} | {{ company.email|default:'' }}
+                {% if company.phone or company.email %}
+                {{ company.phone|default:'' }}{% if company.phone and company.email %} | {% endif %}{{ company.email|default:'' }}
+                {% endif %}
             </p>
             <hr>
             <h3>{% trans 'طلب' %} #{{ order.order_number }}</h3>

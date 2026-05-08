@@ -1,0 +1,152 @@
+{% extends 'adminlte/base.html' %}
+{% load static i18n core_tags humanize %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="h3">{{ title }}</h1>
+        <a href="{% url 'pos:pos_dashboard' %}" class="btn btn-secondary">
+            <i class="bi bi-arrow-right"></i> {% trans 'عودة' %}
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">{% trans 'المنتجات' %}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="input-group mb-3">
+                        <input type="text" id="product-search" class="form-control" placeholder="{% trans 'بحث عن منتج...' %}" autofocus>
+                        <button class="btn btn-primary" type="button"><i class="bi bi-search"></i></button>
+                    </div>
+                    <div id="product-results" class="row g-2"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">{% trans 'عناصر الفاتورة' %}</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0" id="cart-table">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>{% trans 'المنتج' %}</th>
+                                    <th>{% trans 'السعر' %}</th>
+                                    <th>{% trans 'الكمية' %}</th>
+                                    <th>{% trans 'المجموع' %}</th>
+                                    <th>{% trans 'إجراءات' %}</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cart-items"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">{% trans 'ملخص الفاتورة' %}</h5>
+                </div>
+                <div class="card-body">
+                    <form id="sale-form" method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label">{% trans 'طريقة الدفع' %}</label>
+                            <select name="payment_method" class="form-control" required>
+                                <option value="cash">{% trans 'نقدي' %}</option>
+                                <option value="card">{% trans 'بطاقة' %}</option>
+                                <option value="credit">{% trans 'آجل' %}</option>
+                            </select>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>{% trans 'الإجمالي' %}</span>
+                            <span id="cart-total" class="fw-bold">0.00</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-3">
+                            <span>{% trans 'عدد العناصر' %}</span>
+                            <span id="cart-count">0</span>
+                        </div>
+                        <input type="hidden" name="items" id="items-input">
+                        <input type="hidden" name="total" id="total-input">
+                        <button type="submit" class="btn btn-success btn-lg w-100" id="checkout-btn">
+                            <i class="bi bi-cash"></i> {% trans 'إتمام البيع' %}
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let cart = [];
+    const searchInput = document.getElementById('product-search');
+    const resultsDiv = document.getElementById('product-results');
+    const cartItems = document.getElementById('cart-items');
+    const cartTotal = document.getElementById('cart-total');
+    const cartCount = document.getElementById('cart-count');
+
+    searchInput.addEventListener('input', function() {
+        const q = this.value.trim();
+        if (q.length < 1) { resultsDiv.innerHTML = ''; return; }
+        fetch(`{% url 'pos:pos_get_items' %}?q=${encodeURIComponent(q)}`)
+            .then(r => r.json())
+            .then(data => {
+                resultsDiv.innerHTML = data.items.map(item =>
+                    `<div class="col-6 col-md-4 mb-2">
+                        <button type="button" class="btn btn-outline-primary w-100" onclick="addToCart(${item.id}, '${item.name}', ${item.price})">
+                            <strong>${item.name}</strong><br>
+                            <small>${item.price} ج.م</small>
+                        </button>
+                    </div>`
+                ).join('');
+            });
+    });
+
+    function addToCart(id, name, price) {
+        const existing = cart.find(i => i.id === id);
+        if (existing) { existing.qty += 1; }
+        else { cart.push({ id, name, price, qty: 1 }); }
+        renderCart();
+    }
+
+    function removeFromCart(id) {
+        cart = cart.filter(i => i.id !== id);
+        renderCart();
+    }
+
+    function updateQty(id, qty) {
+        const item = cart.find(i => i.id === id);
+        if (item) { item.qty = Math.max(1, parseInt(qty) || 1); }
+        renderCart();
+    }
+
+    function renderCart() {
+        cartItems.innerHTML = cart.map(i =>
+            `<tr>
+                <td>${i.name}</td>
+                <td>${i.price}</td>
+                <td><input type="number" value="${i.qty}" min="1" class="form-control form-control-sm" style="width:70px" onchange="updateQty(${i.id}, this.value)"></td>
+                <td>${(i.price * i.qty).toFixed(2)}</td>
+                <td><button type="button" class="btn btn-danger btn-sm" onclick="removeFromCart(${i.id})"><i class="bi bi-trash"></i></button></td>
+            </tr>`
+        ).join('');
+        const total = cart.reduce((sum, i) => sum + i.price * i.qty, 0);
+        cartTotal.textContent = total.toFixed(2);
+        cartCount.textContent = cart.length;
+        document.getElementById('items-input').value = JSON.stringify(cart.map(i => ({ id: i.id, qty: i.qty })));
+        document.getElementById('total-input').value = total.toFixed(2);
+    }
+</script>
+{% endblock %}

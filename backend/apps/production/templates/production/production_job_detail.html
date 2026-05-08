@@ -1,0 +1,232 @@
+{% extends 'adminlte/base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">{{ job.job_number }}</h3>
+                <div class="card-tools">
+                    <a href="{% url 'production:production_job_edit' job.pk %}" class="btn btn-warning btn-sm">
+                        <i class="fas fa-edit"></i> تعديل
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <table class="table table-bordered">
+                    <tr>
+                        <th>رقم الطلب</th>
+                        <td>{{ job.order.order_number }}</td>
+                        <th>القسم</th>
+                        <td>{{ job.department.name_ar }}</td>
+                    </tr>
+                    <tr>
+                        <th>الماكينة</th>
+                        <td>{{ job.machine.name|default:'-' }}</td>
+                        <th>مسند إلى</th>
+                        <td>
+                            {% if job.assigned_to %}
+                            {{ job.assigned_to }}
+                            {% else %}
+                            <a href="{% url 'production:assign_job' job.pk %}" class="btn btn-info btn-sm">إسناد</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>الحالة</th>
+                        <td>
+                            <span class="badge
+                                {% if job.status == 'pending' %}badge-warning
+                                {% elif job.status == 'in_progress' %}badge-info
+                                {% elif job.status == 'quality_check' %}badge-primary
+                                {% elif job.status == 'completed' %}badge-success
+                                {% elif job.status == 'rejected' %}badge-danger
+                                {% elif job.status == 'paused' %}badge-secondary
+                                {% endif %} fs-5">
+                                {{ job.get_status_display }}
+                            </span>
+                        </td>
+                        <th>الأولوية</th>
+                        <td>
+                            {% if job.priority == 'urgent' %}
+                            <span class="badge badge-danger">{{ job.get_priority_display }}</span>
+                            {% elif job.priority == 'high' %}
+                            <span class="badge badge-warning">{{ job.get_priority_display }}</span>
+                            {% else %}
+                            <span class="badge badge-info">{{ job.get_priority_display }}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>الكمية</th>
+                        <td>{{ job.quantity }}</td>
+                        <th>الكمية المنجزة</th>
+                        <td>{{ job.completed_quantity }}</td>
+                    </tr>
+                    <tr>
+                        <th>الكمية المرفوضة</th>
+                        <td>{{ job.rejected_quantity }}</td>
+                        <th>الساعات المقدرة</th>
+                        <td>{{ job.estimated_hours|default:'-' }}</td>
+                    </tr>
+                    <tr>
+                        <th>الساعات الفعلية</th>
+                        <td>{{ job.actual_hours|default:'-' }}</td>
+                        <th>تاريخ البدء</th>
+                        <td>{{ job.start_date|date:'Y-m-d H:i'|default:'-' }}</td>
+                    </tr>
+                    <tr>
+                        <th>تاريخ الانتهاء</th>
+                        <td>{{ job.end_date|date:'Y-m-d H:i'|default:'-' }}</td>
+                        <th>تاريخ الإنشاء</th>
+                        <td>{{ job.created_at|date:'Y-m-d H:i' }}</td>
+                    </tr>
+                </table>
+                {% if job.notes %}
+                <div class="mt-3">
+                    <h5>ملاحظات</h5>
+                    <p>{{ job.notes|linebreaks }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">مراحل الإنتاج</h3>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>المرحلة</th>
+                                <th>الترتيب</th>
+                                <th>الحالة</th>
+                                <th>تاريخ البدء</th>
+                                <th>تاريخ الانتهاء</th>
+                                <th>بواسطة</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for stage in stages %}
+                            <tr>
+                                <td>{{ stage.stage_name }}</td>
+                                <td>{{ stage.stage_order }}</td>
+                                <td>
+                                    <span class="badge
+                                        {% if stage.status == 'pending' %}badge-warning
+                                        {% elif stage.status == 'in_progress' %}badge-info
+                                        {% elif stage.status == 'completed' %}badge-success
+                                        {% elif stage.status == 'skipped' %}badge-secondary
+                                        {% endif %}">
+                                        {{ stage.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>{{ stage.started_at|date:'Y-m-d H:i'|default:'-' }}</td>
+                                <td>{{ stage.completed_at|date:'Y-m-d H:i'|default:'-' }}</td>
+                                <td>{{ stage.completed_by|default:'-' }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="6" class="text-center">لا توجد مراحل</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">فحوصات الجودة</h3>
+                <div class="card-tools">
+                    <a href="{% url 'production:quality_check_create' job.pk %}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus"></i> فحص جديد
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>التاريخ</th>
+                                <th>النتيجة</th>
+                                <th>بواسطة</th>
+                                <th>العيوب</th>
+                                <th>ملاحظات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for check in quality_checks %}
+                            <tr>
+                                <td>{{ check.check_date|date:'Y-m-d H:i' }}</td>
+                                <td>
+                                    <span class="badge
+                                        {% if check.result == 'passed' %}badge-success
+                                        {% elif check.result == 'failed' %}badge-danger
+                                        {% else %}badge-warning
+                                        {% endif %}">
+                                        {{ check.get_result_display }}
+                                    </span>
+                                </td>
+                                <td>{{ check.checked_by }}</td>
+                                <td>{{ check.defects|default:'-' }}</td>
+                                <td>{{ check.notes|default:'-' }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="5" class="text-center">لم يتم إجراء فحوصات</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">تحديث الحالة</h3>
+            </div>
+            <div class="card-body">
+                <div class="btn-group-vertical w-100" role="group">
+                    <button type="button" class="btn btn-warning status-btn mb-1" data-status="pending">قيد الانتظار</button>
+                    <button type="button" class="btn btn-info status-btn mb-1" data-status="in_progress">قيد التنفيذ</button>
+                    <button type="button" class="btn btn-primary status-btn mb-1" data-status="quality_check">فحص جودة</button>
+                    <button type="button" class="btn btn-success status-btn mb-1" data-status="completed">مكتمل</button>
+                    <button type="button" class="btn btn-danger status-btn mb-1" data-status="rejected">مرفوض</button>
+                    <button type="button" class="btn btn-secondary status-btn mb-1" data-status="paused">متوقف</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(function() {
+    $('.status-btn').click(function() {
+        var status = $(this).data('status');
+        var btn = $(this);
+        $.ajax({
+            url: '{% url "production:update_job_status" job.pk %}',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({status: status}),
+            headers: {'X-CSRFToken': '{{ csrf_token }}'},
+            success: function(response) {
+                location.reload();
+            },
+            error: function(xhr) {
+                alert('حدث خطأ');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

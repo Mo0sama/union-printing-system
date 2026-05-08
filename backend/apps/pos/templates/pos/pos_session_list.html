@@ -1,0 +1,71 @@
+{% extends 'adminlte/base.html' %}
+{% load static i18n core_tags humanize %}
+{% block title %}{{ title }} - {{ block.super }}{% endblock %}
+{% block page_title %}<h5 class="mb-0 fw-bold"><i class="bi bi-clock-history"></i> {{ title }}</h5>{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <span>{% trans 'جلسات البيع' %}</span>
+        <div>
+            <a href="{% url 'pos:pos_session_open' %}" class="btn btn-success btn-sm">
+                <i class="bi bi-plus-lg"></i> {% trans 'جلسة جديدة' %}
+            </a>
+            <a href="{% url 'pos:pos_dashboard' %}" class="btn btn-primary btn-sm">
+                <i class="bi bi-credit-card-2-front"></i> {% trans 'نقطة البيع' %}
+            </a>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-custom">
+                <thead>
+                    <tr>
+                        <th>{% trans 'رقم الجلسة' %}</th>
+                        <th>{% trans 'الكاشير' %}</th>
+                        <th>{% trans 'وقت الفتح' %}</th>
+                        <th>{% trans 'وقت الإغلاق' %}</th>
+                        <th>{% trans 'الرصيد الافتتاحي' %}</th>
+                        <th>{% trans 'رصيد الإغلاق' %}</th>
+                        <th>{% trans 'الفارق' %}</th>
+                        <th>{% trans 'الحالة' %}</th>
+                        <th>{% trans 'إجراءات' %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for session in sessions %}
+                    <tr>
+                        <td class="fw-bold">{{ session.session_number }}</td>
+                        <td>{{ session.cashier }}</td>
+                        <td>{{ session.opened_at|date:'Y-m-d H:i' }}</td>
+                        <td>{{ session.closed_at|date:'Y-m-d H:i'|default:'-' }}</td>
+                        <td>{{ session.opening_balance|currency }}</td>
+                        <td>{{ session.closing_balance|default:'-'|currency }}</td>
+                        <td class="{% if session.difference and session.difference != 0 %}text-danger fw-bold{% endif %}">
+                            {{ session.difference|default:'-'|currency }}
+                        </td>
+                        <td>
+                            {% if session.status == 'open' %}
+                            <span class="badge-status badge-confirmed">{% trans 'مفتوحة' %}</span>
+                            {% else %}
+                            <span class="badge-status badge-completed">{% trans 'مغلقة' %}</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-nowrap">
+                            {% if session.status == 'open' %}
+                            <a href="{% url 'pos:pos_session_close' session.pk %}" class="btn btn-sm btn-warning">
+                                <i class="bi bi-lock"></i> {% trans 'إغلاق' %}
+                            </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9" class="text-center text-muted py-4">{% trans 'لا توجد جلسات بيع' %}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,17 @@
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.env
+desktop/
+scripts/
+*.bat
+desktop-run.bat
+run.bat
+backend/staticfiles/
+backend/media/
+backend/stderr.txt
+backend/stdout.txt
+.git/
+.gitignore
+deploy_pythonanywhere/

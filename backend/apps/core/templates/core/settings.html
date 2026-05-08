@@ -1,0 +1,120 @@
+{% extends 'adminlte/base.html' %}
+{% load static i18n core_tags humanize crispy_forms_tags %}
+{% block title %}{% trans 'الإعدادات' %} - {{ block.super }}{% endblock %}
+{% block page_title %}<h5 class="mb-0 fw-bold"><i class="bi bi-gear-wide"></i> {% trans 'الإعدادات' %}</h5>{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <span>{% trans 'إعدادات الشركة' %}</span>
+                <small class="text-muted">{% trans 'آخر تحديث' %}: {{ settings.updated_at|date:'Y-m-d H:i'|default:'-' }}</small>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data" novalidate>
+                    {% csrf_token %}
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+                    {% endif %}
+
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                {{ form.company_name|as_crispy_field }}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                {{ form.currency|as_crispy_field }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.phone|as_crispy_field }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.email|as_crispy_field }}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.address|as_crispy_field }}
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.website|as_crispy_field }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.tax_number|as_crispy_field }}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            {{ form.language|as_crispy_field }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            {{ form.timezone|as_crispy_field }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            {{ form.date_format|as_crispy_field }}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.default_profit_margin|as_crispy_field }}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">{% trans 'شعار الشركة' %}</label>
+                        <div class="d-flex align-items-center gap-3">
+                            {% if settings.logo %}
+                            <div class="logo-preview" id="logo-preview">
+                                <img src="{{ settings.logo.url }}" alt="{% trans 'الشعار الحالي' %}" style="max-height:100px;border-radius:8px;border:1px solid #e2e8f0;padding:4px;">
+                            </div>
+                            {% endif %}
+                            <div class="flex-grow-1">
+                                {{ form.logo|as_crispy_field }}
+                            </div>
+                        </div>
+                        <div id="logo-preview-new" class="mt-2" style="display:none">
+                            <img id="logo-preview-img" src="#" alt="{% trans 'معاينة الشعار' %}" style="max-height:100px;border-radius:8px;border:1px solid #e2e8f0;padding:4px;">
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-check-lg"></i> {% trans 'حفظ الإعدادات' %}
+                        </button>
+                        <a href="{% url 'core:dashboard' %}" class="btn btn-secondary btn-lg">
+                            <i class="bi bi-arrow-right"></i> {% trans 'عودة' %}
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+$('#id_logo').on('change', function(e) {
+    var file = e.target.files[0];
+    if (file) {
+        var reader = new FileReader();
+        reader.onload = function(ev) {
+            $('#logo-preview').hide();
+            $('#logo-preview-new').show();
+            $('#logo-preview-img').attr('src', ev.target.result);
+        };
+        reader.readAsDataURL(file);
+    }
+});
+</script>
+{% endblock %}

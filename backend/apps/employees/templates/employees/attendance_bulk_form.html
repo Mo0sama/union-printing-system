@@ -1,0 +1,71 @@
+{% extends 'adminlte/base.html' %}
+{% load static i18n core_tags humanize %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col">
+            <h1 class="h3">{{ title }}</h1>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <form method="post" novalidate>
+                {% csrf_token %}
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label">{% trans 'التاريخ' %}</label>
+                        <input type="date" name="date" class="form-control" value="{{ today|date:'Y-m-d' }}" required>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead class="table-light">
+                            <tr>
+                                <th>#</th>
+                                <th>{% trans 'الموظف' %}</th>
+                                <th>{% trans 'الحضور' %}</th>
+                                <th>{% trans 'الانصراف' %}</th>
+                                <th>{% trans 'الحالة' %}</th>
+                                <th>{% trans 'ملاحظات' %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for emp in employees %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ emp.full_name }}</td>
+                                <td><input type="time" name="check_in_{{ emp.id }}" class="form-control" value="09:00"></td>
+                                <td><input type="time" name="check_out_{{ emp.id }}" class="form-control" value="17:00"></td>
+                                <td>
+                                    <select name="status_{{ emp.id }}" class="form-control">
+                                        <option value="present">{% trans 'حاضر' %}</option>
+                                        <option value="absent">{% trans 'غائب' %}</option>
+                                        <option value="late">{% trans 'متأخر' %}</option>
+                                        <option value="leave">{% trans 'إجازة' %}</option>
+                                    </select>
+                                </td>
+                                <td><input type="text" name="notes_{{ emp.id }}" class="form-control" placeholder="{% trans 'ملاحظات' %}"></td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="6" class="text-center text-muted">{% trans 'لا يوجد موظفون نشطون.' %}</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-lg"></i> {% trans 'حفظ الكل' %}
+                    </button>
+                    <a href="{% url 'employees:attendance_list' %}" class="btn btn-secondary">
+                        <i class="bi bi-x-lg"></i> {% trans 'إلغاء' %}
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

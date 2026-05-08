@@ -1,0 +1,458 @@
+{% extends 'adminlte/base.html' %}
+{% load static i18n core_tags humanize %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col">
+            <h1 class="h3">{% trans 'طلب' %} #{{ order.order_number }}</h1>
+            <div class="d-flex gap-2 mt-2">
+                <span class="badge badge-status badge-{{ order.status }} fs-6">{{ order.get_status_display }}</span>
+                {% if order.priority == 'urgent' %}
+                <span class="badge bg-danger fs-6">{{ order.get_priority_display }}</span>
+                {% elif order.priority == 'high' %}
+                <span class="badge bg-warning text-dark fs-6">{{ order.get_priority_display }}</span>
+                {% elif order.priority == 'normal' %}
+                <span class="badge bg-info fs-6">{{ order.get_priority_display }}</span>
+                {% else %}
+                <span class="badge bg-secondary fs-6">{{ order.get_priority_display }}</span>
+                {% endif %}
+            </div>
+        </div>
+        <div class="col-auto">
+            <div class="btn-group">
+                <a href="{% url 'orders:order_list' %}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-right"></i> {% trans 'عودة' %}
+                </a>
+                {% if perms.orders.change_order %}
+                <a href="{% url 'orders:order_edit' order.pk %}" class="btn btn-warning">
+                    <i class="bi bi-pencil"></i> {% trans 'تعديل' %}
+                </a>
+                {% endif %}
+                <a href="{% url 'orders:order_print' order.pk %}" class="btn btn-secondary" target="_blank">
+                    <i class="bi bi-printer"></i> {% trans 'طباعة' %}
+                </a>
+                {% if perms.orders.delete_order %}
+                <a href="{% url 'orders:order_delete' order.pk %}" class="btn btn-danger">
+                    <i class="bi bi-trash"></i> {% trans 'حذف' %}
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">{% trans 'معلومات الطلب' %}</h3>
+                </div>
+                <div class="card-body">
+                    <table class="table table-bordered">
+                        <tr>
+                            <th class="w-25">{% trans 'رقم الطلب' %}</th>
+                            <td>{{ order.order_number }}</td>
+                            <th class="w-25">{% trans 'تاريخ الطلب' %}</th>
+                            <td>{{ order.order_date|date:'Y-m-d H:i' }}</td>
+                        </tr>
+                        <tr>
+                            <th>{% trans 'العميل' %}</th>
+                            <td>
+                                <a href="{% url 'customers:customer_detail' order.customer.pk %}">{{ order.customer }}</a>
+                            </td>
+                            <th>{% trans 'تاريخ التسليم' %}</th>
+                            <td>{{ order.delivery_date|date:'Y-m-d' }}</td>
+                        </tr>
+                        <tr>
+                            <th>{% trans 'نوع الطلب' %}</th>
+                            <td>{{ order.get_order_type_display }}</td>
+                            <th>{% trans 'طريقة الدفع' %}</th>
+                            <td>{{ order.get_payment_method_display|default:'-' }}</td>
+                        </tr>
+                        {% if order.quote %}
+                        <tr>
+                            <th>{% trans 'عرض السعر' %}</th>
+                            <td colspan="3">
+                                <a href="{% url 'quotes:quote_detail' order.quote.pk %}">{{ order.quote.quote_number }}</a>
+                            </td>
+                        </tr>
+                        {% endif %}
+                        <tr>
+                            <th>{% trans 'تم بواسطة' %}</th>
+                            <td>{{ order.created_by.get_full_name|default:order.created_by.username }}</td>
+                            <th>{% trans 'آخر تحديث' %}</th>
+                            <td>{{ order.updated_at|date:'Y-m-d H:i' }}</td>
+                        </tr>
+                    </table>
+                    {% if order.delivery_address %}
+                    <div class="mt-2">
+                        <strong>{% trans 'عنوان التسليم' %}:</strong>
+                        <p class="mb-0">{{ order.delivery_address|linebreaks }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">{% trans 'بنود الطلب' %}</h3>
+                </div>
+                <div class="card-body table-responsive p-0">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>{% trans 'الوصف' %}</th>
+                                <th>{% trans 'النوع' %}</th>
+                                <th>{% trans 'الكمية' %}</th>
+                                <th>{% trans 'الوحدة' %}</th>
+                                <th>{% trans 'سعر الوحدة' %}</th>
+                                <th>{% trans 'الخصم %' %}</th>
+                                <th>{% trans 'الإجمالي' %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in order.items.all %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ item.description }}</td>
+                                <td>{{ item.get_item_type_display }}</td>
+                                <td>{{ item.quantity }}</td>
+                                <td>{{ item.get_unit_display }}</td>
+                                <td>{{ item.unit_price|currency }}</td>
+                                <td>{{ item.discount_percent|default:'-' }}</td>
+                                <td>{{ item.total|currency }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="8" class="text-center">{% trans 'لا توجد بنود' %}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">{% trans 'ملفات التصميم' %}</h3>
+                    <div class="card-tools">
+                        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#designFileModal">
+                            <i class="bi bi-upload"></i> {% trans 'رفع ملف' %}
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if order.design_files.all %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>{% trans 'الإصدار' %}</th>
+                                    <th>{% trans 'الملف' %}</th>
+                                    <th>{% trans 'تم الرفع بواسطة' %}</th>
+                                    <th>{% trans 'التاريخ' %}</th>
+                                    <th>{% trans 'ملاحظات' %}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for df in order.design_files.all %}
+                                <tr>
+                                    <td>v{{ df.version }}</td>
+                                    <td><a href="{{ df.file.url }}" target="_blank"><i class="bi bi-download"></i> {{ df.file.name }}</a></td>
+                                    <td>{{ df.uploaded_by.get_full_name|default:df.uploaded_by.username }}</td>
+                                    <td>{{ df.uploaded_at|date:'Y-m-d H:i' }}</td>
+                                    <td>{{ df.notes|default:'-' }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted mb-0">{% trans 'لا توجد ملفات تصميم' %}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">{% trans 'مذكرات التسليم' %}</h3>
+                    <div class="card-tools">
+                        <a href="{% url 'orders:add_delivery_note' order.pk %}" class="btn btn-primary btn-sm">
+                            <i class="bi bi-plus-lg"></i> {% trans 'إضافة مذكرة تسليم' %}
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if order.delivery_notes.all %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>{% trans 'التاريخ' %}</th>
+                                    <th>{% trans 'تم التسليم بواسطة' %}</th>
+                                    <th>{% trans 'استلم' %}</th>
+                                    <th>{% trans 'الحالة' %}</th>
+                                    <th>{% trans 'البنود المسلمة' %}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for dn in order.delivery_notes.all %}
+                                <tr>
+                                    <td>{{ dn.delivery_date|date:'Y-m-d H:i' }}</td>
+                                    <td>{{ dn.delivered_by }}</td>
+                                    <td>{{ dn.received_by|default:'-' }}</td>
+                                    <td>
+                                        <span class="badge {% if dn.status == 'full' %}bg-success{% else %}bg-warning text-dark{% endif %}">
+                                            {{ dn.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>{{ dn.items_delivered|truncatewords:10 }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted mb-0">{% trans 'لا توجد مذكرات تسليم' %}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if order.notes %}
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">{% trans 'ملاحظات' %}</h3>
+                </div>
+                <div class="card-body">
+                    {{ order.notes|linebreaks }}
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">{% trans 'الخط الزمني' %}</h3>
+                </div>
+                <div class="card-body">
+                    <ul class="timeline">
+                        {% for event in timeline %}
+                        <li class="timeline-item">
+                            <div class="timeline-icon
+                                {% if event.type == 'payment' %}bg-success
+                                {% elif event.type == 'design' %}bg-info
+                                {% elif event.type == 'delivery' %}bg-warning
+                                {% else %}bg-primary
+                                {% endif %}">
+                            </div>
+                            <div class="timeline-content">
+                                <div class="d-flex justify-content-between">
+                                    <strong>{{ event.description }}</strong>
+                                    <small class="timeline-time">{{ event.date|date:'Y-m-d H:i' }}</small>
+                                </div>
+                                <small class="text-muted">{{ event.user }}</small>
+                            </div>
+                        </li>
+                        {% empty %}
+                        <li class="text-muted">{% trans 'لا توجد أحداث' %}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">{% trans 'ملخص المبالغ' %}</h3>
+                </div>
+                <div class="card-body">
+                    <table class="table">
+                        <tr>
+                            <td>{% trans 'المجموع الفرعي' %}</td>
+                            <td class="text-start">{{ order.subtotal|currency }}</td>
+                        </tr>
+                        {% if order.discount_type %}
+                        <tr>
+                            <td>{% trans 'الخصم' %}
+                                {% if order.discount_type == 'percentage' %}
+                                ({{ order.discount_value }}%)
+                                {% endif %}
+                            </td>
+                            <td class="text-start text-danger">-{{ order.discount_value|currency }}</td>
+                        </tr>
+                        {% endif %}
+                        <tr>
+                            <td>{% trans 'الضريبة' %} ({{ order.tax_percentage }}%)</td>
+                            <td class="text-start">{{ order.tax_amount|currency }}</td>
+                        </tr>
+                        {% if order.shipping_cost %}
+                        <tr>
+                            <td>{% trans 'الشحن' %}</td>
+                            <td class="text-start">{{ order.shipping_cost|currency }}</td>
+                        </tr>
+                        {% endif %}
+                        <tr class="fw-bold">
+                            <td>{% trans 'الإجمالي' %}</td>
+                            <td class="text-start text-success fs-5">{{ order.total|currency }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">{% trans 'تحديث الحالة' %}</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{% url 'orders:update_order_status' order.pk %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <select name="status" class="form-control">
+                                {% for s_key, s_label in order.Status.choices %}
+                                <option value="{{ s_key }}" {% if order.status == s_key %}selected{% endif %}>{{ s_label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        {% if perms.orders.change_order %}
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-check-lg"></i> {% trans 'تحديث' %}
+                        </button>
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">{% trans 'المدفوعات' %}</h3>
+                    <div class="card-tools">
+                        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#paymentModal">
+                            <i class="bi bi-plus-lg"></i> {% trans 'إضافة' %}
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>{% trans 'المبلغ' %}</th>
+                                <th>{% trans 'الطريقة' %}</th>
+                                <th>{% trans 'التاريخ' %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for p in order.payments.all %}
+                            <tr>
+                                <td>{{ p.amount|currency }}</td>
+                                <td>{{ p.get_payment_method_display }}</td>
+                                <td>{{ p.payment_date|date:'Y-m-d' }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-center text-muted">{% trans 'لا توجد دفعات' %}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <hr>
+                    <div class="d-flex justify-content-between">
+                        <span>{% trans 'المدفوع' %}:</span>
+                        <span class="text-success fw-bold">{{ order.paid_amount|currency }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>{% trans 'المتبقي' %}:</span>
+                        <span class="text-danger fw-bold">{{ order.due_amount|currency }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">{% trans 'معلومات إضافية' %}</h3>
+                </div>
+                <div class="card-body">
+                    <p><strong>{% trans 'تم بواسطة:' %}</strong> {{ order.created_by.get_full_name|default:order.created_by.username }}</p>
+                    <p><strong>{% trans 'تاريخ الإنشاء:' %}</strong> {{ order.created_at|date:'Y-m-d H:i' }}</p>
+                    <p><strong>{% trans 'آخر تحديث:' %}</strong> {{ order.updated_at|date:'Y-m-d H:i' }}</p>
+                    {% if order.internal_notes %}
+                    <hr>
+                    <strong>{% trans 'ملاحظات داخلية' %}:</strong>
+                    <p class="mb-0 text-muted">{{ order.internal_notes|linebreaks }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="paymentModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="{% url 'orders:add_payment' order.pk %}">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title">{% trans 'إضافة دفعة' %}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">{{ payment_form.amount.label }}</label>
+                        {{ payment_form.amount }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">{{ payment_form.payment_method.label }}</label>
+                        {{ payment_form.payment_method }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">{{ payment_form.reference.label }}</label>
+                        {{ payment_form.reference }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">{{ payment_form.notes.label }}</label>
+                        {{ payment_form.notes }}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans 'إلغاء' %}</button>
+                    <button type="submit" class="btn btn-primary">{% trans 'حفظ' %}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="designFileModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="{% url 'orders:add_design_file' order.pk %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title">{% trans 'رفع ملف تصميم' %}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">{{ design_file_form.file.label }}</label>
+                        {{ design_file_form.file }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">{{ design_file_form.version.label }}</label>
+                        {{ design_file_form.version }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">{{ design_file_form.notes.label }}</label>
+                        {{ design_file_form.notes }}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans 'إلغاء' %}</button>
+                    <button type="submit" class="btn btn-primary">{% trans 'رفع' %}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

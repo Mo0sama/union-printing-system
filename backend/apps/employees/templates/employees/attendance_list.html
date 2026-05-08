@@ -1,0 +1,90 @@
+{% extends 'adminlte/base.html' %}
+{% load static i18n core_tags humanize %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="container-fluid">
+  <div class="row mb-3">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">{{ title }}</h3>
+          <div class="card-tools">
+            <a href="{% url 'employees:mark_attendance' %}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg"></i> {% trans 'تسجيل حضور' %}</a>
+            <a href="{% url 'employees:mark_bulk_attendance' %}" class="btn btn-info btn-sm"><i class="bi bi-people"></i> {% trans 'حضور جماعي' %}</a>
+          </div>
+        </div>
+        <div class="card-body">
+          <form class="row g-2 mb-3" method="get">
+            <div class="col-md-3">
+              <input type="date" name="date_from" class="form-control" value="{{ date_from }}" placeholder="{% trans 'من تاريخ' %}">
+            </div>
+            <div class="col-md-3">
+              <input type="date" name="date_to" class="form-control" value="{{ date_to }}" placeholder="{% trans 'إلى تاريخ' %}">
+            </div>
+            <div class="col-md-3">
+              <select name="employee" class="form-control">
+                <option value="">{% trans 'كل الموظفين' %}</option>
+                {% for emp in employees %}
+                <option value="{{ emp.pk }}" {% if employee_id|stringformat:'s' == emp.pk|stringformat:'s' %}selected{% endif %}>{{ emp.full_name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-2">
+              <select name="status" class="form-control">
+                <option value="">{% trans 'كل الحالات' %}</option>
+                {% for code, label in attendance_status_choices %}
+                <option value="{{ code }}" {% if status_filter == code %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-1">
+              <button type="submit" class="btn btn-info w-100"><i class="bi bi-search"></i></button>
+            </div>
+          </form>
+          <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+              <thead class="table-dark">
+                <tr>
+                  <th>{% trans 'الموظف' %}</th>
+                  <th>{% trans 'التاريخ' %}</th>
+                  <th>{% trans 'الحضور' %}</th>
+                  <th>{% trans 'الانصراف' %}</th>
+                  <th>{% trans 'الحالة' %}</th>
+                  <th>{% trans 'ملاحظات' %}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for a in attendances %}
+                <tr>
+                  <td><a href="{% url 'employees:employee_detail' a.employee.pk %}">{{ a.employee.full_name }}</a></td>
+                  <td>{{ a.date|date:'Y-m-d' }}</td>
+                  <td>{{ a.check_in|time:'H:i' }}</td>
+                  <td>{{ a.check_out|time:'H:i'|default:'---' }}</td>
+                  <td>{% include 'adminlte/_badge.html' with status=a.status label=a.get_status_display %}</td>
+                  <td>{{ a.notes|default:'---'|truncatechars:30 }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="text-center">{% trans 'لا توجد سجلات حضور' %}</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% if is_paginated %}
+          <nav class="mt-3">
+            <ul class="pagination justify-content-center">
+              {% if page_obj.has_previous %}
+              <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{% trans 'السابق' %}</a></li>
+              {% endif %}
+              <li class="page-item active"><span class="page-link">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span></li>
+              {% if page_obj.has_next %}
+              <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{% trans 'التالي' %}</a></li>
+              {% endif %}
+            </ul>
+          </nav>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

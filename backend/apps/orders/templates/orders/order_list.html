@@ -1,0 +1,162 @@
+{% extends 'adminlte/base.html' %}
+{% load static i18n core_tags humanize %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col">
+            <h1 class="h3">{{ title }}</h1>
+        </div>
+        <div class="col-auto">
+            {% if perms.orders.add_order %}
+            <a href="{% url 'orders:order_create' %}" class="btn btn-primary">
+                <i class="bi bi-plus-lg"></i> {% trans 'إضافة طلب' %}
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">{% trans 'بحث وتصفية' %}</h3>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    {{ filter_form.search|as_crispy_field }}
+                </div>
+                <div class="col-md-2">
+                    {{ filter_form.status|as_crispy_field }}
+                </div>
+                <div class="col-md-2">
+                    {{ filter_form.priority|as_crispy_field }}
+                </div>
+                <div class="col-md-2">
+                    {{ filter_form.payment_status|as_crispy_field }}
+                </div>
+                <div class="col-md-2">
+                    {{ filter_form.customer|as_crispy_field }}
+                </div>
+                <div class="col-md-2">
+                    {{ filter_form.date_from|as_crispy_field }}
+                </div>
+                <div class="col-md-2">
+                    {{ filter_form.date_to|as_crispy_field }}
+                </div>
+                <div class="col-md-12 d-flex gap-2 align-items-end">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-search"></i> {% trans 'بحث' %}
+                    </button>
+                    <a href="{% url 'orders:order_list' %}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-counterclockwise"></i> {% trans 'إعادة تعيين' %}
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body table-responsive p-0">
+            <table class="table table-hover table-striped">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>{% trans 'رقم الطلب' %}</th>
+                        <th>{% trans 'العميل' %}</th>
+                        <th>{% trans 'الإجمالي' %}</th>
+                        <th>{% trans 'الحالة' %}</th>
+                        <th>{% trans 'الأولوية' %}</th>
+                        <th>{% trans 'حالة الدفع' %}</th>
+                        <th>{% trans 'التاريخ' %}</th>
+                        <th>{% trans 'إجراءات' %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in page_obj %}
+                    <tr>
+                        <td>{{ forloop.counter0|add:page_obj.start_index }}</td>
+                        <td><a href="{% url 'orders:order_detail' order.pk %}">{{ order.order_number }}</a></td>
+                        <td>{{ order.customer }}</td>
+                        <td>{{ order.total|currency }}</td>
+                        <td>
+                            <span class="badge badge-status badge-{{ order.status }}">
+                                {{ order.get_status_display }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if order.priority == 'urgent' %}
+                            <span class="badge bg-danger">{{ order.get_priority_display }}</span>
+                            {% elif order.priority == 'high' %}
+                            <span class="badge bg-warning text-dark">{{ order.get_priority_display }}</span>
+                            {% elif order.priority == 'normal' %}
+                            <span class="badge bg-info">{{ order.get_priority_display }}</span>
+                            {% else %}
+                            <span class="badge bg-secondary">{{ order.get_priority_display }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge badge-status badge-{{ order.payment_status }}">
+                                {{ order.get_payment_status_display }}
+                            </span>
+                        </td>
+                        <td>{{ order.order_date|date:'Y-m-d' }}</td>
+                        <td>
+                            <div class="btn-group">
+                                <a href="{% url 'orders:order_detail' order.pk %}" class="btn btn-sm btn-info" title="{% trans 'عرض' %}">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                {% if perms.orders.change_order %}
+                                <a href="{% url 'orders:order_edit' order.pk %}" class="btn btn-sm btn-warning" title="{% trans 'تعديل' %}">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                {% endif %}
+                                <a href="{% url 'orders:order_print' order.pk %}" class="btn btn-sm btn-secondary" target="_blank" title="{% trans 'طباعة' %}">
+                                    <i class="bi bi-printer"></i>
+                                </a>
+                                {% if perms.orders.delete_order %}
+                                <a href="{% url 'orders:order_delete' order.pk %}" class="btn btn-sm btn-danger" title="{% trans 'حذف' %}">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9" class="text-center">{% trans 'لا توجد طلبات' %}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if page_obj.paginator.num_pages > 1 %}
+        <div class="card-footer clearfix">
+            <nav>
+                <ul class="pagination pagination-sm m-0 float-end">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page=1">&laquo;</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page_obj.previous_page_number }}">{{ page_obj.previous_page_number }}</a>
+                    </li>
+                    {% endif %}
+                    <li class="page-item active"><span class="page-link">{{ page_obj.number }}</span></li>
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page_obj.next_page_number }}">{{ page_obj.next_page_number }}</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page_obj.paginator.num_pages }}">&raquo;</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

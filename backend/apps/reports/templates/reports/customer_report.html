@@ -1,0 +1,85 @@
+{% extends 'adminlte/base.html' %}
+{% load static i18n core_tags humanize %}
+
+{% block title %}{% trans "تقرير العملاء" %}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
+    <h1 class="h3"><i class="fas fa-users ms-2"></i>{% trans "تقرير العملاء" %}</h1>
+    <div class="no-print">
+      <a href="{% url 'reports:export_report_excel' %}?type=customers" class="btn btn-success btn-sm"><i class="fas fa-file-excel ms-1"></i>{% trans "تصدير Excel" %}</a>
+      <a href="{% url 'reports:print_report' %}?type=customers" target="_blank" class="btn btn-info btn-sm"><i class="fas fa-print ms-1"></i>{% trans "طباعة" %}</a>
+    </div>
+  </div>
+
+  <div class="card shadow-sm mb-4 no-print">
+    <div class="card-body">
+      <form method="get" class="row g-3 align-items-end">
+        <div class="col-md-4">{{ form.start_date.label_tag }}{{ form.start_date }}</div>
+        <div class="col-md-4">{{ form.end_date.label_tag }}{{ form.end_date }}</div>
+        <div class="col-md-4"><button type="submit" class="btn btn-primary w-100"><i class="fas fa-search ms-1"></i>{% trans "بحث" %}</button></div>
+      </form>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-12 col-md-4">
+      <div class="card text-white bg-primary shadow-sm">
+        <div class="card-body">
+          <h6 class="card-title">{% trans "إجمالي العملاء" %}</h6>
+          <div class="stat-card h3 mb-0">{{ total_customers|intcomma }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-md-4">
+      <div class="card text-white bg-success shadow-sm">
+        <div class="card-body">
+          <h6 class="card-title">{% trans "عملاء جدد" %}</h6>
+          <div class="stat-card h3 mb-0">{{ new_customers_count|intcomma }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-12">
+      <div class="card shadow-sm">
+        <div class="card-header"><h5 class="mb-0">{% trans "أفضل العملاء حسب الإيرادات" %}</h5></div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover table-striped mb-0">
+              <thead class="table-light"><tr><th>#</th><th>{% trans "اسم العميل" %}</th><th>{% trans "رقم الهاتف" %}</th><th>{% trans "عدد الطلبات" %}</th><th>{% trans "إجمالي المشتريات" %}</th></tr></thead>
+              <tbody>
+                {% for c in top_customers %}
+                <tr>
+                  <td>{{ forloop.counter }}</td>
+                  <td>{{ c.customer__name|default:c.customer__company_name|default:"---" }}</td>
+                  <td>{{ c.customer__phone|default:"---" }}</td>
+                  <td>{{ c.order_count }}</td>
+                  <td>{{ c.total_spent|floatformat:2|intcomma }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="text-center text-muted">{% trans "لا توجد بيانات" %}</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-12 col-md-6">
+      <div class="card shadow-sm">
+        <div class="card-header"><h5 class="mb-0">{% trans "ملخص العملاء" %}</h5></div>
+        <div class="card-body">
+          <div class="d-flex justify-content-between mb-2 pb-2 border-bottom"><span>{% trans "إجمالي العملاء" %}</span><strong>{{ total_customers }}</strong></div>
+          <div class="d-flex justify-content-between mb-2 pb-2 border-bottom"><span>{% trans "عملاء جدد (في الفترة)" %}</span><strong>{{ new_customers_count }}</strong></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

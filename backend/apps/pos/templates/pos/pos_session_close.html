@@ -1,0 +1,118 @@
+{% extends 'adminlte/base.html' %}
+{% load static i18n core_tags humanize crispy_forms_tags %}
+{% block title %}{{ title }} - {{ block.super }}{% endblock %}
+{% block page_title %}<h5 class="mb-0 fw-bold"><i class="bi bi-lock"></i> {{ title }}</h5>{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <span>{% trans 'إغلاق الجلسة' %} - {{ session.session_number }}</span>
+                <span class="badge bg-success fs-6">{% trans 'مفتوحة' %}</span>
+            </div>
+            <div class="card-body">
+                <div class="row g-4 mb-4">
+                    <div class="col-md-4">
+                        <div class="card bg-light border-0">
+                            <div class="card-body text-center">
+                                <small class="text-muted d-block">{% trans 'الرصيد الافتتاحي' %}</small>
+                                <h3 class="fw-bold mb-0">{{ session.opening_balance|currency }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-primary bg-opacity-10 border-0">
+                            <div class="card-body text-center">
+                                <small class="text-muted d-block">{% trans 'الرصيد المتوقع' %}</small>
+                                <h3 class="fw-bold mb-0 text-primary">{{ expected_balance|currency }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-info bg-opacity-10 border-0">
+                            <div class="card-body text-center">
+                                <small class="text-muted d-block">{% trans 'إجمالي المبيعات' %}</small>
+                                <h3 class="fw-bold mb-0 text-info">{{ total_sales|currency }}</h3>
+                                <small>{{ sale_count }} {% trans 'فاتورة' %}</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+                    {% endif %}
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.closing_balance|as_crispy_field }}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.notes|as_crispy_field }}
+                    </div>
+
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        {% trans 'بإغلاق الجلسة، لن تتمكن من إضافة فواتير جديدة لهذه الجلسة. تأكد من مطابقة الرصيد النقدي الفعلي.' %}
+                    </div>
+
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-warning btn-lg">
+                            <i class="bi bi-lock"></i> {% trans 'إغلاق الجلسة' %}
+                        </button>
+                        <a href="{% url 'pos:pos_session_list' %}" class="btn btn-secondary btn-lg">
+                            <i class="bi bi-x-lg"></i> {% trans 'إلغاء' %}
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span>{% trans 'معلومات الجلسة' %}</span>
+            </div>
+            <div class="card-body">
+                <table class="table table-bordered mb-0">
+                    <tr>
+                        <th>{% trans 'رقم الجلسة' %}</th>
+                        <td>{{ session.session_number }}</td>
+                        <th>{% trans 'الكاشير' %}</th>
+                        <td>{{ session.cashier }}</td>
+                    </tr>
+                    <tr>
+                        <th>{% trans 'تاريخ الفتح' %}</th>
+                        <td>{{ session.opened_at|date:'Y-m-d H:i' }}</td>
+                        <th>{% trans 'الرصيد الافتتاحي' %}</th>
+                        <td>{{ session.opening_balance|currency }}</td>
+                    </tr>
+                    <tr>
+                        <th>{% trans 'إجمالي المبيعات' %}</th>
+                        <td>{{ total_sales|currency }}</td>
+                        <th>{% trans 'عدد الفواتير' %}</th>
+                        <td>{{ sale_count }}</td>
+                    </tr>
+                    <tr class="fw-bold">
+                        <th>{% trans 'الرصيد المتوقع' %}</th>
+                        <td class="text-primary">{{ expected_balance|currency }}</td>
+                        <th>{% trans 'الرصيد النقدي الفعلي' %}</th>
+                        <td class="text-warning" id="actual-display">{{ session.closing_balance|default:'0.00'|currency }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+$('#id_closing_balance').on('input', function() {
+    var val = parseFloat($(this).val()) || 0;
+    $('#actual-display').text(val.toFixed(2));
+});
+</script>
+{% endblock %}

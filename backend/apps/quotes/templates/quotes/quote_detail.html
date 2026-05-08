@@ -1,0 +1,200 @@
+{% extends 'adminlte/base.html' %}
+{% load i18n %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col">
+            <h1 class="h3">{% trans 'عرض سعر' %} #{{ quote.quote_number }}</h1>
+        </div>
+        <div class="col-auto">
+            <div class="btn-group">
+                <a href="{% url 'quotes:quote_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-right"></i> {% trans 'عودة' %}
+                </a>
+                {% if perms.quotes.change_quote and quote.status != 'converted' %}
+                <a href="{% url 'quotes:quote_edit' quote.pk %}" class="btn btn-warning">
+                    <i class="fas fa-edit"></i> {% trans 'تعديل' %}
+                </a>
+                {% endif %}
+                <a href="{% url 'quotes:quote_print_pdf' quote.pk %}" class="btn btn-secondary" target="_blank">
+                    <i class="fas fa-print"></i> {% trans 'طباعة' %}
+                </a>
+                <a href="{% url 'quotes:quote_send_email' quote.pk %}" class="btn btn-info">
+                    <i class="fas fa-envelope"></i> {% trans 'إرسال بريد' %}
+                </a>
+                {% if perms.quotes.change_quote and quote.status != 'converted' and quote.status != 'rejected' %}
+                <a href="{% url 'quotes:quote_convert_to_order' quote.pk %}" class="btn btn-success" onclick="return confirm('{% trans 'هل تريد تحويل عرض السعر إلى طلب؟' %}')">
+                    <i class="fas fa-exchange-alt"></i> {% trans 'تحويل لطلب' %}
+                </a>
+                {% endif %}
+                {% if perms.quotes.delete_quote %}
+                <a href="{% url 'quotes:quote_delete' quote.pk %}" class="btn btn-danger">
+                    <i class="fas fa-trash"></i> {% trans 'حذف' %}
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">{% trans 'معلومات عرض السعر' %}</h3>
+                </div>
+                <div class="card-body">
+                    <table class="table table-bordered">
+                        <tr>
+                            <th class="w-25">{% trans 'رقم عرض السعر' %}</th>
+                            <td>{{ quote.quote_number }}</td>
+                        </tr>
+                        <tr>
+                            <th>{% trans 'العميل' %}</th>
+                            <td>{{ quote.customer }}</td>
+                        </tr>
+                        {% if quote.contact_person %}
+                        <tr>
+                            <th>{% trans 'جهة الاتصال' %}</th>
+                            <td>{{ quote.contact_person }}</td>
+                        </tr>
+                        {% endif %}
+                        <tr>
+                            <th>{% trans 'التاريخ' %}</th>
+                            <td>{{ quote.quote_date|date:'Y-m-d' }}</td>
+                        </tr>
+                        <tr>
+                            <th>{% trans 'صلاحية حتى' %}</th>
+                            <td>{{ quote.valid_until|date:'Y-m-d' }}</td>
+                        </tr>
+                        <tr>
+                            <th>{% trans 'الحالة' %}</th>
+                            <td>
+                                {% if quote.status == 'draft' %}
+                                    <span class="badge bg-secondary">{{ quote.get_status_display }}</span>
+                                {% elif quote.status == 'sent' %}
+                                    <span class="badge bg-primary">{{ quote.get_status_display }}</span>
+                                {% elif quote.status == 'accepted' %}
+                                    <span class="badge bg-success">{{ quote.get_status_display }}</span>
+                                {% elif quote.status == 'rejected' %}
+                                    <span class="badge bg-danger">{{ quote.get_status_display }}</span>
+                                {% elif quote.status == 'expired' %}
+                                    <span class="badge bg-warning">{{ quote.get_status_display }}</span>
+                                {% elif quote.status == 'converted' %}
+                                    <span class="badge bg-info">{{ quote.get_status_display }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">{% trans 'البنود' %}</h3>
+                </div>
+                <div class="card-body table-responsive p-0">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>{% trans 'الوصف' %}</th>
+                                <th>{% trans 'الكمية' %}</th>
+                                <th>{% trans 'الوحدة' %}</th>
+                                <th>{% trans 'سعر الوحدة' %}</th>
+                                <th>{% trans 'الخصم %' %}</th>
+                                <th>{% trans 'الإجمالي' %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in quote.items.all %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ item.description }}</td>
+                                <td>{{ item.quantity }}</td>
+                                <td>{{ item.get_unit_display }}</td>
+                                <td>{{ item.unit_price }}</td>
+                                <td>{{ item.discount_percent|default:'-' }}</td>
+                                <td>{{ item.total }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            {% if quote.notes %}
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">{% trans 'ملاحظات' %}</h3>
+                </div>
+                <div class="card-body">
+                    {{ quote.notes|linebreaks }}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if quote.terms_conditions %}
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">{% trans 'الشروط والأحكام' %}</h3>
+                </div>
+                <div class="card-body">
+                    {{ quote.terms_conditions|linebreaks }}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">{% trans 'ملخص المبالغ' %}</h3>
+                </div>
+                <div class="card-body">
+                    <table class="table">
+                        <tr>
+                            <td>{% trans 'المجموع الفرعي' %}</td>
+                            <td class="text-start">{{ quote.subtotal }}</td>
+                        </tr>
+                        {% if quote.discount_type %}
+                        <tr>
+                            <td>{% trans 'الخصم' %}
+                                {% if quote.discount_type == 'percentage' %}
+                                ({{ quote.discount_value }}%)
+                                {% endif %}
+                            </td>
+                            <td class="text-start text-danger">-{{ quote.discount_value }}</td>
+                        </tr>
+                        {% endif %}
+                        <tr>
+                            <td>{% trans 'الضريبة' %} ({{ quote.tax_percentage }}%)</td>
+                            <td class="text-start">{{ quote.tax_amount }}</td>
+                        </tr>
+                        <tr class="fw-bold">
+                            <td>{% trans 'الإجمالي' %}</td>
+                            <td class="text-start text-success fs-5">{{ quote.total }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">{% trans 'معلومات إضافية' %}</h3>
+                </div>
+                <div class="card-body">
+                    <p><strong>{% trans 'تم بواسطة:' %}</strong> {{ quote.created_by.get_full_name|default:quote.created_by.username }}</p>
+                    <p><strong>{% trans 'تاريخ الإنشاء:' %}</strong> {{ quote.created_at|date:'Y-m-d H:i' }}</p>
+                    {% if quote.updated_at %}
+                    <p><strong>{% trans 'آخر تحديث:' %}</strong> {{ quote.updated_at|date:'Y-m-d H:i' }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,126 @@
+{% extends 'adminlte/base.html' %}
+{% load static i18n core_tags humanize %}
+{% block title %}{% trans 'سجل النشاطات' %} - {{ block.super }}{% endblock %}
+{% block page_title %}<h5 class="mb-0 fw-bold"><i class="bi bi-activity"></i> {% trans 'سجل النشاطات' %}</h5>{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <span>{% trans 'سجل النشاطات' %}</span>
+        <small class="text-muted">{% trans 'آخر 100 نشاط' %}</small>
+    </div>
+    <div class="card-body">
+        <form method="get" class="row g-3 mb-3">
+            <div class="col-md-6">
+                <div class="input-group">
+                    <input type="text" name="search" class="form-control" placeholder="{% trans 'بحث في سجل النشاطات...' %}" value="{{ search }}">
+                    <button class="btn btn-primary" type="submit">
+                        <i class="bi bi-search"></i> {% trans 'بحث' %}
+                    </button>
+                    {% if search %}
+                    <a href="{% url 'core:activity_log' %}" class="btn btn-secondary">
+                        <i class="bi bi-x-circle"></i> {% trans 'مسح' %}
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </form>
+
+        <div class="table-responsive">
+            <table class="table table-custom">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>{% trans 'المستخدم' %}</th>
+                        <th>{% trans 'الإجراء' %}</th>
+                        <th>{% trans 'النموذج' %}</th>
+                        <th>{% trans 'التفاصيل' %}</th>
+                        <th>{% trans 'عنوان IP' %}</th>
+                        <th>{% trans 'التاريخ والوقت' %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>
+                            <strong>{{ log.user.get_full_name|default:log.user.username }}</strong>
+                        </td>
+                        <td>
+                            <span class="badge-status
+                                {% if log.action == 'create' %}badge-confirmed
+                                {% elif log.action == 'update' or log.action == 'edit' %}badge-pending
+                                {% elif log.action == 'delete' %}badge-cancelled
+                                {% else %}badge-draft
+                                {% endif %}">
+                                {{ log.get_action_display|default:log.action }}
+                            </span>
+                        </td>
+                        <td>
+                            <small>{{ log.model_name }}</small>
+                            {% if log.object_id %}
+                            <small class="text-muted">(#{{ log.object_id }})</small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <small class="text-muted">{{ log.details|truncatechars:80 }}</small>
+                        </td>
+                        <td><code>{{ log.ip_address|default:'-' }}</code></td>
+                        <td>
+                            <small>{{ log.created_at|date:'Y-m-d H:i:s' }}</small>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-4">
+                            {% if search %}
+                            {% trans 'لا توجد نتائج للبحث' %}
+                            {% else %}
+                            {% trans 'لا توجد نشاطات بعد' %}
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if logs.has_other_pages %}
+        <nav class="mt-3">
+            <ul class="pagination justify-content-center">
+                {% if logs.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1{% if search %}&search={{ search }}{% endif %}">
+                        <i class="bi bi-chevron-double-right"></i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ logs.previous_page_number }}{% if search %}&search={{ search }}{% endif %}">
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+                {% endif %}
+
+                <li class="page-item active">
+                    <span class="page-link">
+                        {% trans 'صفحة' %} {{ logs.number }} {% trans 'من' %} {{ logs.paginator.num_pages }}
+                    </span>
+                </li>
+
+                {% if logs.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ logs.next_page_number }}{% if search %}&search={{ search }}{% endif %}">
+                        <i class="bi bi-chevron-left"></i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ logs.paginator.num_pages }}{% if search %}&search={{ search }}{% endif %}">
+                        <i class="bi bi-chevron-double-left"></i>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,235 @@
+{% extends 'adminlte/base.html' %}
+{% load static i18n %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">{{ title }}</h3>
+    </div>
+    <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {% if form.non_field_errors %}
+            <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+            {% endif %}
+
+            <div class="row">
+                {% for field in form %}
+                <div class="col-md-6 mb-3">
+                    <div class="form-group">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        <div class="input-group">
+                            {{ field }}
+                            {% if field.name == 'department' %}
+                            <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addDepartmentModal">
+                                <i class="bi bi-plus-lg"></i>
+                            </button>
+                            {% elif field.name == 'machine' %}
+                            <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addMachineModal">
+                                <i class="bi bi-plus-lg"></i>
+                            </button>
+                            {% elif field.name == 'assigned_to' %}
+                            <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addEmployeeModal">
+                                <i class="bi bi-plus-lg"></i>
+                            </button>
+                            {% endif %}
+                        </div>
+                        {% if field.errors %}
+                        <div class="text-danger">{{ field.errors }}</div>
+                        {% endif %}
+                        {% if field.help_text %}
+                        <small class="form-text text-muted">{{ field.help_text }}</small>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="row mt-3">
+                <div class="col-md-12">
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> حفظ</button>
+                    <a href="javascript:history.back()" class="btn btn-secondary">إلغاء</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Add Department Modal -->
+<div class="modal fade" id="addDepartmentModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">إضافة قسم جديد</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">الاسم (إنجليزي)</label>
+                    <input type="text" id="dept-name" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">الاسم (عربي)</label>
+                    <input type="text" id="dept-name-ar" class="form-control">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">الكود</label>
+                    <input type="text" id="dept-code" class="form-control" required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-primary" onclick="quickAddDepartment()">إضافة</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Machine Modal -->
+<div class="modal fade" id="addMachineModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">إضافة ماكينة جديدة</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">الاسم</label>
+                    <input type="text" id="machine-name" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">النوع</label>
+                    <select id="machine-type" class="form-control">
+                        <option value="large_format">Large Format</option>
+                        <option value="offset">Offset</option>
+                        <option value="uv">UV</option>
+                        <option value="sublimation">Sublimation</option>
+                        <option value="laser">Laser</option>
+                        <option value="finishing">Finishing</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">القسم</label>
+                    <select id="machine-dept" class="form-control">
+                        {% for d in departments %}
+                        <option value="{{ d.pk }}">{{ d }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-primary" onclick="quickAddMachine()">إضافة</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Employee Modal -->
+<div class="modal fade" id="addEmployeeModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">إضافة موظف جديد</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">الاسم</label>
+                    <input type="text" id="emp-name" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">رقم الهاتف</label>
+                    <input type="text" id="emp-phone" class="form-control">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">الوظيفة</label>
+                    <input type="text" id="emp-position" class="form-control" value="موظف إنتاج">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-primary" onclick="quickAddEmployee()">إضافة</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function getCsrf() {
+    return document.querySelector('[name=csrfmiddlewaretoken]').value;
+}
+
+function quickAddDepartment() {
+    var name = document.getElementById('dept-name').value;
+    var name_ar = document.getElementById('dept-name-ar').value;
+    var code = document.getElementById('dept-code').value;
+    if (!name || !code) { alert('الاسم والكود مطلوبان'); return; }
+    fetch('{% url "production:quick_add_department" %}', {
+        method: 'POST',
+        headers: {'X-CSRFToken': getCsrf()},
+        body: new URLSearchParams({name: name, name_ar: name_ar, code: code})
+    }).then(r => r.json()).then(data => {
+        if (data.success) {
+            var sel = document.getElementById('id_department');
+            var opt = document.createElement('option');
+            opt.value = data.id; opt.text = data.text; opt.selected = true;
+            sel.appendChild(opt);
+            bootstrap.Modal.getInstance(document.getElementById('addDepartmentModal')).hide();
+            document.getElementById('dept-name').value = '';
+            document.getElementById('dept-name-ar').value = '';
+            document.getElementById('dept-code').value = '';
+        } else { alert(data.error); }
+    });
+}
+
+function quickAddMachine() {
+    var name = document.getElementById('machine-name').value;
+    var machine_type = document.getElementById('machine-type').value;
+    var department = document.getElementById('machine-dept').value;
+    if (!name) { alert('الاسم مطلوب'); return; }
+    fetch('{% url "production:quick_add_machine" %}', {
+        method: 'POST',
+        headers: {'X-CSRFToken': getCsrf()},
+        body: new URLSearchParams({name: name, machine_type: machine_type, department: department})
+    }).then(r => r.json()).then(data => {
+        if (data.success) {
+            var sel = document.getElementById('id_machine');
+            var opt = document.createElement('option');
+            opt.value = data.id; opt.text = data.text; opt.selected = true;
+            sel.appendChild(opt);
+            bootstrap.Modal.getInstance(document.getElementById('addMachineModal')).hide();
+            document.getElementById('machine-name').value = '';
+        } else { alert(data.error); }
+    });
+}
+
+function quickAddEmployee() {
+    var full_name = document.getElementById('emp-name').value;
+    var phone = document.getElementById('emp-phone').value;
+    var position = document.getElementById('emp-position').value;
+    if (!full_name) { alert('الاسم مطلوب'); return; }
+    fetch('{% url "production:quick_add_employee" %}', {
+        method: 'POST',
+        headers: {'X-CSRFToken': getCsrf()},
+        body: new URLSearchParams({full_name: full_name, phone: phone, position: position})
+    }).then(r => r.json()).then(data => {
+        if (data.success) {
+            var sel = document.getElementById('id_assigned_to');
+            var opt = document.createElement('option');
+            opt.value = data.id; opt.text = data.text; opt.selected = true;
+            sel.appendChild(opt);
+            bootstrap.Modal.getInstance(document.getElementById('addEmployeeModal')).hide();
+            document.getElementById('emp-name').value = '';
+            document.getElementById('emp-phone').value = '';
+        } else { alert(data.error); }
+    });
+}
+</script>
+{% endblock %}

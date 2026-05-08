@@ -1,0 +1,147 @@
+{% extends 'adminlte/base.html' %}
+{% load static i18n core_tags %}
+
+{% block title %}{% trans 'الإعدادات المتقدمة' %}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .config-section { margin-bottom: 1.5rem; }
+    .card-header h3 { margin: 0; font-size: 1rem; }
+    .table-actions { white-space: nowrap; width: 1px; }
+    .table-actions .btn { padding: 0.15rem 0.4rem; font-size: 0.75rem; }
+    .empty-state { text-align: center; padding: 1.5rem; color: #6c757d; }
+    .table th { font-weight: 600; font-size: 0.85rem; }
+    .table td { font-size: 0.85rem; vertical-align: middle; padding: 0.35rem 0.5rem; }
+    .nav-tabs .nav-link { font-size: 0.85rem; white-space: nowrap; padding: 0.5rem 1rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col">
+            <h1 class="h3">{% trans 'الإعدادات المتقدمة' %}</h1>
+            <p class="text-muted">{% trans 'إدارة جميع إعدادات النظام' %}</p>
+        </div>
+    </div>
+
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show">{{ message }}</div>
+    {% endfor %}
+    {% endif %}
+
+    <!-- Tabs -->
+    <div class="nav nav-tabs mb-3 flex-nowrap overflow-auto" id="settingsTabs">
+        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#sec-category">{% trans 'التصنيفات' %}</button>
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#sec-department">{% trans 'أقسام الإنتاج' %}</button>
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#sec-machine">{% trans 'الماكينات' %}</button>
+        {% for type_key in lookup_types %}
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#sec-{{ type_key }}">{{ lookup_labels|lookup:type_key }}</button>
+        {% endfor %}
+    </div>
+
+    <div class="tab-content">
+        <!-- ====== CATEGORIES ====== -->
+        <div class="tab-pane fade show active" id="sec-category">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3>{% trans 'التصنيفات' %}</h3>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="openCatAdd()" data-bs-toggle="modal" data-bs-target="#catModal"><i class="bi bi-plus-lg"></i> {% trans 'إضافة' %}</button>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-hover mb-0">
+                        <thead><tr><th>#</th><th>{% trans 'الاسم (عربي)' %}</th><th>{% trans 'الاسم (إنجليزي)' %}</th><th>{% trans 'التصنيف الأب' %}</th><th class="table-actions">{% trans 'إجراءات' %}</th></tr></thead>
+                        <tbody>{% for item in categories %}<tr><td>{{ forloop.counter }}</td><td>{{ item.name_ar }}</td><td>{{ item.name }}</td><td>{{ item.parent.name_ar|default:'-' }}</td><td class="table-actions"><button class="btn btn-sm btn-outline-primary" onclick="openCatEdit({{ item.pk }},'{{ item.name_ar|escapejs }}','{{ item.name|escapejs }}','{{ item.parent_id|default:'' }}')" data-bs-toggle="modal" data-bs-target="#catModal"><i class="bi bi-pencil"></i></button><form method="post" class="d-inline" onsubmit="return confirm('{% trans 'هل تريد الحذف؟' %}')">{% csrf_token %}<input type="hidden" name="type" value="category"><input type="hidden" name="action" value="delete"><input type="hidden" name="pk" value="{{ item.pk }}"><button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button></form></td></tr>{% empty %}<tr><td colspan="5"><div class="empty-state">{% trans 'لا توجد بيانات' %}</div></td></tr>{% endfor %}</tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ====== DEPARTMENTS ====== -->
+        <div class="tab-pane fade" id="sec-department">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3>{% trans 'أقسام الإنتاج' %}</h3>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="openDeptAdd()" data-bs-toggle="modal" data-bs-target="#deptModal"><i class="bi bi-plus-lg"></i> {% trans 'إضافة' %}</button>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-hover mb-0">
+                        <thead><tr><th>#</th><th>{% trans 'الاسم (عربي)' %}</th><th>{% trans 'الاسم (إنجليزي)' %}</th><th>{% trans 'الكود' %}</th><th>{% trans 'الترتيب' %}</th><th class="table-actions">{% trans 'إجراءات' %}</th></tr></thead>
+                        <tbody>{% for item in departments %}<tr><td>{{ forloop.counter }}</td><td>{{ item.name_ar }}</td><td>{{ item.name }}</td><td>{{ item.code }}</td><td>{{ item.sort_order }}</td><td class="table-actions"><button class="btn btn-sm btn-outline-primary" onclick="openDeptEdit({{ item.pk }},'{{ item.name_ar|escapejs }}','{{ item.name|escapejs }}','{{ item.code|escapejs }}',{{ item.sort_order }})" data-bs-toggle="modal" data-bs-target="#deptModal"><i class="bi bi-pencil"></i></button><form method="post" class="d-inline" onsubmit="return confirm('{% trans 'هل تريد الحذف؟' %}')">{% csrf_token %}<input type="hidden" name="type" value="department"><input type="hidden" name="action" value="delete"><input type="hidden" name="pk" value="{{ item.pk }}"><button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button></form></td></tr>{% empty %}<tr><td colspan="6"><div class="empty-state">{% trans 'لا توجد بيانات' %}</div></td></tr>{% endfor %}</tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ====== MACHINES ====== -->
+        <div class="tab-pane fade" id="sec-machine">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3>{% trans 'الماكينات' %}</h3>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="openMachAdd()" data-bs-toggle="modal" data-bs-target="#machModal"><i class="bi bi-plus-lg"></i> {% trans 'إضافة' %}</button>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-hover mb-0">
+                        <thead><tr><th>#</th><th>{% trans 'الاسم' %}</th><th>{% trans 'النوع' %}</th><th>{% trans 'القسم' %}</th><th>{% trans 'الحالة' %}</th><th class="table-actions">{% trans 'إجراءات' %}</th></tr></thead>
+                        <tbody>{% for item in machines %}<tr><td>{{ forloop.counter }}</td><td>{{ item.name }}</td><td>{{ item.get_machine_type_display }}</td><td>{{ item.department.name_ar }}</td><td>{% if item.status == 'active' %}<span class="badge bg-success">{% trans 'نشط' %}</span>{% elif item.status == 'maintenance' %}<span class="badge bg-warning">{% trans 'صيانة' %}</span>{% else %}<span class="badge bg-secondary">{% trans 'غير نشط' %}</span>{% endif %}</td><td class="table-actions"><button class="btn btn-sm btn-outline-primary" onclick="openMachEdit({{ item.pk }},'{{ item.name|escapejs }}','{{ item.machine_type }}',{{ item.department_id }},'{{ item.model|escapejs }}','{{ item.status }}')" data-bs-toggle="modal" data-bs-target="#machModal"><i class="bi bi-pencil"></i></button><form method="post" class="d-inline" onsubmit="return confirm('{% trans 'هل تريد الحذف؟' %}')">{% csrf_token %}<input type="hidden" name="type" value="machine"><input type="hidden" name="action" value="delete"><input type="hidden" name="pk" value="{{ item.pk }}"><button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button></form></td></tr>{% empty %}<tr><td colspan="6"><div class="empty-state">{% trans 'لا توجد بيانات' %}</div></td></tr>{% endfor %}</tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ====== LOOKUP SECTIONS (material_unit, payment_method, order_type, machine_type, employee_dept, supplier_type, customer_type, vat) ====== -->
+        {% for type_key in lookup_types %}
+        {% with items=lookup_sections|lookup:type_key label=lookup_labels|lookup:type_key %}
+        <div class="tab-pane fade" id="sec-{{ type_key }}">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3>{{ label }}</h3>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="openLookupAdd('{{ type_key }}')" data-bs-toggle="modal" data-bs-target="#lookupModal"><i class="bi bi-plus-lg"></i> {% trans 'إضافة' %}</button>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-hover mb-0">
+                        <thead><tr><th>#</th><th>{% trans 'الكود' %}</th><th>{% trans 'الاسم (عربي)' %}</th><th>{% trans 'الاسم (إنجليزي)' %}</th><th>{% trans 'الترتيب' %}</th><th class="table-actions">{% trans 'إجراءات' %}</th></tr></thead>
+                        <tbody>{% for item in items %}<tr><td>{{ forloop.counter }}</td><td>{{ item.code }}</td><td>{{ item.name_ar }}</td><td>{{ item.name }}</td><td>{{ item.sort_order }}</td><td class="table-actions"><button class="btn btn-sm btn-outline-primary" onclick="openLookupEdit('{{ type_key }}',{{ item.pk }},'{{ item.code|escapejs }}','{{ item.name_ar|escapejs }}','{{ item.name|escapejs }}',{{ item.sort_order }})" data-bs-toggle="modal" data-bs-target="#lookupModal"><i class="bi bi-pencil"></i></button><form method="post" class="d-inline" onsubmit="return confirm('{% trans 'هل تريد الحذف؟' %}')">{% csrf_token %}<input type="hidden" name="type" value="{{ type_key }}"><input type="hidden" name="action" value="delete"><input type="hidden" name="pk" value="{{ item.pk }}"><button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button></form></td></tr>{% empty %}<tr><td colspan="6"><div class="empty-state">{% trans 'لا توجد بيانات' %}</div></td></tr>{% endfor %}</tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endwith %}
+        {% endfor %}
+    </div>
+</div>
+
+<!-- ====== CATEGORY MODAL ====== -->
+<div class="modal fade" id="catModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered"><div class="modal-content"><form method="post">{% csrf_token %}<input type="hidden" name="type" value="category"><input type="hidden" name="action" id="cat-action" value="add"><input type="hidden" name="pk" id="cat-pk" value=""><div class="modal-header"><h5 class="modal-title" id="catModalTitle">{% trans 'إضافة تصنيف' %}</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="mb-2"><label class="form-label">{% trans 'الاسم (عربي)' %}</label><input type="text" name="name_ar" id="cat-name_ar" class="form-control form-control-sm" required></div><div class="mb-2"><label class="form-label">{% trans 'الاسم (إنجليزي)' %}</label><input type="text" name="name" id="cat-name" class="form-control form-control-sm"></div><div class="mb-2"><label class="form-label">{% trans 'التصنيف الأب' %}</label><select name="parent" id="cat-parent" class="form-select form-select-sm"><option value="">---</option>{% for cat in categories %}<option value="{{ cat.pk }}">{{ cat.name_ar }}</option>{% endfor %}</select></div><div class="mb-2"><label class="form-label">{% trans 'وصف' %}</label><textarea name="description" id="cat-description" class="form-control form-control-sm" rows="2"></textarea></div></div><div class="modal-footer"><button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">{% trans 'إلغاء' %}</button><button type="submit" class="btn btn-primary btn-sm">{% trans 'حفظ' %}</button></div></form></div></div>
+</div>
+
+<!-- ====== DEPARTMENT MODAL ====== -->
+<div class="modal fade" id="deptModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered"><div class="modal-content"><form method="post">{% csrf_token %}<input type="hidden" name="type" value="department"><input type="hidden" name="action" id="dept-action" value="add"><input type="hidden" name="pk" id="dept-pk" value=""><div class="modal-header"><h5 class="modal-title" id="deptModalTitle">{% trans 'إضافة قسم' %}</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="mb-2"><label class="form-label">{% trans 'الاسم (عربي)' %}</label><input type="text" name="name_ar" id="dept-name_ar" class="form-control form-control-sm" required></div><div class="mb-2"><label class="form-label">{% trans 'الاسم (إنجليزي)' %}</label><input type="text" name="name" id="dept-name" class="form-control form-control-sm"></div><div class="mb-2"><label class="form-label">{% trans 'الكود' %}</label><input type="text" name="code" id="dept-code" class="form-control form-control-sm" required></div><div class="mb-2"><label class="form-label">{% trans 'الترتيب' %}</label><input type="number" name="sort_order" id="dept-sort_order" class="form-control form-control-sm" value="0"></div><div class="mb-2"><label class="form-label">{% trans 'وصف' %}</label><textarea name="description" id="dept-description" class="form-control form-control-sm" rows="2"></textarea></div></div><div class="modal-footer"><button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">{% trans 'إلغاء' %}</button><button type="submit" class="btn btn-primary btn-sm">{% trans 'حفظ' %}</button></div></form></div></div>
+</div>
+
+<!-- ====== MACHINE MODAL ====== -->
+<div class="modal fade" id="machModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered"><div class="modal-content"><form method="post">{% csrf_token %}<input type="hidden" name="type" value="machine"><input type="hidden" name="action" id="mach-action" value="add"><input type="hidden" name="pk" id="mach-pk" value=""><div class="modal-header"><h5 class="modal-title" id="machModalTitle">{% trans 'إضافة ماكينة' %}</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="mb-2"><label class="form-label">{% trans 'الاسم' %}</label><input type="text" name="name" id="mach-name" class="form-control form-control-sm" required></div><div class="mb-2"><label class="form-label">{% trans 'النوع' %}</label><select name="machine_type" id="mach-type" class="form-select form-select-sm">{% for lt in lookup_sections.machine_type %}<option value="{{ lt.code }}">{{ lt.name_ar }}</option>{% endfor %}</select></div><div class="mb-2"><label class="form-label">{% trans 'القسم' %}</label><select name="department" id="mach-dept" class="form-select form-select-sm" required><option value="">---</option>{% for d in departments %}<option value="{{ d.pk }}">{{ d.name_ar }}</option>{% endfor %}</select></div><div class="mb-2"><label class="form-label">{% trans 'الموديل' %}</label><input type="text" name="model" id="mach-model" class="form-control form-control-sm"></div><div class="mb-2"><label class="form-label">{% trans 'الحالة' %}</label><select name="status" id="mach-status" class="form-select form-select-sm"><option value="active">{% trans 'نشط' %}</option><option value="maintenance">{% trans 'صيانة' %}</option><option value="inactive">{% trans 'غير نشط' %}</option></select></div><div class="mb-2"><label class="form-label">{% trans 'ملاحظات' %}</label><textarea name="notes" id="mach-notes" class="form-control form-control-sm" rows="2"></textarea></div></div><div class="modal-footer"><button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">{% trans 'إلغاء' %}</button><button type="submit" class="btn btn-primary btn-sm">{% trans 'حفظ' %}</button></div></form></div></div>
+</div>
+
+<!-- ====== GENERIC LOOKUP MODAL ====== -->
+<div class="modal fade" id="lookupModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered"><div class="modal-content"><form method="post">{% csrf_token %}<input type="hidden" name="type" id="l-type" value=""><input type="hidden" name="action" id="l-action" value="add"><input type="hidden" name="pk" id="l-pk" value=""><div class="modal-header"><h5 class="modal-title" id="lModalTitle">{% trans 'إضافة' %}</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="mb-2"><label class="form-label">{% trans 'الكود' %}</label><input type="text" name="code" id="l-code" class="form-control form-control-sm" required></div><div class="mb-2"><label class="form-label">{% trans 'الاسم (عربي)' %}</label><input type="text" name="name_ar" id="l-name_ar" class="form-control form-control-sm" required></div><div class="mb-2"><label class="form-label">{% trans 'الاسم (إنجليزي)' %}</label><input type="text" name="name" id="l-name" class="form-control form-control-sm"></div><div class="mb-2"><label class="form-label">{% trans 'الترتيب' %}</label><input type="number" name="sort_order" id="l-sort_order" class="form-control form-control-sm" value="0"></div></div><div class="modal-footer"><button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">{% trans 'إلغاء' %}</button><button type="submit" class="btn btn-primary btn-sm">{% trans 'حفظ' %}</button></div></form></div></div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function openLookupAdd(type) { document.getElementById('l-type').value = type; document.getElementById('l-action').value = 'add'; document.getElementById('l-pk').value = ''; document.getElementById('lModalTitle').textContent = '{% trans "إضافة" %}'; document.querySelectorAll('#lookupModal input').forEach(function(el) { if (el.type !== 'hidden') el.value = ''; }); }
+function openLookupEdit(type, pk, code, nameAr, name, sortOrder) { document.getElementById('l-type').value = type; document.getElementById('l-action').value = 'edit'; document.getElementById('l-pk').value = pk; document.getElementById('lModalTitle').textContent = '{% trans "تعديل" %}'; document.getElementById('l-code').value = code || ''; document.getElementById('l-name_ar').value = nameAr || ''; document.getElementById('l-name').value = name || ''; document.getElementById('l-sort_order').value = sortOrder || 0; }
+function openCatAdd() { document.getElementById('cat-action').value = 'add'; document.getElementById('cat-pk').value = ''; document.getElementById('catModalTitle').textContent = '{% trans "إضافة تصنيف" %}'; document.querySelectorAll('#catModal input, #catModal textarea, #catModal select').forEach(function(el) { if (el.type !== 'hidden') el.value = ''; }); }
+function openCatEdit(pk, nameAr, name, parentId) { document.getElementById('cat-action').value = 'edit'; document.getElementById('cat-pk').value = pk; document.getElementById('catModalTitle').textContent = '{% trans "تعديل تصنيف" %}'; document.getElementById('cat-name_ar').value = nameAr || ''; document.getElementById('cat-name').value = name || ''; document.getElementById('cat-parent').value = parentId || ''; document.getElementById('cat-description').value = ''; }
+function openDeptAdd() { document.getElementById('dept-action').value = 'add'; document.getElementById('dept-pk').value = ''; document.getElementById('deptModalTitle').textContent = '{% trans "إضافة قسم" %}'; document.querySelectorAll('#deptModal input, #deptModal textarea').forEach(function(el) { if (el.type !== 'hidden') el.value = ''; }); }
+function openDeptEdit(pk, nameAr, name, code, sortOrder) { document.getElementById('dept-action').value = 'edit'; document.getElementById('dept-pk').value = pk; document.getElementById('deptModalTitle').textContent = '{% trans "تعديل قسم" %}'; document.getElementById('dept-name_ar').value = nameAr || ''; document.getElementById('dept-name').value = name || ''; document.getElementById('dept-code').value = code || ''; document.getElementById('dept-sort_order').value = sortOrder || 0; document.getElementById('dept-description').value = ''; }
+function openMachAdd() { document.getElementById('mach-action').value = 'add'; document.getElementById('mach-pk').value = ''; document.getElementById('machModalTitle').textContent = '{% trans "إضافة ماكينة" %}'; document.querySelectorAll('#machModal input, #machModal textarea').forEach(function(el) { if (el.type !== 'hidden') el.value = ''; }); document.getElementById('mach-status').value = 'active'; }
+function openMachEdit(pk, name, machType, deptId, model, status) { document.getElementById('mach-action').value = 'edit'; document.getElementById('mach-pk').value = pk; document.getElementById('machModalTitle').textContent = '{% trans "تعديل ماكينة" %}'; document.getElementById('mach-name').value = name || ''; document.getElementById('mach-type').value = machType || ''; document.getElementById('mach-dept').value = deptId || ''; document.getElementById('mach-model').value = model || ''; document.getElementById('mach-status').value = status || 'active'; document.getElementById('mach-notes').value = ''; }
+</script>
+{% endblock %}

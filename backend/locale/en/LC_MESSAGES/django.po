@@ -1,0 +1,597 @@
+# Arabic translations for UNION FOR DIGITAL PRINTING Management System
+msgid ""
+msgstr ""
+"Project-Id-Version: UNION PRINTING SYSTEM 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-05-07\n"
+"PO-Revision-Date: 2026-05-07\n"
+"Last-Translator: UNION FOR DIGITAL PRINTING\n"
+"Language-Team: Arabic\n"
+"Language: ar\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5;\n"
+
+# General
+msgid "Union Printing System"
+msgstr "نظام يونيون للطباعة"
+
+msgid "نظام الإدارة المتكامل"
+msgstr "Integrated Management System"
+
+msgid "UNION FOR DIGITAL PRINTING"
+msgstr "يونيون للطباعة الرقمية"
+
+msgid "لوحة التحكم"
+msgstr "Dashboard"
+
+msgid "الرئيسية"
+msgstr "Main"
+
+msgid "المبيعات"
+msgstr "Sales"
+
+msgid "العملاء"
+msgstr "Customers"
+
+msgid "عروض الأسعار"
+msgstr "Quotes"
+
+msgid "الطلبات"
+msgstr "Orders"
+
+msgid "نقطة البيع"
+msgstr "Point of Sale"
+
+msgid "الإنتاج"
+msgstr "Production"
+
+msgid "المعدات"
+msgstr "Equipment"
+
+msgid "المخزون والمشتريات"
+msgstr "Inventory & Purchases"
+
+msgid "المخزون"
+msgstr "Inventory"
+
+msgid "الموردين"
+msgstr "Suppliers"
+
+msgid "أوامر الشراء"
+msgstr "Purchase Orders"
+
+msgid "الموظفين"
+msgstr "Employees"
+
+msgid "الحضور"
+msgstr "Attendance"
+
+msgid "الرواتب"
+msgstr "Salaries"
+
+msgid "التقارير"
+msgstr "Reports"
+
+msgid "الإعدادات"
+msgstr "Settings"
+
+msgid "الإدارة المتقدمة"
+msgstr "Advanced Admin"
+
+msgid "الملف الشخصي"
+msgstr "Profile"
+
+msgid "تغيير كلمة المرور"
+msgstr "Change Password"
+
+msgid "تسجيل الخروج"
+msgstr "Logout"
+
+msgid "جميع الحقوق محفوظة"
+msgstr "All Rights Reserved"
+
+# Dashboard
+msgid "طلبات اليوم"
+msgstr "Today's Orders"
+
+msgid "قيد الإنتاج"
+msgstr "In Production"
+
+msgid "إيرادات الشهر"
+msgstr "Monthly Revenue"
+
+msgid "إجمالي العملاء"
+msgstr "Total Customers"
+
+msgid "أحدث الطلبات"
+msgstr "Latest Orders"
+
+msgid "عرض الكل"
+msgstr "View All"
+
+msgid "رقم الطلب"
+msgstr "Order No."
+
+msgid "العميل"
+msgstr "Customer"
+
+msgid "الإجمالي"
+msgstr "Total"
+
+msgid "الحالة"
+msgstr "Status"
+
+msgid "التاريخ"
+msgstr "Date"
+
+msgid "مهام الإنتاج"
+msgstr "Production Tasks"
+
+msgid "التفاصيل"
+msgstr "Details"
+
+msgid "تنبيهات المخزون"
+msgstr "Stock Alerts"
+
+msgid "عرض"
+msgstr "View"
+
+msgid "جميع المواد متوفرة"
+msgstr "All Materials Available"
+
+msgid "لا توجد مهام إنتاج حالية"
+msgstr "No current production tasks"
+
+msgid "لا توجد طلبات بعد"
+msgstr "No orders yet"
+
+# Actions
+msgid "إضافة"
+msgstr "Add"
+
+msgid "تعديل"
+msgstr "Edit"
+
+msgid "حذف"
+msgstr "Delete"
+
+msgid "حفظ"
+msgstr "Save"
+
+msgid "إلغاء"
+msgstr "Cancel"
+
+msgid "بحث"
+msgstr "Search"
+
+msgid "تصدير"
+msgstr "Export"
+
+msgid "طباعة"
+msgstr "Print"
+
+msgid "تأكيد"
+msgstr "Confirm"
+
+msgid "تراجع"
+msgstr "Back"
+
+# Login
+msgid "تسجيل الدخول"
+msgstr "Login"
+
+msgid "اسم المستخدم"
+msgstr "Username"
+
+msgid "كلمة المرور"
+msgstr "Password"
+
+msgid "دخول"
+msgstr "Sign In"
+
+msgid "الرجاء تسجيل الدخول لإدارة النظام"
+msgstr "Please sign in to manage the system"
+
+# Statuses
+msgid "قيد الانتظار"
+msgstr "Pending"
+
+msgid "مؤكد"
+msgstr "Confirmed"
+
+msgid "في التصميم"
+msgstr "In Design"
+
+msgid "في الإنتاج"
+msgstr "In Production"
+
+msgid "في التشطيب"
+msgstr "In Finishing"
+
+msgid "فحص الجودة"
+msgstr "Quality Check"
+
+msgid "جاهز"
+msgstr "Ready"
+
+msgid "تم التسليم"
+msgstr "Delivered"
+
+msgid "ملغي"
+msgstr "Cancelled"
+
+msgid "مكتمل"
+msgstr "Completed"
+
+msgid "مرفوض"
+msgstr "Rejected"
+
+# Payment Status
+msgid "غير مدفوع"
+msgstr "Unpaid"
+
+msgid "مدفوع جزئياً"
+msgstr "Partially Paid"
+
+msgid "مدفوع"
+msgstr "Paid"
+
+# Priorities
+msgid "منخفض"
+msgstr "Low"
+
+msgid "عادي"
+msgstr "Normal"
+
+msgid "مرتفع"
+msgstr "High"
+
+msgid "عاجل"
+msgstr "Urgent"
+
+# Quote status
+msgid "مسودة"
+msgstr "Draft"
+
+msgid "مرسل"
+msgstr "Sent"
+
+msgid "مقبول"
+msgstr "Accepted"
+
+msgid "منتهي الصلاحية"
+msgstr "Expired"
+
+msgid "محول"
+msgstr "Converted"
+
+# Forms
+msgid "نعم"
+msgstr "Yes"
+
+msgid "لا"
+msgstr "No"
+
+msgid "اختر..."
+msgstr "Select..."
+
+msgid "ملاحظات"
+msgstr "Notes"
+
+msgid "الوصف"
+msgstr "Description"
+
+msgid "الكمية"
+msgstr "Quantity"
+
+msgid "السعر"
+msgstr "Price"
+
+msgid "الخصم"
+msgstr "Discount"
+
+msgid "الضريبة"
+msgstr "Tax"
+
+msgid "المجموع"
+msgstr "Subtotal"
+
+msgid "الإجمالي الكلي"
+msgstr "Grand Total"
+
+msgid "المدفوع"
+msgstr "Paid Amount"
+
+msgid "المتبقي"
+msgstr "Remaining"
+
+msgid "طريقة الدفع"
+msgstr "Payment Method"
+
+msgid "نقداً"
+msgstr "Cash"
+
+msgid "تحويل بنكي"
+msgstr "Bank Transfer"
+
+msgid "شيك"
+msgstr "Cheque"
+
+msgid "بطاقة ائتمان"
+msgstr "Credit Card"
+
+msgid "آجل"
+msgstr "Credit"
+
+msgid "التاريخ المتوقع"
+msgstr "Expected Date"
+
+# Reports
+msgid "تقرير المبيعات"
+msgstr "Sales Report"
+
+msgid "تقرير الإيرادات"
+msgstr "Revenue Report"
+
+msgid "تقرير الأرباح والخسائر"
+msgstr "Profit & Loss Report"
+
+msgid "تقرير العملاء"
+msgstr "Customer Report"
+
+msgid "تقرير الإنتاج"
+msgstr "Production Report"
+
+msgid "تقرير المخزون"
+msgstr "Inventory Report"
+
+msgid "تقرير الموظفين"
+msgstr "Employee Report"
+
+msgid "تقرير الضرائب"
+msgstr "Tax Report"
+
+msgid "من تاريخ"
+msgstr "From Date"
+
+msgid "إلى تاريخ"
+msgstr "To Date"
+
+msgid "تصدير إكسل"
+msgstr "Export Excel"
+
+# Customer
+msgid "بيانات العميل"
+msgstr "Customer Info"
+
+msgid "رمز العميل"
+msgstr "Customer Code"
+
+msgid "اسم الشركة"
+msgstr "Company Name"
+
+msgid "جهة الاتصال"
+msgstr "Contact Person"
+
+msgid "الهاتف"
+msgstr "Phone"
+
+msgid "البريد الإلكتروني"
+msgstr "Email"
+
+msgid "العنوان"
+msgstr "Address"
+
+msgid "المدينة"
+msgstr "City"
+
+msgid "الرقم الضريبي"
+msgstr "Tax Number"
+
+msgid "الحد الائتماني"
+msgstr "Credit Limit"
+
+msgid "الرصيد الحالي"
+msgstr "Current Balance"
+
+msgid "نشط"
+msgstr "Active"
+
+msgid "غير نشط"
+msgstr "Inactive"
+
+# Inventory
+msgid "المادة"
+msgstr "Material"
+
+msgid "التصنيف"
+msgstr "Category"
+
+msgid "الوحدة"
+msgstr "Unit"
+
+msgid "المخزون الحالي"
+msgstr "Current Stock"
+
+msgid "الحد الأدنى"
+msgstr "Minimum Stock"
+
+msgid "الموقع"
+msgstr "Location"
+
+msgid "سعر الشراء"
+msgstr "Purchase Price"
+
+msgid "سعر البيع"
+msgstr "Selling Price"
+
+msgid "رقم التشغيلة"
+msgstr "Batch Number"
+
+msgid "تاريخ الشراء"
+msgstr "Purchase Date"
+
+msgid "تاريخ انتهاء الصلاحية"
+msgstr "Expiry Date"
+
+msgid "الكمية المتبقية"
+msgstr "Remaining Quantity"
+
+# Employee
+msgid "الموظف"
+msgstr "Employee"
+
+msgid "كود الموظف"
+msgstr "Employee Code"
+
+msgid "الاسم"
+msgstr "Full Name"
+
+msgid "الوظيفة"
+msgstr "Position"
+
+msgid "القسم"
+msgstr "Department"
+
+msgid "تاريخ التعيين"
+msgstr "Hire Date"
+
+msgid "الراتب الأساسي"
+msgstr "Base Salary"
+
+msgid "نوع الراتب"
+msgstr "Salary Type"
+
+msgid "المكافآت"
+msgstr "Bonuses"
+
+msgid "الخصومات"
+msgstr "Deductions"
+
+msgid "العمولة"
+msgstr "Commission"
+
+msgid "صافي الراتب"
+msgstr "Net Salary"
+
+msgid "إجازة"
+msgstr "Leave"
+
+msgid "إجازة سنوية"
+msgstr "Annual Leave"
+
+msgid "إجازة مرضية"
+msgstr "Sick Leave"
+
+msgid "إجازة طارئة"
+msgstr "Emergency Leave"
+
+msgid "إجازة بدون راتب"
+msgstr "Unpaid Leave"
+
+msgid "حاضر"
+msgstr "Present"
+
+msgid "غائب"
+msgstr "Absent"
+
+msgid "متأخر"
+msgstr "Late"
+
+msgid "نصف يوم"
+msgstr "Half Day"
+
+# Supplier
+msgid "المورد"
+msgstr "Supplier"
+
+msgid "نوع التوريد"
+msgstr "Supply Type"
+
+msgid "شروط الدفع"
+msgstr "Payment Terms"
+
+msgid "أمر الشراء"
+msgstr "Purchase Order"
+
+msgid "المستلم"
+msgstr "Received Qty"
+
+# Production
+msgid "القسم"
+msgstr "Department"
+
+msgid "الماكينة"
+msgstr "Machine"
+
+msgid "مسند إلى"
+msgstr "Assigned To"
+
+msgid "تاريخ البداية"
+msgstr "Start Date"
+
+msgid "تاريخ النهاية"
+msgstr "End Date"
+
+msgid "الكمية المنتجة"
+msgstr "Completed Qty"
+
+msgid "الكمية المرفوضة"
+msgstr "Rejected Qty"
+
+msgid "فحص الجودة"
+msgstr "Quality Check"
+
+msgid "نجاح"
+msgstr "Passed"
+
+msgid "فشل"
+msgstr "Failed"
+
+# POS
+msgid "جلسة البيع"
+msgstr "POS Session"
+
+msgid "رقم الفاتورة"
+msgstr "Invoice No."
+
+msgid "المبلغ المدفوع"
+msgstr "Paid Amount"
+
+msgid "المبلغ المتبقي"
+msgstr "Change"
+
+msgid "إتمام البيع"
+msgstr "Complete Sale"
+
+msgid "إلغاء البيع"
+msgstr "Cancel Sale"
+
+msgid "إيصال"
+msgstr "Receipt"
+
+msgid "شكراً لتعاملكم معنا"
+msgstr "Thank you for your business"
+
+msgid "نقداً"
+msgstr "Cash"
+
+msgid "بطاقة"
+msgstr "Card"
+
+msgid "الرصيد الافتتاحي"
+msgstr "Opening Balance"
+
+msgid "الرصيد الختامي"
+msgstr "Closing Balance"
+
+msgid "الفرق"
+msgstr "Difference"
+
+msgid "إغلاق الجلسة"
+msgstr "Close Session"
+
+msgid "فتح جلسة"
+msgstr "Open Session"

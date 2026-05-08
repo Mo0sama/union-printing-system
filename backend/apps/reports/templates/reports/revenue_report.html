@@ -1,0 +1,109 @@
+{% extends 'adminlte/base.html' %}
+{% load static i18n core_tags humanize %}
+
+{% block title %}{% trans "تقرير الإيرادات" %}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
+    <h1 class="h3"><i class="fas fa-dollar-sign ms-2"></i>{% trans "تقرير الإيرادات" %}</h1>
+    <div class="no-print">
+      <a href="{% url 'reports:export_report_excel' %}?type=revenue" class="btn btn-success btn-sm"><i class="fas fa-file-excel ms-1"></i>{% trans "تصدير Excel" %}</a>
+      <a href="{% url 'reports:print_report' %}?type=revenue" target="_blank" class="btn btn-info btn-sm"><i class="fas fa-print ms-1"></i>{% trans "طباعة" %}</a>
+    </div>
+  </div>
+
+  <div class="card shadow-sm mb-4 no-print">
+    <div class="card-body">
+      <form method="get" class="row g-3 align-items-end">
+        <div class="col-md-4">{{ form.start_date.label_tag }}{{ form.start_date }}</div>
+        <div class="col-md-4">{{ form.end_date.label_tag }}{{ form.end_date }}</div>
+        <div class="col-md-2"><label class="form-label">{% trans "تجميع" %}</label><select name="group_by" class="form-control"><option value="day" {% if request.GET.group_by == 'day' %}selected{% endif %}>{% trans "يومي" %}</option><option value="month" {% if request.GET.group_by == 'month' or not request.GET.group_by %}selected{% endif %}>{% trans "شهري" %}</option><option value="year" {% if request.GET.group_by == 'year' %}selected{% endif %}>{% trans "سنوي" %}</option></select></div>
+        <div class="col-md-2"><button type="submit" class="btn btn-primary w-100"><i class="fas fa-search ms-1"></i>{% trans "بحث" %}</button></div>
+      </form>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-12 col-md-3">
+      <div class="card text-white bg-success shadow-sm">
+        <div class="card-body">
+          <h6 class="card-title">{% trans "إجمالي الإيرادات" %}</h6>
+          <div class="stat-card h3 mb-0">{{ total_revenue|floatformat:2|intcomma }} {% trans "ج.م" %}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-md-3">
+      <div class="card text-white bg-info shadow-sm">
+        <div class="card-body">
+          <h6 class="card-title">{% trans "إجمالي المعاملات" %}</h6>
+          <div class="stat-card h3 mb-0">{{ revenue_by_period|length|intcomma }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-12 col-lg-8">
+      <div class="card shadow-sm">
+        <div class="card-header"><h5 class="mb-0">{% trans "الإيرادات الشهرية" %}</h5></div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover table-striped mb-0">
+              <thead class="table-light"><tr><th>{% trans "الفترة" %}</th><th>{% trans "عدد المعاملات" %}</th><th>{% trans "إجمالي الإيرادات" %}</th></tr></thead>
+              <tbody>
+                {% for r in revenue_by_period %}
+                <tr><td>{{ r.period|date:"Y-m-d" }}</td><td>{{ r.count }}</td><td>{{ r.total|floatformat:2|intcomma }}</td></tr>
+                {% empty %}
+                <tr><td colspan="3" class="text-center text-muted">{% trans "لا توجد بيانات" %}</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-lg-4">
+      <div class="card shadow-sm">
+        <div class="card-header"><h5 class="mb-0">{% trans "حسب طريقة الدفع" %}</h5></div>
+        <div class="card-body p-0">
+          <table class="table table-hover mb-0">
+            <thead class="table-light"><tr><th>{% trans "الطريقة" %}</th><th>{% trans "العدد" %}</th><th>{% trans "الإيرادات" %}</th></tr></thead>
+            <tbody>
+              {% for p in by_payment %}
+              <tr><td>{{ payment_labels|get_item:p.payment_method|default:p.payment_method }}</td><td>{{ p.count }}</td><td>{{ p.total|floatformat:2|intcomma }}</td></tr>
+              {% empty %}
+              <tr><td colspan="3" class="text-center text-muted">{% trans "لا توجد بيانات" %}</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card shadow-sm">
+    <div class="card-header"><h5 class="mb-0">{% trans "اتجاه الإيرادات الشهرية" %}</h5></div>
+    <div class="card-body">
+      <div class="chart-container" style="position:relative;height:250px;">
+        {% if revenue_by_period %}
+        {% with max_r=revenue_by_period.0.total %}
+        {% for r in revenue_by_period %}{% if r.total > max_r %}{% with max_r=r.total %}{% endwith %}{% endif %}{% endfor %}
+        <div class="d-flex align-items-end gap-2" style="height:200px;">
+          {% for r in revenue_by_period %}
+          <div class="flex-fill d-flex flex-column align-items-center">
+            <small class="mb-1">{{ r.total|floatformat:0 }}</small>
+            <div class="w-100 bg-success rounded-top" style="height:{% widthratio r.total max_r 150 %}px;min-height:5px;" title="{{ r.period|date:'Y-m-d' }}: {{ r.total|floatformat:2 }}"></div>
+            <small class="mt-1 text-muted" style="font-size:10px;">{{ r.period|date:"m/d" }}</small>
+          </div>
+          {% endfor %}
+        </div>
+        {% endwith %}
+        {% else %}
+        <p class="text-muted text-center">{% trans "لا توجد بيانات للرسم البياني" %}</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,244 @@
+{% extends 'adminlte/base.html' %}
+{% load i18n %}
+
+{% block title %}{{ customer }} - {% trans 'تفاصيل العميل' %}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="bi bi-person-badge"></i> {{ customer }}
+                </h3>
+                <div class="card-tools">
+                    <a href="{% url 'customers:customer_edit' customer.pk %}" class="btn btn-warning btn-sm">
+                        <i class="bi bi-pencil"></i> {% trans 'تعديل' %}
+                    </a>
+                    <a href="{% url 'customers:customer_statement' customer.pk %}" class="btn btn-info btn-sm">
+                        <i class="bi bi-file-text"></i> {% trans 'كشف حساب' %}
+                    </a>
+                    <a href="{% url 'customers:add_interaction' customer.pk %}" class="btn btn-primary btn-sm">
+                        <i class="bi bi-chat-dots"></i> {% trans 'إضافة تفاعل' %}
+                    </a>
+                    <a href="{% url 'customers:add_payment' customer.pk %}" class="btn btn-success btn-sm">
+                        <i class="bi bi-cash"></i> {% trans 'تسجيل دفعة' %}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title">{% trans 'معلومات العميل' %}</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-bordered">
+                    <tr>
+                        <th class="w-25">{% trans 'الكود' %}</th>
+                        <td>{{ customer.code }}</td>
+                    </tr>
+                    <tr>
+                        <th>{% trans 'النوع' %}</th>
+                        <td>{{ customer.get_customer_type_display }}</td>
+                    </tr>
+                    <tr>
+                        <th>{% trans 'الاسم' %}</th>
+                        <td>{{ customer.name|default:customer.contact_person|default:'-' }}</td>
+                    </tr>
+                    {% if customer.customer_type == 'company' %}
+                    <tr>
+                        <th>{% trans 'اسم الشركة' %}</th>
+                        <td>{{ customer.company_name }}</td>
+                    </tr>
+                    <tr>
+                        <th>{% trans 'الشخص المسؤول' %}</th>
+                        <td>{{ customer.contact_person|default:'-' }}</td>
+                    </tr>
+                    {% endif %}
+                    <tr>
+                        <th>{% trans 'رقم الهاتف' %}</th>
+                        <td dir="ltr">{{ customer.phone }}</td>
+                    </tr>
+                    <tr>
+                        <th>{% trans 'هاتف آخر' %}</th>
+                        <td dir="ltr">{{ customer.secondary_phone|default:'-' }}</td>
+                    </tr>
+                    <tr>
+                        <th>{% trans 'البريد الإلكتروني' %}</th>
+                        <td>{{ customer.email|default:'-' }}</td>
+                    </tr>
+                    <tr>
+                        <th>{% trans 'المدينة' %}</th>
+                        <td>{{ customer.city|default:'-' }}</td>
+                    </tr>
+                    <tr>
+                        <th>{% trans 'العنوان' %}</th>
+                        <td>{{ customer.address|default:'-' }}</td>
+                    </tr>
+                    <tr>
+                        <th>{% trans 'الرقم الضريبي' %}</th>
+                        <td>{{ customer.tax_number|default:'-' }}</td>
+                    </tr>
+                    <tr>
+                        <th>{% trans 'الحالة' %}</th>
+                        <td>
+                            {% if customer.is_active %}
+                                <span class="badge bg-success">{% trans 'نشط' %}</span>
+                            {% else %}
+                                <span class="badge bg-danger">{% trans 'غير نشط' %}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>{% trans 'تاريخ الإنشاء' %}</th>
+                        <td>{{ customer.created_at|date:'Y-m-d H:i' }}</td>
+                    </tr>
+                    <tr>
+                        <th>{% trans 'آخر تحديث' %}</th>
+                        <td>{{ customer.updated_at|date:'Y-m-d H:i' }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title">{% trans 'المعلومات المالية' %}</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-bordered">
+                    <tr>
+                        <th class="w-25">{% trans 'الرصيد الحالي' %}</th>
+                        <td class="{% if customer.current_balance > 0 %}text-danger fw-bold{% elif customer.current_balance < 0 %}text-success fw-bold{% endif %}">
+                            {{ customer.current_balance }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>{% trans 'الحد الائتماني' %}</th>
+                        <td>{{ customer.credit_limit }}</td>
+                    </tr>
+                    <tr>
+                        <th>{% trans 'حالة الرصيد' %}</th>
+                        <td>{{ customer.get_balance_display }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title">{% trans 'جهات الاتصال' %}</h5>
+            </div>
+            <div class="card-body">
+                {% if customer.contacts.all %}
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm">
+                        <thead class="table-light">
+                            <tr>
+                                <th>{% trans 'الاسم' %}</th>
+                                <th>{% trans 'الهاتف' %}</th>
+                                <th>{% trans 'البريد' %}</th>
+                                <th>{% trans 'رئيسي' %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for contact in customer.contacts.all %}
+                            <tr>
+                                <td>{{ contact.name }}</td>
+                                <td dir="ltr">{{ contact.phone|default:'-' }}</td>
+                                <td>{{ contact.email|default:'-' }}</td>
+                                <td>
+                                    {% if contact.is_primary %}
+                                        <i class="bi bi-check-circle-fill text-success"></i>
+                                    {% else %}
+                                        <i class="bi bi-x-circle-fill text-muted"></i>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">{% trans 'لا توجد جهات اتصال.' %}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title">{% trans 'آخر المدفوعات' %}</h5>
+            </div>
+            <div class="card-body">
+                {% if payments %}
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm">
+                        <thead class="table-light">
+                            <tr>
+                                <th>{% trans 'التاريخ' %}</th>
+                                <th>{% trans 'المبلغ' %}</th>
+                                <th>{% trans 'الطريقة' %}</th>
+                                <th>{% trans 'المرجع' %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for payment in payments %}
+                            <tr>
+                                <td>{{ payment.payment_date|date:'Y-m-d' }}</td>
+                                <td class="text-success">{{ payment.amount }}</td>
+                                <td>{{ payment.get_payment_method_display }}</td>
+                                <td>{{ payment.reference|default:'-' }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">{% trans 'لا توجد مدفوعات بعد.' %}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title">{% trans 'آخر التفاعلات' %}</h5>
+            </div>
+            <div class="card-body">
+                {% if interactions %}
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm">
+                        <thead class="table-light">
+                            <tr>
+                                <th>{% trans 'التاريخ' %}</th>
+                                <th>{% trans 'النوع' %}</th>
+                                <th>{% trans 'الملخص' %}</th>
+                                <th>{% trans 'بواسطة' %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for interaction in interactions %}
+                            <tr>
+                                <td>{{ interaction.created_at|date:'Y-m-d H:i' }}</td>
+                                <td>{{ interaction.get_interaction_type_display }}</td>
+                                <td>{{ interaction.summary|truncatewords:10 }}</td>
+                                <td>{{ interaction.created_by }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">{% trans 'لا توجد تفاعلات.' %}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,133 @@
+{% extends 'adminlte/base.html' %}
+{% load static i18n core_tags humanize %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="container-fluid">
+  <div class="row mb-3">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">{{ title }}</h3>
+          <div class="card-tools">
+            <form method="post" action="{% url 'employees:salary_generate' %}" class="d-inline">
+              {% csrf_token %}
+              <div class="input-group input-group-sm d-inline-flex" style="width:auto;">
+                <input type="month" name="month" class="form-control form-control-sm" required value="{{ month }}">
+                <button type="submit" class="btn btn-success btn-sm"><i class="bi bi-gear"></i> {% trans 'توليد الرواتب' %}</button>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="row mb-3">
+            <div class="col-md-4">
+              <div class="small-box bg-info p-3 rounded text-center">
+                <h5>{% trans 'إجمالي الرواتب' %}</h5>
+                <h3>{{ total_net|currency }}</h3>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="small-box bg-success p-3 rounded text-center">
+                <h5>{% trans 'المدفوع' %}</h5>
+                <h3>{{ total_paid|currency }}</h3>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="small-box bg-warning p-3 rounded text-center">
+                <h5>{% trans 'غير المدفوع' %}</h5>
+                <h3>{{ total_unpaid|currency }}</h3>
+              </div>
+            </div>
+          </div>
+          <form class="row g-2 mb-3" method="get">
+            <div class="col-md-4">
+              <select name="month" class="form-control">
+                <option value="">{% trans 'كل الأشهر' %}</option>
+                {% for m in months %}
+                <option value="{{ m }}" {% if month == m %}selected{% endif %}>{{ m }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-3">
+              <select name="employee" class="form-control">
+                <option value="">{% trans 'كل الموظفين' %}</option>
+                {% for emp in employees %}
+                <option value="{{ emp.pk }}" {% if employee_id|stringformat:'s' == emp.pk|stringformat:'s' %}selected{% endif %}>{{ emp.full_name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-2">
+              <select name="paid" class="form-control">
+                <option value="">{% trans 'الكل' %}</option>
+                <option value="true" {% if paid_filter == 'true' %}selected{% endif %}>{% trans 'مدفوع' %}</option>
+                <option value="false" {% if paid_filter == 'false' %}selected{% endif %}>{% trans 'غير مدفوع' %}</option>
+              </select>
+            </div>
+            <div class="col-md-2">
+              <button type="submit" class="btn btn-info w-100"><i class="bi bi-search"></i> {% trans 'بحث' %}</button>
+            </div>
+            <div class="col-md-1">
+              <a href="{% url 'employees:salary_list' %}" class="btn btn-secondary w-100"><i class="bi bi-arrow-counterclockwise"></i></a>
+            </div>
+          </form>
+          <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+              <thead class="table-dark">
+                <tr>
+                  <th>{% trans 'الموظف' %}</th>
+                  <th>{% trans 'الشهر' %}</th>
+                  <th>{% trans 'الراتب الأساسي' %}</th>
+                  <th>{% trans 'المكافآت' %}</th>
+                  <th>{% trans 'الخصومات' %}</th>
+                  <th>{% trans 'العمولة' %}</th>
+                  <th>{% trans 'صافي الراتب' %}</th>
+                  <th>{% trans 'مدفوع' %}</th>
+                  <th>{% trans 'إجراءات' %}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for s in salaries %}
+                <tr>
+                  <td><a href="{% url 'employees:employee_detail' s.employee.pk %}">{{ s.employee.full_name }}</a></td>
+                  <td>{{ s.month }}</td>
+                  <td>{{ s.base_salary|currency }}</td>
+                  <td>{{ s.bonuses|currency }}</td>
+                  <td class="text-danger">{{ s.deductions|currency }}</td>
+                  <td>{{ s.commission|currency }}</td>
+                  <td><strong>{{ s.net_salary|currency }}</strong></td>
+                  <td>{% if s.paid %}<span class="badge bg-success">{% trans 'مدفوع' %}</span>{% else %}<span class="badge bg-warning text-dark">{% trans 'غير مدفوع' %}</span>{% endif %}</td>
+                  <td>
+                    <a href="{% url 'employees:salary_edit' s.pk %}" class="btn btn-warning btn-sm" title="{% trans 'تعديل' %}"><i class="bi bi-pencil"></i></a>
+                    {% if not s.paid %}
+                    <form method="post" action="{% url 'employees:salary_pay' s.pk %}" class="d-inline" onsubmit="return confirm('{% trans 'تأكيد دفع الراتب؟' %}')">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-success btn-sm" title="{% trans 'دفع الراتب' %}"><i class="bi bi-cash"></i></button>
+                    </form>
+                    {% endif %}
+                  </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="9" class="text-center">{% trans 'لا توجد رواتب' %}</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% if is_paginated %}
+          <nav class="mt-3">
+            <ul class="pagination justify-content-center">
+              {% if page_obj.has_previous %}
+              <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{% trans 'السابق' %}</a></li>
+              {% endif %}
+              <li class="page-item active"><span class="page-link">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span></li>
+              {% if page_obj.has_next %}
+              <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{% trans 'التالي' %}</a></li>
+              {% endif %}
+            </ul>
+          </nav>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

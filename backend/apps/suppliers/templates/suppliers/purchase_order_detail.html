@@ -1,0 +1,213 @@
+{% extends 'adminlte/base.html' %}
+{% load static i18n core_tags humanize %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col">
+            <h1 class="h3">{% trans 'أمر شراء' %} #{{ order.po_number }}</h1>
+            <div class="mt-2">
+                <span class="badge badge-status badge-{{ order.status }} fs-6">{{ order.get_status_display }}</span>
+            </div>
+        </div>
+        <div class="col-auto">
+            <a href="{% url 'suppliers:purchase_order_list' %}" class="btn btn-secondary">
+                <i class="bi bi-arrow-right"></i> {% trans 'عودة' %}
+            </a>
+            {% if order.status == 'draft' or order.status == 'sent' %}
+            <a href="{% url 'suppliers:purchase_order_receive' order.pk %}" class="btn btn-success">
+                <i class="bi bi-box-seam"></i> {% trans 'استلام' %}
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">{% trans 'معلومات أمر الشراء' %}</h3>
+                </div>
+                <div class="card-body">
+                    <table class="table table-bordered">
+                        <tr>
+                            <th class="w-25">{% trans 'رقم الأمر' %}</th>
+                            <td>{{ order.po_number }}</td>
+                            <th class="w-25">{% trans 'تاريخ الأمر' %}</th>
+                            <td>{{ order.order_date|date:'Y-m-d' }}</td>
+                        </tr>
+                        <tr>
+                            <th>{% trans 'المورد' %}</th>
+                            <td>
+                                <a href="{% url 'suppliers:supplier_detail' order.supplier.pk %}">{{ order.supplier.company_name }}</a>
+                            </td>
+                            <th>{% trans 'تاريخ التسليم المتوقع' %}</th>
+                            <td>{{ order.expected_delivery|date:'Y-m-d'|default:'-' }}</td>
+                        </tr>
+                        <tr>
+                            <th>{% trans 'الحالة' %}</th>
+                            <td>
+                                <span class="badge badge-status badge-{{ order.status }}">{{ order.get_status_display }}</span>
+                            </td>
+                            <th>{% trans 'تم بواسطة' %}</th>
+                            <td>{{ order.created_by.get_full_name|default:order.created_by.username }}</td>
+                        </tr>
+                        <tr>
+                            <th>{% trans 'تاريخ الإنشاء' %}</th>
+                            <td>{{ order.created_at|date:'Y-m-d H:i' }}</td>
+                            <th>{% trans 'آخر تحديث' %}</th>
+                            <td>{{ order.updated_at|date:'Y-m-d H:i' }}</td>
+                        </tr>
+                    </table>
+                    {% if order.notes %}
+                    <div class="mt-2">
+                        <strong>{% trans 'ملاحظات' %}:</strong>
+                        <p class="mb-0">{{ order.notes|linebreaks }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">{% trans 'بنود أمر الشراء' %}</h3>
+                </div>
+                <div class="card-body table-responsive p-0">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>{% trans 'الخامة' %}</th>
+                                <th>{% trans 'الكمية' %}</th>
+                                <th>{% trans 'سعر الوحدة' %}</th>
+                                <th>{% trans 'الإجمالي' %}</th>
+                                <th>{% trans 'الكمية المستلمة' %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in items %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>
+                                    <a href="{% url 'inventory:material_detail' item.material.pk %}">
+                                        {{ item.material.code }} - {{ item.material.name_ar|default:item.material.name }}
+                                    </a>
+                                </td>
+                                <td>{{ item.quantity }}</td>
+                                <td>{{ item.unit_price|currency }}</td>
+                                <td>{{ item.total|currency }}</td>
+                                <td>
+                                    <span class="{% if item.received_quantity >= item.quantity %}text-success fw-bold{% else %}text-warning{% endif %}">
+                                        {{ item.received_quantity }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center">{% trans 'لا توجد بنود.' %}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <th colspan="4" class="text-center">{% trans 'المجموع الفرعي' %}</th>
+                                <th>{{ order.subtotal|currency }}</th>
+                                <th></th>
+                            </tr>
+                            <tr>
+                                <th colspan="4" class="text-center">{% trans 'الضريبة' %} ({{ order.tax_percentage }}%)</th>
+                                <th>{{ order.tax_amount|currency }}</th>
+                                <th></th>
+                            </tr>
+                            {% if order.shipping_cost %}
+                            <tr>
+                                <th colspan="4" class="text-center">{% trans 'الشحن' %}</th>
+                                <th>{{ order.shipping_cost|currency }}</th>
+                                <th></th>
+                            </tr>
+                            {% endif %}
+                            <tr class="fw-bold fs-5">
+                                <th colspan="4" class="text-center">{% trans 'الإجمالي' %}</th>
+                                <th class="text-success">{{ order.total|currency }}</th>
+                                <th></th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">{% trans 'ملخص المبالغ' %}</h3>
+                </div>
+                <div class="card-body">
+                    <table class="table">
+                        <tr>
+                            <td>{% trans 'الإجمالي' %}</td>
+                            <td class="text-start">{{ order.total|currency }}</td>
+                        </tr>
+                        <tr>
+                            <td>{% trans 'المدفوع' %}</td>
+                            <td class="text-start text-success fw-bold">{{ order.paid_amount|currency }}</td>
+                        </tr>
+
+                    </table>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">{% trans 'المدفوعات' %}</h3>
+                </div>
+                <div class="card-body">
+                    {% if order.supplier.payments.all %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>{% trans 'المبلغ' %}</th>
+                                    <th>{% trans 'الطريقة' %}</th>
+                                    <th>{% trans 'التاريخ' %}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for payment in order.supplier.payments.all %}
+                                <tr>
+                                    <td class="text-success">{{ payment.amount|currency }}</td>
+                                    <td>{{ payment.get_payment_method_display }}</td>
+                                    <td>{{ payment.payment_date|date:'Y-m-d' }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted">{% trans 'لا توجد دفعات' %}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted mb-0">{% trans 'لا توجد مدفوعات بعد.' %}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if order.status == 'received' %}
+            <div class="card border-success">
+                <div class="card-header bg-success text-white">
+                    <h3 class="card-title mb-0">
+                        <i class="bi bi-check-circle"></i> {% trans 'تم الاستلام' %}
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <p class="mb-0">{% trans 'تم استلام هذا الأمر بالكامل.' %}</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

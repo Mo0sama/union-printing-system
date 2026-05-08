@@ -1,0 +1,120 @@
+{% extends 'adminlte/base.html' %}
+{% load i18n core_tags humanize %}
+{% block title %}{% trans 'لوحة التحكم' %} - {{ block.super }}{% endblock %}
+{% block page_title %}<h5 class="mb-0 fw-bold">{% trans 'لوحة التحكم' %}</h5>{% endblock %}
+{% block content %}
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="stat-card bg-primary bg-opacity-10">
+            <div class="stat-icon bg-primary text-white"><i class="bi bi-cart3"></i></div>
+            <div class="stat-info">
+                <h3>{{ today_orders }}</h3>
+                <small>{% trans 'طلبات اليوم' %}</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card bg-warning bg-opacity-10">
+            <div class="stat-icon bg-warning text-white"><i class="bi bi-gear"></i></div>
+            <div class="stat-info">
+                <h3>{{ pending_production }}</h3>
+                <small>{% trans 'قيد الإنتاج' %}</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card bg-success bg-opacity-10">
+            <div class="stat-icon bg-success text-white"><i class="bi bi-cash-coin"></i></div>
+            <div class="stat-info">
+                <h3>{{ monthly_revenue|floatformat:0|intcomma }}</h3>
+                <small>{% trans 'إيرادات الشهر' %}</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card bg-info bg-opacity-10">
+            <div class="stat-icon bg-info text-white"><i class="bi bi-people"></i></div>
+            <div class="stat-info">
+                <h3>{{ total_customers }}</h3>
+                <small>{% trans 'إجمالي العملاء' %}</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <span>{% trans 'أحدث الطلبات' %}</span>
+                <a href="{% url 'orders:order_list' %}" class="btn btn-sm btn-primary">{% trans 'عرض الكل' %}</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-custom mb-0">
+                        <thead>
+                            <tr>
+                                <th>{% trans 'رقم الطلب' %}</th>
+                                <th>{% trans 'العميل' %}</th>
+                                <th>{% trans 'الإجمالي' %}</th>
+                                <th>{% trans 'الحالة' %}</th>
+                                <th>{% trans 'التاريخ' %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in recent_orders %}
+                            <tr>
+                                <td><a href="{% url 'orders:order_detail' order.id %}">{{ order.order_number }}</a></td>
+                                <td>{{ order.customer.name|default:order.customer }}</td>
+                                <td>{{ order.total|floatformat:2|intcomma }}</td>
+                                <td><span class="badge-status badge-{{ order.status }}">{{ order.get_status_display }}</span></td>
+                                <td>{{ order.created_at|date:'Y-m-d' }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="5" class="text-center text-muted py-4">{% trans 'لا توجد طلبات بعد' %}</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <span>{% trans 'مهام الإنتاج' %}</span>
+                <a href="{% url 'production:production_dashboard' %}" class="btn btn-sm btn-primary">{% trans 'التفاصيل' %}</a>
+            </div>
+            <div class="card-body">
+                {% for job in production_jobs %}
+                <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                    <div>
+                        <small class="fw-bold">{{ job.job_number }}</small>
+                        <small class="d-block text-muted">{{ job.order.order_number }}</small>
+                    </div>
+                    <span class="badge-status badge-{{ job.status }}">{{ job.get_status_display }}</span>
+                </div>
+                {% empty %}
+                <p class="text-muted text-center py-3">{% trans 'لا توجد مهام إنتاج حالية' %}</p>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="card mt-3">
+            <div class="card-header">
+                <span>{% trans 'تنبيهات المخزون' %}</span>
+                <a href="{% url 'inventory:material_list' %}" class="btn btn-sm btn-primary">{% trans 'عرض' %}</a>
+            </div>
+            <div class="card-body">
+                {% for item in low_stock_items %}
+                <div class="d-flex justify-content-between align-items-center py-1">
+                    <small>{{ item.name }}</small>
+                    <small class="text-danger fw-bold">{{ item.current_stock }} / {{ item.minimum_stock }}</small>
+                </div>
+                {% empty %}
+                <p class="text-muted text-center py-3">{% trans 'جميع المواد متوفرة' %}</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,16 @@
+venv/
+desktop/
+scripts/
+node_modules/
+__pycache__/
+*.pyc
+*.pyo
+.DS_Store
+Thumbs.db
+backend/staticfiles/
+backend/media/company/*
+!backend/media/company/.gitkeep
+*.zip
+*.egg-info/
+dist/
+.env

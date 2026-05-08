@@ -1,0 +1,99 @@
+{% extends 'adminlte/base.html' %}
+{% load static i18n %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="container-fluid">
+  <div class="row mb-3">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">{{ title }}</h3>
+          <div class="card-tools">
+            <a href="{% url 'employees:employee_create' %}" class="btn btn-primary btn-sm">
+              <i class="fas fa-plus"></i> إضافة موظف
+            </a>
+          </div>
+        </div>
+        <div class="card-body">
+          <form class="row g-2 mb-3" method="get">
+            <div class="col-md-4">
+              <input type="text" name="search" class="form-control" placeholder="بحث..." value="{{ search }}">
+            </div>
+            <div class="col-md-3">
+              <select name="department" class="form-control">
+                <option value="">كل الأقسام</option>
+                {% for code, name in department_choices %}
+                <option value="{{ code }}" {% if department == code %}selected{% endif %}>{{ name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-2">
+              <select name="status" class="form-control">
+                <option value="">الكل</option>
+                <option value="active" {% if status == 'active' %}selected{% endif %}>نشط</option>
+                <option value="inactive" {% if status == 'inactive' %}selected{% endif %}>غير نشط</option>
+              </select>
+            </div>
+            <div class="col-md-2">
+              <button type="submit" class="btn btn-info w-100"><i class="fas fa-search"></i> بحث</button>
+            </div>
+            <div class="col-md-1">
+              <a href="{% url 'employees:employee_list' %}" class="btn btn-secondary w-100"><i class="fas fa-redo"></i></a>
+            </div>
+          </form>
+          <div class="table-responsive">
+            <table class="table table-bordered table-hover datatable">
+              <thead class="table-dark">
+                <tr>
+                  <th>الكود</th>
+                  <th>الاسم</th>
+                  <th>القسم</th>
+                  <th>المسمى الوظيفي</th>
+                  <th>الهاتف</th>
+                  <th>نوع الراتب</th>
+                  <th>الراتب</th>
+                  <th>الحالة</th>
+                  <th>إجراءات</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for emp in employees %}
+                <tr>
+                  <td>{{ emp.employee_code }}</td>
+                  <td><a href="{% url 'employees:employee_detail' emp.pk %}">{{ emp.full_name }}</a></td>
+                  <td>{{ emp.get_department_display }}</td>
+                  <td>{{ emp.position }}</td>
+                  <td>{{ emp.phone }}</td>
+                  <td>{{ emp.get_salary_type_display }}</td>
+                  <td>{{ emp.base_salary }}</td>
+                  <td>{% if emp.is_active %}<span class="badge bg-success">نشط</span>{% else %}<span class="badge bg-danger">غير نشط</span>{% endif %}</td>
+                  <td>
+                    <a href="{% url 'employees:employee_detail' emp.pk %}" class="btn btn-info btn-sm" title="عرض"><i class="fas fa-eye"></i></a>
+                    <a href="{% url 'employees:employee_edit' emp.pk %}" class="btn btn-warning btn-sm" title="تعديل"><i class="fas fa-edit"></i></a>
+                    <a href="{% url 'employees:employee_delete' emp.pk %}" class="btn btn-danger btn-sm" title="حذف" onclick="return confirm('تأكيد الحذف؟')"><i class="fas fa-trash"></i></a>
+                  </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="9" class="text-center">لا يوجد موظفين</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+  $('.datatable').DataTable({
+    language: {url: '//cdn.datatables.net/plug-ins/1.13.4/i18n/ar.json'},
+    dom: 'Bfrtip',
+    buttons: ['copy', 'excel', 'print'],
+    order: [[0, 'desc']],
+  });
+});
+</script>
+{% endblock %}

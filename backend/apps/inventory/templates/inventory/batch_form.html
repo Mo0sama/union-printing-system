@@ -1,0 +1,79 @@
+{% extends 'adminlte/base.html' %}
+{% load static i18n core_tags humanize %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col">
+            <h1 class="h3">{{ title }}</h1>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <form method="post" novalidate>
+                {% csrf_token %}
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">{% trans 'الخامة' %} <span class="text-danger">*</span></label>
+                        <select name="material" class="form-control" required>
+                            <option value="">{% trans '--- اختر ---' %}</option>
+                            {% for material in materials %}
+                            <option value="{{ material.pk }}">{{ material.code }} - {{ material.name_ar|default:material.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">{% trans 'رقم الدفعة' %} <span class="text-danger">*</span></label>
+                        <input type="text" name="batch_number" class="form-control" required placeholder="{% trans 'رقم الدفعة' %}">
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">{% trans 'الكمية' %} <span class="text-danger">*</span></label>
+                        <input type="number" name="quantity" class="form-control" step="0.01" required placeholder="{% trans 'الكمية' %}">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">{% trans 'سعر الوحدة' %} <span class="text-danger">*</span></label>
+                        <input type="number" name="unit_price" class="form-control" step="0.01" required placeholder="{% trans 'سعر الوحدة' %}">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">{% trans 'المورد' %}</label>
+                        <select name="supplier" class="form-control">
+                            <option value="">{% trans '--- اختر ---' %}</option>
+                            {% for supplier in suppliers %}
+                            <option value="{{ supplier.pk }}">{{ supplier.code }} - {{ supplier.company_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">{% trans 'تاريخ الشراء' %} <span class="text-danger">*</span></label>
+                        <input type="date" name="purchase_date" class="form-control" required>
+                    </div>
+                    <div class="col-md-8 mb-3">
+                        <label class="form-label">{% trans 'ملاحظات' %}</label>
+                        <textarea name="notes" class="form-control" rows="3" placeholder="{% trans 'ملاحظات...' %}"></textarea>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-lg"></i> {% trans 'حفظ' %}
+                    </button>
+                    <a href="{% url 'inventory:batch_list' %}" class="btn btn-secondary">
+                        <i class="bi bi-x-lg"></i> {% trans 'إلغاء' %}
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,114 @@
+{% extends 'adminlte/base.html' %}
+{% load static i18n core_tags humanize %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="h3">{{ title }}</h1>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label">{% trans 'الشهر' %}</label>
+                    <input type="month" name="month" class="form-control" value="{{ month }}">
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-primary w-100"><i class="bi bi-search"></i> {% trans 'عرض' %}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h6>{% trans 'إجمالي الأساسي' %}</h6>
+                    <h3>{{ summary.total_base|floatformat:2|intcomma }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h6>{% trans 'إجمالي الحوافز' %}</h6>
+                    <h3>{{ summary.total_bonuses|floatformat:2|intcomma }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <h6>{% trans 'إجمالي الخصومات' %}</h6>
+                    <h3>{{ summary.total_deductions|floatformat:2|intcomma }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h6>{% trans 'إجمالي العمولات' %}</h6>
+                    <h3>{{ summary.total_commission|floatformat:2|intcomma }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <h6>{% trans 'إجمالي الإضافي' %}</h6>
+                    <h3>{{ summary.total_overtime|floatformat:2|intcomma }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-dark text-white">
+                <div class="card-body">
+                    <h6>{% trans 'صافي الرواتب' %}</h6>
+                    <h3>{{ summary.total_net|floatformat:2|intcomma }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>{% trans 'الموظف' %}</th>
+                            <th>{% trans 'الأساسي' %}</th>
+                            <th>{% trans 'الحوافز' %}</th>
+                            <th>{% trans 'الخصومات' %}</th>
+                            <th>{% trans 'العمولات' %}</th>
+                            <th>{% trans 'الإضافي' %}</th>
+                            <th>{% trans 'الصافي' %}</th>
+                            <th>{% trans 'مدفوع' %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for s in salaries %}
+                        <tr>
+                            <td>{{ s.employee.full_name }}</td>
+                            <td>{{ s.base_salary|floatformat:2|intcomma }}</td>
+                            <td>{{ s.bonuses|floatformat:2|intcomma }}</td>
+                            <td>{{ s.deductions|floatformat:2|intcomma }}</td>
+                            <td>{{ s.commission|floatformat:2|intcomma }}</td>
+                            <td>{{ s.overtime|floatformat:2|intcomma }}</td>
+                            <td class="fw-bold">{{ s.net_salary|floatformat:2|intcomma }}</td>
+                            <td>{% if s.paid %}<span class="badge bg-success">{% trans 'نعم' %}</span>{% else %}<span class="badge bg-danger">{% trans 'لا' %}</span>{% endif %}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="8" class="text-center text-muted">{% trans 'لا توجد رواتب.' %}</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

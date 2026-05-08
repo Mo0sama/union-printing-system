@@ -1,0 +1,230 @@
+{% extends 'adminlte/base.html' %}
+{% load static i18n core_tags humanize %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col">
+            <h1 class="h3">{{ supplier.code }} - {{ supplier.company_name }}</h1>
+        </div>
+        <div class="col-auto">
+            <a href="{% url 'suppliers:supplier_list' %}" class="btn btn-secondary">
+                <i class="bi bi-arrow-right"></i> {% trans 'عودة' %}
+            </a>
+            <a href="{% url 'suppliers:supplier_edit' supplier.pk %}" class="btn btn-warning">
+                <i class="bi bi-pencil"></i> {% trans 'تعديل' %}
+            </a>
+            <a href="{% url 'suppliers:add_supplier_payment' supplier.pk %}" class="btn btn-success">
+                <i class="bi bi-cash"></i> {% trans 'تسجيل دفعة' %}
+            </a>
+            <a href="{% url 'suppliers:supplier_ledger' supplier.pk %}" class="btn btn-info">
+                <i class="bi bi-journal-text"></i> {% trans 'كشف حساب' %}
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">{% trans 'معلومات المورد' %}</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-bordered">
+                        <tr>
+                            <th class="w-25">{% trans 'الكود' %}</th>
+                            <td>{{ supplier.code }}</td>
+                        </tr>
+                        <tr>
+                            <th>{% trans 'اسم الشركة' %}</th>
+                            <td>{{ supplier.company_name }}</td>
+                        </tr>
+                        <tr>
+                            <th>{% trans 'الشخص المسؤول' %}</th>
+                            <td>{{ supplier.contact_person }}</td>
+                        </tr>
+                        <tr>
+                            <th>{% trans 'رقم الهاتف' %}</th>
+                            <td dir="ltr">{{ supplier.phone }}</td>
+                        </tr>
+                        <tr>
+                            <th>{% trans 'هاتف آخر' %}</th>
+                            <td dir="ltr">{{ supplier.secondary_phone|default:'-' }}</td>
+                        </tr>
+                        <tr>
+                            <th>{% trans 'البريد الإلكتروني' %}</th>
+                            <td>{{ supplier.email|default:'-' }}</td>
+                        </tr>
+                        <tr>
+                            <th>{% trans 'العنوان' %}</th>
+                            <td>{{ supplier.address|default:'-'|linebreaks }}</td>
+                        </tr>
+                        <tr>
+                            <th>{% trans 'نوع التوريد' %}</th>
+                            <td>{{ supplier.supply_type|default:'-' }}</td>
+                        </tr>
+                        <tr>
+                            <th>{% trans 'الرقم الضريبي' %}</th>
+                            <td>{{ supplier.tax_number|default:'-' }}</td>
+                        </tr>
+                        <tr>
+                            <th>{% trans 'شروط الدفع' %}</th>
+                            <td>{{ supplier.payment_terms|default:'-' }}</td>
+                        </tr>
+                        <tr>
+                            <th>{% trans 'الحالة' %}</th>
+                            <td>
+                                {% if supplier.is_active %}
+                                <span class="badge bg-success">{% trans 'نشط' %}</span>
+                                {% else %}
+                                <span class="badge bg-danger">{% trans 'غير نشط' %}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>{% trans 'تاريخ الإنشاء' %}</th>
+                            <td>{{ supplier.created_at|date:'Y-m-d H:i' }}</td>
+                        </tr>
+                        <tr>
+                            <th>{% trans 'آخر تحديث' %}</th>
+                            <td>{{ supplier.updated_at|date:'Y-m-d H:i' }}</td>
+                        </tr>
+                    </table>
+                    {% if supplier.notes %}
+                    <div class="mt-2">
+                        <strong>{% trans 'ملاحظات' %}:</strong>
+                        <p class="mb-0">{{ supplier.notes|linebreaks }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">{% trans 'المعلومات المالية' %}</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-bordered">
+                        <tr>
+                            <th class="w-25">{% trans 'الرصيد الحالي' %}</th>
+                            <td class="{% if supplier.current_balance > 0 %}text-success fw-bold{% elif supplier.current_balance < 0 %}text-danger fw-bold{% endif %} fs-5">
+                                {{ supplier.current_balance|currency }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>{% trans 'إجمالي المشتريات' %}</th>
+                            <td>{{ purchase_orders_total|default:0|currency }}</td>
+                        </tr>
+                        <tr>
+                            <th>{% trans 'إجمالي المدفوعات' %}</th>
+                            <td>{{ payments_total|default:0|currency }}</td>
+                        </tr>
+                        <tr>
+                            <th>{% trans 'عدد أوامر الشراء' %}</th>
+                            <td>{{ purchase_orders|length }}</td>
+                        </tr>
+                        <tr>
+                            <th>{% trans 'تم بواسطة' %}</th>
+                            <td>{{ supplier.created_by.get_full_name|default:supplier.created_by.username }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">{% trans 'أوامر الشراء' %}</h5>
+                    <div class="card-tools">
+                        <a href="{% url 'suppliers:purchase_order_create' %}?supplier={{ supplier.pk }}" class="btn btn-primary btn-sm">
+                            <i class="bi bi-plus-lg"></i> {% trans 'أمر شراء جديد' %}
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if purchase_orders %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-sm">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>{% trans 'رقم الأمر' %}</th>
+                                    <th>{% trans 'التاريخ' %}</th>
+                                    <th>{% trans 'الإجمالي' %}</th>
+                                    <th>{% trans 'الحالة' %}</th>
+                                    <th>{% trans 'إجراءات' %}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for po in purchase_orders|slice:':10' %}
+                                <tr>
+                                    <td>{{ po.po_number }}</td>
+                                    <td>{{ po.order_date|date:'Y-m-d' }}</td>
+                                    <td>{{ po.total|currency }}</td>
+                                    <td>
+                                        <span class="badge badge-status badge-{{ po.status }}">{{ po.get_status_display }}</span>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'suppliers:purchase_order_detail' po.pk %}" class="btn btn-info btn-sm">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% if purchase_orders|length > 10 %}
+                    <div class="text-center mt-2">
+                        <a href="{% url 'suppliers:purchase_order_list' %}?supplier={{ supplier.pk }}" class="btn btn-outline-primary btn-sm">
+                            {% trans 'عرض الكل' %} ({{ purchase_orders|length }})
+                        </a>
+                    </div>
+                    {% endif %}
+                    {% else %}
+                    <p class="text-muted mb-0">{% trans 'لا توجد أوامر شراء.' %}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">{% trans 'آخر المدفوعات' %}</h5>
+                </div>
+                <div class="card-body">
+                    {% if payments %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-sm">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>{% trans 'التاريخ' %}</th>
+                                    <th>{% trans 'المبلغ' %}</th>
+                                    <th>{% trans 'الطريقة' %}</th>
+                                    <th>{% trans 'المرجع' %}</th>
+                                    <th>{% trans 'أمر الشراء' %}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for payment in payments|slice:':10' %}
+                                <tr>
+                                    <td>{{ payment.payment_date|date:'Y-m-d' }}</td>
+                                    <td class="text-success fw-bold">{{ payment.amount|currency }}</td>
+                                    <td>{{ payment.get_payment_method_display }}</td>
+                                    <td>{{ payment.reference|default:'-' }}</td>
+                                    <td>{{ payment.purchase_order.po_number|default:'-' }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted mb-0">{% trans 'لا توجد مدفوعات.' %}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

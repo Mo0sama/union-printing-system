@@ -1,0 +1,138 @@
+{% extends 'adminlte/base.html' %}
+{% load static i18n core_tags humanize %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="container-fluid">
+  <div class="row mb-3">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">{{ title }}</h3>
+          <div class="card-tools">
+            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#departmentModal">
+              <i class="bi bi-plus-lg"></i> {% trans 'إضافة قسم' %}
+            </button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+              <thead class="table-dark">
+                <tr>
+                  <th>{% trans 'الكود' %}</th>
+                  <th>{% trans 'الاسم (إنجليزي)' %}</th>
+                  <th>{% trans 'الاسم (عربي)' %}</th>
+                  <th>{% trans 'الوصف' %}</th>
+                  <th>{% trans 'الترتيب' %}</th>
+                  <th>{% trans 'إجراءات' %}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for dept in departments %}
+                <tr>
+                  <td><strong>{{ dept.code }}</strong></td>
+                  <td>{{ dept.name }}</td>
+                  <td>{{ dept.name_ar }}</td>
+                  <td>{{ dept.description|default:'---'|truncatechars:50 }}</td>
+                  <td>{{ dept.sort_order }}</td>
+                  <td>
+                    <button type="button" class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#departmentModal"
+                      data-id="{{ dept.pk }}"
+                      data-code="{{ dept.code }}"
+                      data-name="{{ dept.name }}"
+                      data-name_ar="{{ dept.name_ar }}"
+                      data-description="{{ dept.description }}"
+                      data-sort_order="{{ dept.sort_order }}">
+                      <i class="bi bi-pencil"></i>
+                    </button>
+                  </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="text-center">{% trans 'لا توجد أقسام' %}</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="departmentModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="{% url 'production:production_job_create' %}">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title">{% trans 'القسم' %}</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" name="dept_id" id="dept_id">
+          <div class="mb-3">
+            <label class="form-label">{% trans 'الكود' %}</label>
+            <input type="text" name="code" id="dept_code" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">{% trans 'الاسم (إنجليزي)' %}</label>
+            <input type="text" name="name" id="dept_name" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">{% trans 'الاسم (عربي)' %}</label>
+            <input type="text" name="name_ar" id="dept_name_ar" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">{% trans 'الوصف' %}</label>
+            <textarea name="description" id="dept_description" class="form-control" rows="3"></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">{% trans 'الترتيب' %}</label>
+            <input type="number" name="sort_order" id="dept_sort_order" class="form-control" value="0">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans 'إلغاء' %}</button>
+          <button type="submit" class="btn btn-primary">{% trans 'حفظ' %}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  var modal = document.getElementById('departmentModal');
+  modal.addEventListener('show.bs.modal', function(event) {
+    var btn = event.relatedTarget;
+    var id = btn.getAttribute('data-id') || '';
+    var code = btn.getAttribute('data-code') || '';
+    var name = btn.getAttribute('data-name') || '';
+    var nameAr = btn.getAttribute('data-name_ar') || '';
+    var description = btn.getAttribute('data-description') || '';
+    var sortOrder = btn.getAttribute('data-sort_order') || '0';
+    document.getElementById('dept_id').value = id;
+    document.getElementById('dept_code').value = code;
+    document.getElementById('dept_name').value = name;
+    document.getElementById('dept_name_ar').value = nameAr;
+    document.getElementById('dept_description').value = description;
+    document.getElementById('dept_sort_order').value = sortOrder;
+    var form = modal.querySelector('form');
+    if (id) {
+      form.action = "{% url 'production:production_job_create' %}";
+    } else {
+      form.action = "{% url 'production:production_job_create' %}";
+    }
+  });
+  modal.addEventListener('hidden.bs.modal', function() {
+    document.getElementById('dept_id').value = '';
+    document.getElementById('dept_code').value = '';
+    document.getElementById('dept_name').value = '';
+    document.getElementById('dept_name_ar').value = '';
+    document.getElementById('dept_description').value = '';
+    document.getElementById('dept_sort_order').value = '0';
+  });
+});
+</script>
+{% endblock %}

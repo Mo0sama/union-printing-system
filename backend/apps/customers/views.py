@@ -1,0 +1,246 @@
+import openpyxl
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from apps.accounts.decorators import app_permission_required
+from django.db.models import Q, Sum
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.utils.translation import gettext_lazy as _
+from django.core.paginator import Paginator
+
+from .forms import (
+    CustomerContactForm, CustomerForm,
+    CustomerInteractionForm, CustomerPaymentForm,
+)
+from .models import Customer, CustomerInteraction, CustomerPayment
+
+
+@app_permission_required('customers_view')
+def customer_list(request):
+    customers = Customer.objects.all().order_by('-created_at')
+
+    search = request.GET.get('search', '')
+    customer_type = request.GET.get('type', '')
+    status = request.GET.get('status', '')
+
+    if search:
+        customers = customers.filter(
+            Q(code__icontains=search) |
+            Q(name__icontains=search) |
+            Q(company_name__icontains=search) |
+            Q(contact_person__icontains=search) |
+            Q(phone__icontains=search) |
+            Q(email__icontains=search)
+        )
+    if customer_type:
+        customers = customers.filter(customer_type=customer_type)
+    if status == 'active':
+        customers = customers.filter(is_active=True)
+    elif status == 'inactive':
+        customers = customers.filter(is_active=False)
+
+    paginator = Paginator(customers, 25)
+    page = request.GET.get('page', 1)
+    customers_page = paginator.get_page(page)
+
+    context = {
+        'customers': customers_page,
+        'search': search,
+        'customer_type': customer_type,
+        'status': status,
+    }
+    return render(request, 'customers/customer_list.html', context)
+
+
+@app_permission_required('customers_view')
+def customer_detail(request, pk):
+    customer = get_object_or_404(Customer, pk=pk)
+    interactions = customer.interactions.all()[:20]
+    payments = customer.payments.all()[:20]
+
+    context = {
+        'customer': customer,
+        'interactions': interactions,
+        'payments': payments,
+    }
+    return render(request, 'customers/customer_detail.html', context)
+
+
+@app_permission_required('customers_create')
+def customer_create(request):
+    if request.method == 'POST':
+        form = CustomerForm(request.POST)
+        if form.is_valid():
+            customer = form.save(commit=False)
+            customer.created_by = request.user
+            customer.save()
+            messages.success(request, _('تم إنشاء العميل بنجاح.'))
+            return redirect('customers:customer_detail', pk=customer.pk)
+    else:
+        form = CustomerForm()
+
+    return render(request, 'customers/customer_form.html', {
+        'form': form,
+        'title': _('إضافة عميل جديد'),
+    })
+
+
+@app_permission_required('customers_create')
+def quick_add_customer(request):
+    if request.method == 'POST':
+        name = request.POST.get('name', '').strip()
+        phone = request.POST.get('phone', '').strip()
+        if not name:
+            return JsonResponse({'success': False, 'error': 'الاسم مطلوب'})
+        if not phone:
+            return JsonResponse({'success': False, 'error': 'رقم الهاتف مطلوب'})
+        customer = Customer.objects.create(
+            customer_type=Customer.CustomerType.INDIVIDUAL,
+            name=name,
+            phone=phone,
+            created_by=request.user,
+        )
+        return JsonResponse({
+            'success': True, 'id': customer.pk, 'text': str(customer)
+        })
+    return JsonResponse({'success': False, 'error': 'POST required'})
+
+
+@app_permission_required('customers_edit')
+def customer_edit(request, pk):
+    customer = get_object_or_404(Customer, pk=pk)
+    if request.method == 'POST':
+        form = CustomerForm(request.POST, instance=customer)
+        if form.is_valid():
+            form.save()
+            messages.success(request, _('تم تحديث بيانات العميل بنجاح.'))
+            return redirect('customers:customer_detail', pk=customer.pk)
+    else:
+        form = CustomerForm(instance=customer)
+
+    return render(request, 'customers/customer_form.html', {
+        'form': form,
+        'title': _('تعديل بيانات العميل'),
+        'customer': customer,
+    })
+
+
+@app_permission_required('customers_delete')
+def customer_delete(request, pk):
+    customer = get_object_or_404(Customer, pk=pk)
+    if request.method == 'POST':
+        name = str(customer)
+        customer.delete()
+        messages.success(request, _('تم حذف العميل "%s" بنجاح.') % name)
+        return redirect('customers:customer_list')
+
+    return render(request, 'customers/customer_confirm_delete.html', {
+        'customer': customer,
+    })
+
+
+@app_permission_required('customers_edit')
+def add_interaction(request, pk):
+    customer = get_object_or_404(Customer, pk=pk)
+    if request.method == 'POST':
+        form = CustomerInteractionForm(request.POST)
+        if form.is_valid():
+            interaction = form.save(commit=False)
+            interaction.customer = customer
+            interaction.created_by = request.user
+            interaction.save()
+            messages.success(request, _('تم تسجيل التفاعل بنجاح.'))
+            return redirect('customers:customer_detail', pk=customer.pk)
+    else:
+        form = CustomerInteractionForm()
+
+    return render(request, 'customers/interaction_form.html', {
+        'form': form,
+        'customer': customer,
+        'title': _('إضافة تفاعل جديد'),
+    })
+
+
+@app_permission_required('customers_edit')
+def add_payment(request, pk):
+    customer = get_object_or_404(Customer, pk=pk)
+    if request.method == 'POST':
+        form = CustomerPaymentForm(request.POST)
+        if form.is_valid():
+            payment = form.save(commit=False)
+            payment.customer = customer
+            payment.created_by = request.user
+            payment.save()
+
+            customer.current_balance -= payment.amount
+            customer.save()
+
+            messages.success(request, _('تم تسجيل الدفعة بنجاح.'))
+            return redirect('customers:customer_detail', pk=customer.pk)
+    else:
+        form = CustomerPaymentForm(initial={'payment_date': None})
+
+    return render(request, 'customers/payment_form.html', {
+        'form': form,
+        'customer': customer,
+        'title': _('تسجيل دفعة جديدة'),
+    })
+
+
+@app_permission_required('customers_view')
+def customer_statement(request, pk):
+    customer = get_object_or_404(Customer, pk=pk)
+    payments = customer.payments.all().order_by('-payment_date')
+    interactions = customer.interactions.all().order_by('-created_at')
+
+    total_paid = payments.aggregate(total=Sum('amount'))['total'] or 0
+
+    context = {
+        'customer': customer,
+        'payments': payments,
+        'interactions': interactions,
+        'total_paid': total_paid,
+    }
+    return render(request, 'customers/customer_statement.html', context)
+
+
+@app_permission_required('customers_view')
+def customer_export(request):
+    customers = Customer.objects.filter(is_active=True).order_by('-created_at')
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = str(_('العملاء'))
+
+    headers = [
+        str(_('كود العميل')), str(_('النوع')), str(_('الاسم')),
+        str(_('اسم الشركة')), str(_('الشخص المسؤول')), str(_('رقم الهاتف')),
+        str(_('الهاتف الثانوي')), str(_('البريد الإلكتروني')), str(_('المدينة')),
+        str(_('الرصيد الحالي')), str(_('الحد الائتماني')), str(_('الرقم الضريبي')),
+        str(_('ملاحظات')),
+    ]
+    ws.append(headers)
+
+    for customer in customers:
+        ws.append([
+            customer.code,
+            customer.get_customer_type_display(),
+            customer.name or customer.contact_person or customer.company_name,
+            customer.company_name,
+            customer.contact_person,
+            customer.phone,
+            customer.secondary_phone,
+            customer.email,
+            customer.city,
+            str(customer.current_balance),
+            str(customer.credit_limit),
+            customer.tax_number,
+            customer.notes,
+        ])
+
+    response = HttpResponse(
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    response['Content-Disposition'] = f'attachment; filename="customers_{__import__("datetime").datetime.now().strftime("%Y%m%d")}.xlsx"'
+    wb.save(response)
+    return response

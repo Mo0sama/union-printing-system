@@ -1,0 +1,432 @@
+{% extends 'adminlte/base.html' %}
+{% load static i18n core_tags humanize %}
+{% block title %}{% trans 'نقطة البيع' %} - {{ block.super }}{% endblock %}
+{% block body_class %}pos-mode{% endblock %}
+{% block extra_css %}
+<style>
+body.pos-mode { background: #0f172a; overflow: hidden; }
+.pos-mode .sidebar, .pos-mode .main-header, .pos-mode .main-footer { display: none !important; }
+.pos-mode .main-content { margin: 0 !important; padding: 0 !important; }
+.pos-mode .wrapper { margin: 0 !important; padding: 0 !important; }
+.pos-mode .main-body { padding: 0 !important; }
+.pos-layout { height: 100vh; display: grid; grid-template-columns: 1fr 400px; }
+.pos-header { background: #1e293b; padding: .5rem 1rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #334155; }
+.pos-header h5 { color: #fff; margin: 0; font-weight: 700; }
+.pos-header .badge { font-size: .75rem; }
+.pos-items-panel { background: #0f172a; display: flex; flex-direction: column; overflow: hidden; }
+.pos-search-bar { padding: .75rem; background: #1e293b; border-bottom: 1px solid #334155; }
+.pos-search-bar input { background: #0f172a; border: 1px solid #334155; color: #fff; border-radius: 8px; padding: .6rem 1rem; width: 100%; }
+.pos-search-bar input::placeholder { color: #64748b; }
+.pos-search-bar input:focus { border-color: #3b82f6; outline: none; box-shadow: 0 0 0 2px rgba(59,130,246,.2); }
+.pos-items-grid { flex: 1; overflow-y: auto; padding: .75rem; display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: .5rem; align-content: start; }
+.pos-item-btn { background: #1e293b; border: 2px solid #334155; border-radius: 10px; padding: 1rem .5rem; text-align: center; cursor: pointer; transition: all .15s; color: #e2e8f0; }
+.pos-item-btn:hover { border-color: #3b82f6; background: #1e3a5f; transform: translateY(-1px); }
+.pos-item-btn .item-price { color: #4ade80; font-weight: 700; font-size: .9rem; display: block; }
+.pos-item-btn .item-name { font-size: .75rem; color: #94a3b8; display: block; margin-top: .25rem; }
+.pos-cart-panel { background: #1e293b; display: flex; flex-direction: column; border-left: 1px solid #334155; }
+[dir="rtl"] .pos-cart-panel { border-left: none; border-right: 1px solid #334155; }
+.pos-cart-header { padding: .75rem 1rem; background: #334155; display: flex; justify-content: space-between; align-items: center; color: #fff; font-weight: 600; }
+.pos-cart-items { flex: 1; overflow-y: auto; padding: .5rem; }
+.pos-cart-item { background: #0f172a; border-radius: 8px; padding: .5rem .75rem; margin-bottom: .4rem; display: flex; align-items: center; justify-content: space-between; }
+.pos-cart-item .item-info { flex: 1; }
+.pos-cart-item .item-name { color: #e2e8f0; font-size: .8rem; font-weight: 500; }
+.pos-cart-item .item-price-label { color: #64748b; font-size: .7rem; }
+.pos-cart-item .item-controls { display: flex; align-items: center; gap: .5rem; }
+.pos-cart-item .item-qty { width: 50px; text-align: center; background: #1e293b; border: 1px solid #334155; color: #fff; border-radius: 6px; padding: .2rem; font-size: .85rem; }
+.pos-cart-item .item-total { color: #4ade80; font-weight: 700; font-size: .9rem; min-width: 60px; text-align: right; }
+[dir="rtl"] .pos-cart-item .item-total { text-align: left; }
+.pos-cart-item .btn-remove { background: none; border: none; color: #ef4444; font-size: 1.1rem; padding: 0 .25rem; cursor: pointer; }
+.pos-cart-footer { background: #334155; padding: .75rem 1rem; border-top: 1px solid #475569; }
+.pos-cart-footer .total-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: .4rem; }
+.pos-cart-footer .total-row span:first-child { color: #94a3b8; font-size: .8rem; }
+.pos-cart-footer .total-row span:last-child { color: #e2e8f0; font-weight: 600; }
+.pos-cart-footer .grand-total { font-size: 1.6rem; font-weight: 800; color: #4ade80 !important; }
+.pos-cart-footer .grand-total-label { font-size: .9rem; font-weight: 600; color: #fff !important; }
+.pos-cart-footer .discount-input { display: flex; align-items: center; gap: .5rem; }
+.pos-cart-footer .discount-input input { background: #0f172a; border: 1px solid #334155; color: #fff; border-radius: 6px; padding: .3rem .5rem; width: 80px; text-align: center; }
+.pos-cart-footer .discount-input label { color: #94a3b8; font-size: .8rem; }
+.pos-payment-section { padding: .75rem 1rem; display: grid; grid-template-columns: 1fr 1fr; gap: .4rem; }
+.pos-payment-section .btn { padding: .75rem; font-size: .85rem; font-weight: 600; border-radius: 8px; border: none; }
+.btn-pay-cash { background: #059669; color: #fff; }
+.btn-pay-cash:hover { background: #047857; }
+.btn-pay-card { background: #3b82f6; color: #fff; }
+.btn-pay-card:hover { background: #2563eb; }
+.btn-pay-bank { background: #8b5cf6; color: #fff; }
+.btn-pay-bank:hover { background: #7c3aed; }
+.btn-hold-sale { background: #f59e0b; color: #fff; }
+.btn-hold-sale:hover { background: #d97706; }
+.pos-customer-bar { padding: .5rem .75rem; background: #1e293b; display: flex; align-items: center; gap: .5rem; border-bottom: 1px solid #334155; }
+.pos-customer-bar select { background: #0f172a; border: 1px solid #334155; color: #e2e8f0; border-radius: 6px; padding: .3rem .5rem; flex: 1; font-size: .8rem; }
+.pos-customer-bar .btn { padding: .3rem .6rem; font-size: .75rem; white-space: nowrap; }
+.pos-empty-cart { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #475569; }
+.pos-empty-cart i { font-size: 3rem; margin-bottom: .5rem; }
+.pos-empty-cart p { font-size: .85rem; }
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #0f172a; }
+::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+.modal-content { background: #1e293b; color: #e2e8f0; border: 1px solid #334155; }
+.modal-header { border-bottom: 1px solid #334155; }
+.modal-footer { border-top: 1px solid #334155; }
+.modal .form-control, .modal .form-select { background: #0f172a; border: 1px solid #334155; color: #e2e8f0; }
+.modal .form-control:focus, .modal .form-select:focus { border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59,130,246,.2); }
+.modal .btn-close { filter: invert(1); }
+.payment-total-display { font-size: 2.5rem; font-weight: 800; color: #4ade80; text-align: center; padding: 1rem; }
+.change-display { font-size: 2rem; font-weight: 700; color: #fbbf24; text-align: center; }
+@media (max-width: 768px) { .pos-layout { grid-template-columns: 1fr; } .pos-cart-panel { position: fixed; top: 0; right: 0; bottom: 0; width: 90%; z-index: 1050; transform: translateX(100%); transition: transform .3s; } [dir="rtl"] .pos-cart-panel { transform: translateX(-100%); } .pos-cart-panel.show { transform: translateX(0); } }
+</style>
+{% endblock %}
+{% block content %}
+<div class="pos-layout">
+    <div class="pos-items-panel">
+        <div class="pos-header">
+            <h5><i class="bi bi-credit-card-2-front me-1"></i> {{ session.session_number }}</h5>
+            <div>
+                <span class="badge bg-success me-1">{% trans 'مفتوحة' %}</span>
+                <small class="text-muted">{{ session.opened_at|date:'H:i' }}</small>
+                <button class="btn btn-sm btn-outline-light ms-2 d-md-none" onclick="toggleCart()"><i class="bi bi-cart-fill"></i></button>
+            </div>
+        </div>
+        <div class="pos-search-bar">
+            <input type="text" id="pos-item-search" placeholder="{% trans 'ابحث عن صنف...' %}" oninput="filterPosItems(this.value)">
+        </div>
+        <div class="pos-items-grid" id="pos-items-grid">
+            {% for product in products %}
+            <div class="pos-item-btn" data-name="{{ product.name }}" data-price="{{ product.selling_price }}" data-id="{{ product.id }}" onclick="addToCart('{{ product.name|escapejs }}', {{ product.selling_price }})">
+                <span class="item-price">{{ product.selling_price|floatformat:2 }}</span>
+                <span class="item-name">{{ product.name }}</span>
+            </div>
+            {% empty %}
+            <div class="text-muted text-center py-5" style="grid-column:1/-1">{% trans 'لا توجد منتجات متاحة' %}</div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="pos-cart-panel" id="pos-cart-panel">
+        <div class="pos-cart-header">
+            <span><i class="bi bi-cart3 me-1"></i> {% trans 'الفاتورة الحالية' %}</span>
+            <button class="btn btn-sm btn-outline-danger" onclick="clearCart()" title="{% trans 'إفراغ' %}"><i class="bi bi-trash3"></i></button>
+        </div>
+        <div class="pos-customer-bar">
+            <i class="bi bi-person text-muted"></i>
+            <select id="pos-customer" class="form-select form-select-sm">
+                <option value="">{% trans 'عميل نقدي' %}</option>
+                {% for c in customers %}
+                <option value="{{ c.id }}">{{ c.name }}</option>
+                {% endfor %}
+            </select>
+            <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#quickCustomerModal"><i class="bi bi-plus-lg"></i></button>
+        </div>
+        <div class="pos-cart-items" id="pos-cart-items">
+            <div class="pos-empty-cart" id="empty-cart-msg">
+                <i class="bi bi-bag"></i>
+                <p>{% trans 'الفاتورة فارغة' %}</p>
+                <small>{% trans 'اختر الأصناف من اليسار' %}</small>
+            </div>
+        </div>
+        <div class="pos-cart-footer">
+            <div class="total-row">
+                <span>{% trans 'المجموع الفرعي' %}</span>
+                <span id="pos-subtotal">0.00</span>
+            </div>
+            <div class="total-row discount-input">
+                <label>{% trans 'خصم' %}</label>
+                <input type="number" id="pos-discount" value="0" min="0" step="0.01" oninput="updatePosTotal()">
+                <span id="pos-discount-display">0.00</span>
+            </div>
+            <div class="total-row">
+                <span class="grand-total-label">{% trans 'الإجمالي' %}</span>
+                <span class="grand-total" id="pos-total-amount">0.00</span>
+            </div>
+        </div>
+        <div class="pos-payment-section">
+            <button class="btn btn-pay-cash" onclick="processPayment('cash')"><i class="bi bi-cash"></i> {% trans 'نقدي' %}</button>
+            <button class="btn btn-pay-card" onclick="processPayment('card')"><i class="bi bi-credit-card"></i> {% trans 'بطاقة' %}</button>
+            <button class="btn btn-pay-bank" onclick="processPayment('bank_transfer')"><i class="bi bi-bank"></i> {% trans 'تحويل' %}</button>
+            <button class="btn btn-hold-sale" onclick="holdSale()"><i class="bi bi-pause-circle"></i> {% trans 'تعليق' %}</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="paymentModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:400px">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{% trans 'إتمام البيع' %}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="payment-total-display" id="payment-total">0.00</div>
+                <p class="text-center text-muted mb-3">{% trans 'المبلغ المستحق' %}</p>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">{% trans 'المبلغ المدفوع' %}</label>
+                    <input type="number" class="form-control form-control-lg text-center" id="amount-paid" value="0" step="0.01" min="0" oninput="calcChange()">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">{% trans 'طريقة الدفع' %}</label>
+                    <select class="form-select" id="payment-method">
+                        <option value="cash">{% trans 'نقدي' %}</option>
+                        <option value="card">{% trans 'بطاقة ائتمان' %}</option>
+                        <option value="bank_transfer">{% trans 'تحويل بنكي' %}</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">{% trans 'ملاحظات' %}</label>
+                    <textarea class="form-control" id="payment-notes" rows="2"></textarea>
+                </div>
+                <div class="change-display" id="change-display">
+                    {% trans 'الباقي' %}: <span id="change-amount">0.00</span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans 'إلغاء' %}</button>
+                <button type="button" class="btn btn-success btn-lg" id="btn-confirm-payment" onclick="confirmPayment()">
+                    <i class="bi bi-check-circle"></i> {% trans 'تأكيد الدفع' %}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="quickCustomerModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{% trans 'إضافة عميل سريع' %}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="quick-customer-form">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">{% trans 'الاسم' %}</label>
+                        <input type="text" class="form-control" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">{% trans 'رقم الهاتف' %}</label>
+                        <input type="text" class="form-control" name="phone">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans 'إلغاء' %}</button>
+                    <button type="submit" class="btn btn-primary">{% trans 'إضافة' %}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="receiptModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{% trans 'تم البيع بنجاح' %}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <i class="bi bi-check-circle-fill text-success" style="font-size:4rem"></i>
+                <h4 class="mt-2" id="receipt-sale-number"></h4>
+                <p class="text-muted">{% trans 'تم إتمام عملية البيع بنجاح' %}</p>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <a href="#" id="receipt-print-link" class="btn btn-primary" target="_blank">
+                    <i class="bi bi-printer"></i> {% trans 'طباعة الإيصال' %}
+                </a>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="location.reload()">
+                    {% trans 'فاتورة جديدة' %}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<input type="hidden" id="pos-current-method" value="">
+<input type="hidden" id="csrf-token" value="{{ csrf_token }}">
+{% endblock %}
+
+{% block extra_js %}
+<script>
+var cartItems = [];
+
+function addToCart(name, price) {
+    var existing = cartItems.findIndex(function(i) { return i.name === name; });
+    if (existing > -1) {
+        cartItems[existing].qty += 1;
+    } else {
+        cartItems.push({name: name, price: parseFloat(price), qty: 1});
+    }
+    renderCart();
+}
+
+function removeFromCart(index) {
+    cartItems.splice(index, 1);
+    renderCart();
+}
+
+function clearCart() {
+    if (cartItems.length === 0) return;
+    if (!confirm('{% trans "هل تريد إفراغ الفاتورة؟" %}')) return;
+    cartItems = [];
+    renderCart();
+}
+
+function renderCart() {
+    var container = $('#pos-cart-items');
+    var emptyMsg = $('#empty-cart-msg');
+    container.find('.pos-cart-item').remove();
+    if (cartItems.length === 0) {
+        emptyMsg.show();
+        updatePosTotal();
+        return;
+    }
+    emptyMsg.hide();
+    $.each(cartItems, function(i, item) {
+        var html = '<div class="pos-cart-item" data-index="' + i + '">' +
+            '<div class="item-info">' +
+            '<div class="item-name">' + item.name + '</div>' +
+            '<div class="item-price-label">' + parseFloat(item.price).toFixed(2) + '</div></div>' +
+            '<div class="item-controls">' +
+            '<input type="number" class="item-qty" value="' + item.qty + '" min="1" onchange="updateCartQty(' + i + ', this.value)">' +
+            '<span class="item-total">' + (item.qty * item.price).toFixed(2) + '</span>' +
+            '<button class="btn-remove" onclick="removeFromCart(' + i + ')"><i class="bi bi-x-circle"></i></button>' +
+            '</div></div>';
+        container.append(html);
+    });
+    updatePosTotal();
+}
+
+function updateCartQty(index, val) {
+    var qty = parseInt(val) || 1;
+    if (qty < 1) qty = 1;
+    cartItems[index].qty = qty;
+    renderCart();
+}
+
+function updatePosTotal() {
+    var subtotal = 0;
+    $.each(cartItems, function(i, item) {
+        subtotal += item.qty * item.price;
+    });
+    var discount = parseFloat($('#pos-discount').val()) || 0;
+    var total = Math.max(0, subtotal - discount);
+    $('#pos-subtotal').text(subtotal.toFixed(2));
+    $('#pos-total-amount').text(total.toFixed(2));
+    $('#pos-discount-display').text(discount.toFixed(2));
+    $('#payment-total').text(total.toFixed(2));
+}
+
+function filterPosItems(val) {
+    var q = val.toLowerCase();
+    $('.pos-item-btn').each(function() {
+        var name = $(this).data('name').toLowerCase();
+        $(this).toggle(name.indexOf(q) > -1);
+    });
+}
+
+function processPayment(method) {
+    var total = parseFloat($('#pos-total-amount').text()) || 0;
+    if (total <= 0) {
+        alert('{% trans "الفاتورة فارغة" %}');
+        return;
+    }
+    if (cartItems.length === 0) {
+        alert('{% trans "الرجاء إضافة أصناف إلى الفاتورة" %}');
+        return;
+    }
+    $('#pos-current-method').val(method);
+    $('#payment-method').val(method);
+    $('#amount-paid').val(total.toFixed(2));
+    $('#change-amount').text('0.00');
+    var paymentModal = new bootstrap.Modal(document.getElementById('paymentModal'));
+    paymentModal.show();
+    $('#amount-paid').focus();
+}
+
+function calcChange() {
+    var total = parseFloat($('#pos-total-amount').text()) || 0;
+    var paid = parseFloat($('#amount-paid').val()) || 0;
+    var change = Math.max(0, paid - total);
+    $('#change-amount').text(change.toFixed(2));
+}
+
+function confirmPayment() {
+    var paid = parseFloat($('#amount-paid').val()) || 0;
+    var total = parseFloat($('#pos-total-amount').text()) || 0;
+    if (paid < total) {
+        alert('{% trans "المبلغ المدفوع أقل من الإجمالي" %}');
+        return;
+    }
+    var items = [];
+    $.each(cartItems, function(i, item) {
+        items.push({
+            description: item.name,
+            quantity: item.qty,
+            unit_price: item.price,
+            item_type: 'product'
+        });
+    });
+    var btn = $('#btn-confirm-payment');
+    btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span>');
+    $.ajax({
+        url: '{% url "pos:pos_sale_create" %}',
+        method: 'POST',
+        data: JSON.stringify({
+            items: items,
+            customer_id: $('#pos-customer').val() || '',
+            payment_method: $('#payment-method').val(),
+            paid_amount: paid,
+            discount: parseFloat($('#pos-discount').val()) || 0,
+            tax_percent: 0,
+            notes: $('#payment-notes').val()
+        }),
+        contentType: 'application/json',
+        headers: {'X-CSRFToken': $('#csrf-token').val(), 'X-Requested-With': 'XMLHttpRequest'},
+        success: function(resp) {
+            if (resp.success) {
+                var payModal = bootstrap.Modal.getInstance(document.getElementById('paymentModal'));
+                if (payModal) payModal.hide();
+                $('#receipt-sale-number').text('{% trans "فاتورة" %} #' + resp.sale_number);
+                $('#receipt-print-link').attr('href', resp.receipt_url);
+                var receiptModal = new bootstrap.Modal(document.getElementById('receiptModal'));
+                receiptModal.show();
+                cartItems = [];
+                renderCart();
+                $('#payment-notes').val('');
+            } else {
+                alert(resp.error || '{% trans "حدث خطأ" %}');
+            }
+        },
+        error: function() {
+            alert('{% trans "فشل الاتصال بالخادم" %}');
+        },
+        complete: function() {
+            btn.prop('disabled', false).html('<i class="bi bi-check-circle"></i> {% trans "تأكيد الدفع" %}');
+        }
+    });
+}
+
+function holdSale() {
+    if (cartItems.length === 0) { alert('{% trans "الفاتورة فارغة" %}'); return; }
+    alert('{% trans "تم تعليق الفاتورة (قيد التطوير)" %}');
+}
+
+function toggleCart() {
+    $('#pos-cart-panel').toggleClass('show');
+}
+
+$('#quick-customer-form').on('submit', function(e) {
+    e.preventDefault();
+    var name = $(this).find('[name="name"]').val();
+    var phone = $(this).find('[name="phone"]').val();
+    $.ajax({
+        url: '{% url "customers:customer_create" %}',
+        method: 'POST',
+        data: {contact_person: name, phone: phone, csrfmiddlewaretoken: $('#csrf-token').val()},
+        success: function() { location.reload(); },
+        error: function() { alert('{% trans "فشل إضافة العميل" %}'); }
+    });
+});
+
+$(document).ready(function() {
+    $('#pos-item-search').focus();
+});
+</script>
+{% endblock %}

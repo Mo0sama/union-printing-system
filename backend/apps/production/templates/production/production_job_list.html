@@ -1,0 +1,123 @@
+{% extends 'adminlte/base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">{{ title }}</h3>
+        <div class="card-tools">
+            <a href="{% url 'production:production_job_create' %}" class="btn btn-primary btn-sm">
+                <i class="fas fa-plus"></i> جديد
+            </a>
+        </div>
+    </div>
+    <div class="card-body">
+        <form method="get" class="row mb-3">
+            <div class="col-md-2">
+                <input type="text" name="q" class="form-control" placeholder="بحث..." value="{{ request.GET.q }}">
+            </div>
+            <div class="col-md-2">
+                <select name="department" class="form-control">
+                    <option value="">كل الأقسام</option>
+                    {% for dept in departments %}
+                    <option value="{{ dept.id }}" {% if request.GET.department == dept.id|stringformat:'s' %}selected{% endif %}>{{ dept.name_ar }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="status" class="form-control">
+                    <option value="">كل الحالات</option>
+                    <option value="pending" {% if request.GET.status == 'pending' %}selected{% endif %}>قيد الانتظار</option>
+                    <option value="in_progress" {% if request.GET.status == 'in_progress' %}selected{% endif %}>قيد التنفيذ</option>
+                    <option value="quality_check" {% if request.GET.status == 'quality_check' %}selected{% endif %}>فحص جودة</option>
+                    <option value="completed" {% if request.GET.status == 'completed' %}selected{% endif %}>مكتمل</option>
+                    <option value="rejected" {% if request.GET.status == 'rejected' %}selected{% endif %}>مرفوض</option>
+                    <option value="paused" {% if request.GET.status == 'paused' %}selected{% endif %}>متوقف</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="machine" class="form-control">
+                    <option value="">كل الماكينات</option>
+                    {% for m in machines %}
+                    <option value="{{ m.id }}" {% if request.GET.machine == m.id|stringformat:'s' %}selected{% endif %}>{{ m.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <input type="date" name="date_from" class="form-control" value="{{ request.GET.date_from }}">
+            </div>
+            <div class="col-md-2">
+                <input type="date" name="date_to" class="form-control" value="{{ request.GET.date_to }}">
+            </div>
+            <div class="col-md-12 mt-2">
+                <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-search"></i> بحث</button>
+                <a href="{% url 'production:production_job_list' %}" class="btn btn-secondary btn-sm">إعادة تعيين</a>
+            </div>
+        </form>
+
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>رقم الأمر</th>
+                        <th>الطلب</th>
+                        <th>القسم</th>
+                        <th>الماكينة</th>
+                        <th>مسند إلى</th>
+                        <th>الحالة</th>
+                        <th>الأولوية</th>
+                        <th>الكمية</th>
+                        <th>تاريخ الإنشاء</th>
+                        <th>إجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for job in jobs %}
+                    <tr>
+                        <td><a href="{% url 'production:production_job_detail' job.pk %}">{{ job.job_number }}</a></td>
+                        <td>{{ job.order.order_number }}</td>
+                        <td>{{ job.department.name_ar }}</td>
+                        <td>{{ job.machine.name|default:'-' }}</td>
+                        <td>{{ job.assigned_to|default:'-' }}</td>
+                        <td>
+                            <span class="badge
+                                {% if job.status == 'pending' %}badge-warning
+                                {% elif job.status == 'in_progress' %}badge-info
+                                {% elif job.status == 'quality_check' %}badge-primary
+                                {% elif job.status == 'completed' %}badge-success
+                                {% elif job.status == 'rejected' %}badge-danger
+                                {% elif job.status == 'paused' %}badge-secondary
+                                {% endif %}">
+                                {{ job.get_status_display }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if job.priority == 'urgent' %}
+                            <span class="badge badge-danger">{{ job.get_priority_display }}</span>
+                            {% elif job.priority == 'high' %}
+                            <span class="badge badge-warning">{{ job.get_priority_display }}</span>
+                            {% else %}
+                            <span class="badge badge-info">{{ job.get_priority_display }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ job.quantity }}</td>
+                        <td>{{ job.created_at|date:'Y-m-d' }}</td>
+                        <td>
+                            <a href="{% url 'production:production_job_edit' job.pk %}" class="btn btn-warning btn-sm" title="تعديل">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="10" class="text-center">لا توجد أوامر إنتاج</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

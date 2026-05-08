@@ -1,0 +1,115 @@
+{% extends 'adminlte/base.html' %}
+{% load static i18n core_tags humanize %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col">
+            <h1 class="h3">{{ title }}</h1>
+        </div>
+        <div class="col-auto">
+            <a href="{% url 'inventory:stock_movement_create' %}" class="btn btn-primary">
+                <i class="bi bi-plus-lg"></i> {% trans 'حركة جديدة' %}
+            </a>
+            <a href="{% url 'inventory:stock_adjustment' %}" class="btn btn-warning">
+                <i class="bi bi-sliders"></i> {% trans 'تسوية' %}
+            </a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <select name="material" class="form-control" onchange="this.form.submit()">
+                        <option value="">{% trans 'جميع الخامات' %}</option>
+                        {% if materials %}
+                        {% for material in materials %}
+                        <option value="{{ material.pk }}" {% if request.GET.material == material.pk|stringformat:'s' %}selected{% endif %}>{{ material.code }} - {{ material.name_ar|default:material.name }}</option>
+                        {% endfor %}
+                        {% endif %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select name="movement_type" class="form-control" onchange="this.form.submit()">
+                        <option value="">{% trans 'جميع الأنواع' %}</option>
+                        <option value="purchase_in" {% if request.GET.movement_type == 'purchase_in' %}selected{% endif %}>{% trans 'مشتريات (وارد)' %}</option>
+                        <option value="return_in" {% if request.GET.movement_type == 'return_in' %}selected{% endif %}>{% trans 'مرتجع (وارد)' %}</option>
+                        <option value="sale_out" {% if request.GET.movement_type == 'sale_out' %}selected{% endif %}>{% trans 'مبيعات (صادر)' %}</option>
+                        <option value="usage_out" {% if request.GET.movement_type == 'usage_out' %}selected{% endif %}>{% trans 'استخدام (صادر)' %}</option>
+                        <option value="damage_out" {% if request.GET.movement_type == 'damage_out' %}selected{% endif %}>{% trans 'تالف (صادر)' %}</option>
+                        <option value="transfer_out" {% if request.GET.movement_type == 'transfer_out' %}selected{% endif %}>{% trans 'تحويل (صادر)' %}</option>
+                        <option value="adjustment_out" {% if request.GET.movement_type == 'adjustment_out' %}selected{% endif %}>{% trans 'تسوية (صادر)' %}</option>
+                        <option value="adjustment_in" {% if request.GET.movement_type == 'adjustment_in' %}selected{% endif %}>{% trans 'تسوية (وارد)' %}</option>
+                        <option value="production_out" {% if request.GET.movement_type == 'production_out' %}selected{% endif %}>{% trans 'إنتاج (صادر)' %}</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <input type="date" name="date_from" class="form-control" value="{{ request.GET.date_from }}" placeholder="{% trans 'من تاريخ' %}" onchange="this.form.submit()">
+                </div>
+                <div class="col-md-2">
+                    <input type="date" name="date_to" class="form-control" value="{{ request.GET.date_to }}" placeholder="{% trans 'إلى تاريخ' %}" onchange="this.form.submit()">
+                </div>
+                <div class="col-md-2">
+                    <a href="{% url 'inventory:stock_movement_list' %}" class="btn btn-secondary w-100">
+                        <i class="bi bi-x-circle"></i> {% trans 'مسح' %}
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body table-responsive p-0">
+            <table class="table table-hover table-striped">
+                <thead>
+                    <tr>
+                        <th>{% trans 'التاريخ' %}</th>
+                        <th>{% trans 'الخامة' %}</th>
+                        <th>{% trans 'النوع' %}</th>
+                        <th>{% trans 'الكمية' %}</th>
+                        <th>{% trans 'الدفعة' %}</th>
+                        <th>{% trans 'المرجع' %}</th>
+                        <th>{% trans 'ملاحظات' %}</th>
+                        <th>{% trans 'بواسطة' %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for movement in movements %}
+                    <tr>
+                        <td>{{ movement.created_at|date:'Y-m-d H:i' }}</td>
+                        <td>
+                            <a href="{% url 'inventory:material_detail' movement.material.pk %}">{{ movement.material.code }} - {{ movement.material.name_ar|default:movement.material.name }}</a>
+                        </td>
+                        <td>
+                            <span class="badge {% if movement.quantity > 0 %}bg-success{% else %}bg-danger{% endif %}">
+                                {{ movement.get_movement_type_display }}
+                            </span>
+                        </td>
+                        <td class="{% if movement.quantity > 0 %}text-success{% else %}text-danger{% endif %} fw-bold">
+                            {{ movement.quantity }}
+                        </td>
+                        <td>{{ movement.batch.batch_number|default:'-' }}</td>
+                        <td>
+                            {% if movement.reference_type %}
+                            {{ movement.reference_type }} #{{ movement.reference_id }}
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                        <td>{{ movement.notes|default:'-'|truncatewords:5 }}</td>
+                        <td>{{ movement.created_by.get_full_name|default:movement.created_by.username }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center">{% trans 'لا توجد حركات مخزنية.' %}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

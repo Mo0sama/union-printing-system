@@ -1,0 +1,95 @@
+{% extends 'adminlte/base.html' %}
+{% load i18n %}
+
+{% block title %}{{ edit_user.get_full_name|default:edit_user.username }}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">
+            <i class="bi bi-person"></i> {{ edit_user.get_full_name|default:edit_user.username }}
+        </h3>
+        <div class="card-tools">
+            <a href="{% url 'accounts:user_edit' edit_user.pk %}" class="btn btn-warning btn-sm">
+                <i class="bi bi-pencil"></i> {% trans 'تعديل' %}
+            </a>
+            <a href="{% url 'accounts:user_list' %}" class="btn btn-secondary btn-sm">
+                <i class="bi bi-arrow-right"></i> {% trans 'العودة' %}
+            </a>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <strong>{% trans 'اسم المستخدم' %}:</strong>
+                <p>{{ edit_user.username }}</p>
+            </div>
+            <div class="col-md-3">
+                <strong>{% trans 'البريد الإلكتروني' %}:</strong>
+                <p>{{ edit_user.email|default:'-' }}</p>
+            </div>
+            <div class="col-md-3">
+                <strong>{% trans 'الدور' %}:</strong>
+                <p><span class="badge bg-info">{{ edit_user.get_role_display }}</span></p>
+            </div>
+            <div class="col-md-3">
+                <strong>{% trans 'الحالة' %}:</strong>
+                <p>
+                    {% if edit_user.is_active %}
+                        <span class="badge bg-success">{% trans 'نشط' %}</span>
+                    {% else %}
+                        <span class="badge bg-danger">{% trans 'غير نشط' %}</span>
+                    {% endif %}
+                </p>
+            </div>
+            <div class="col-md-3">
+                <strong>{% trans 'الهاتف' %}:</strong>
+                <p>{{ edit_user.phone|default:'-' }}</p>
+            </div>
+            <div class="col-md-3">
+                <strong>{% trans 'اللغة' %}:</strong>
+                <p>{{ edit_user.get_language_preference_display }}</p>
+            </div>
+            <div class="col-md-3">
+                <strong>{% trans 'تاريخ التسجيل' %}:</strong>
+                <p>{{ edit_user.date_joined|date:'Y-m-d H:i' }}</p>
+            </div>
+            <div class="col-md-3">
+                <strong>{% trans 'آخر دخول' %}:</strong>
+                <p>{{ edit_user.last_login|date:'Y-m-d H:i'|default:'-' }}</p>
+            </div>
+        </div>
+
+        <hr>
+        <h5 class="mb-3"><i class="bi bi-shield-lock"></i> {% trans 'الصلاحيات' %}</h5>
+
+        <div class="accordion" id="permAccordion">
+            {% for group_key, group in permission_groups.items %}
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#perm-{{ group_key }}">
+                        <strong>{{ group.label }}</strong>
+                        <span class="badge bg-secondary ms-2">{{ group.perms|length }}</span>
+                    </button>
+                </h2>
+                <div id="perm-{{ group_key }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}">
+                    <div class="accordion-body">
+                        <div class="row">
+                            {% for codename, perm_name in group.perms %}
+                            <div class="col-md-4 col-lg-3 mb-2">
+                                {% if codename in selected_perms %}
+                                    <span class="badge bg-success"><i class="bi bi-check-lg"></i> {{ perm_name }}</span>
+                                {% else %}
+                                    <span class="badge bg-light text-muted">{{ perm_name }}</span>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

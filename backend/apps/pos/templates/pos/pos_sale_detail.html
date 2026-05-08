@@ -1,0 +1,169 @@
+{% extends 'adminlte/base.html' %}
+{% load static i18n core_tags humanize %}
+{% block title %}{{ title }} - {{ block.super }}{% endblock %}
+{% block page_title %}<h5 class="mb-0 fw-bold">{{ title }}</h5>{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <span>{% trans 'معلومات الفاتورة' %}</span>
+                <div class="btn-group">
+                    <a href="{% url 'pos:pos_sale_list' %}" class="btn btn-sm btn-secondary">
+                        <i class="bi bi-arrow-right"></i> {% trans 'عودة' %}
+                    </a>
+                    <a href="{% url 'pos:pos_receipt' sale.pk %}" class="btn btn-sm btn-primary" target="_blank">
+                        <i class="bi bi-printer"></i> {% trans 'طباعة الإيصال' %}
+                    </a>
+                    {% if sale.status == 'completed' %}
+                    <a href="{% url 'pos:pos_sale_refund' sale.pk %}" class="btn btn-sm btn-warning confirm-delete" data-confirm="{% trans 'هل تريد استرجاع هذه الفاتورة؟' %}">
+                        <i class="bi bi-arrow-return-left"></i> {% trans 'استرجاع' %}
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card-body">
+                <table class="table table-bordered">
+                    <tr>
+                        <th class="w-25">{% trans 'رقم الفاتورة' %}</th>
+                        <td class="w-25">{{ sale.sale_number }}</td>
+                        <th class="w-25">{% trans 'التاريخ' %}</th>
+                        <td class="w-25">{{ sale.sale_date|date:'Y-m-d H:i' }}</td>
+                    </tr>
+                    <tr>
+                        <th>{% trans 'العميل' %}</th>
+                        <td>{{ sale.customer|default:'عميل نقدي' }}</td>
+                        <th>{% trans 'الجلسة' %}</th>
+                        <td>{{ sale.session.session_number }}</td>
+                    </tr>
+                    <tr>
+                        <th>{% trans 'طريقة الدفع' %}</th>
+                        <td>
+                            {% if sale.payment_method == 'cash' %}
+                            <span class="badge bg-success">{% trans 'نقدي' %}</span>
+                            {% elif sale.payment_method == 'card' %}
+                            <span class="badge bg-primary">{% trans 'بطاقة' %}</span>
+                            {% elif sale.payment_method == 'bank_transfer' %}
+                            <span class="badge bg-info">{% trans 'تحويل بنكي' %}</span>
+                            {% else %}
+                            {{ sale.get_payment_method_display }}
+                            {% endif %}
+                        </td>
+                        <th>{% trans 'الحالة' %}</th>
+                        <td>
+                            {% if sale.status == 'completed' %}
+                            <span class="badge-status badge-completed">{% trans 'مكتملة' %}</span>
+                            {% elif sale.status == 'refunded' %}
+                            <span class="badge-status badge-cancelled">{% trans 'مسترجعة' %}</span>
+                            {% elif sale.status == 'voided' %}
+                            <span class="badge-status badge-cancelled">{% trans 'ملغاة' %}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>{% trans 'تم بواسطة' %}</th>
+                        <td>{{ sale.created_by.get_full_name|default:sale.created_by.username }}</td>
+                        <th></th>
+                        <td></td>
+                    </tr>
+                </table>
+                {% if sale.notes %}
+                <div class="mt-2">
+                    <strong>{% trans 'ملاحظات' %}:</strong>
+                    <p class="mb-0 text-muted">{{ sale.notes|linebreaks }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span>{% trans 'بنود الفاتورة' %}</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-custom mb-0">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>{% trans 'الوصف' %}</th>
+                                <th>{% trans 'النوع' %}</th>
+                                <th>{% trans 'الكمية' %}</th>
+                                <th>{% trans 'سعر الوحدة' %}</th>
+                                <th>{% trans 'الإجمالي' %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in items %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ item.description }}</td>
+                                <td>{{ item.get_item_type_display }}</td>
+                                <td>{{ item.quantity }}</td>
+                                <td>{{ item.unit_price|currency }}</td>
+                                <td class="fw-bold">{{ item.total|currency }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <span>{% trans 'ملخص المبالغ' %}</span>
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr>
+                        <td>{% trans 'المجموع الفرعي' %}</td>
+                        <td class="text-start">{{ sale.subtotal|currency }}</td>
+                    </tr>
+                    {% if sale.discount %}
+                    <tr>
+                        <td>{% trans 'الخصم' %}</td>
+                        <td class="text-start text-danger">-{{ sale.discount|currency }}</td>
+                    </tr>
+                    {% endif %}
+                    {% if sale.tax %}
+                    <tr>
+                        <td>{% trans 'الضريبة' %}</td>
+                        <td class="text-start">{{ sale.tax|currency }}</td>
+                    </tr>
+                    {% endif %}
+                    <tr class="fw-bold fs-5">
+                        <td>{% trans 'الإجمالي' %}</td>
+                        <td class="text-start text-success">{{ sale.total|currency }}</td>
+                    </tr>
+                    <tr>
+                        <td>{% trans 'المدفوع' %}</td>
+                        <td class="text-start">{{ sale.paid_amount|currency }}</td>
+                    </tr>
+                    {% if sale.change_amount %}
+                    <tr>
+                        <td>{% trans 'الباقي' %}</td>
+                        <td class="text-start text-warning">{{ sale.change_amount|currency }}</td>
+                    </tr>
+                    {% endif %}
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span>{% trans 'معلومات إضافية' %}</span>
+            </div>
+            <div class="card-body">
+                <p><strong>{% trans 'الكاشير' %}:</strong> {{ sale.session.cashier }}</p>
+                <p><strong>{% trans 'تاريخ الإنشاء' %}:</strong> {{ sale.sale_date|date:'Y-m-d H:i' }}</p>
+                {% if sale.session.closed_at %}
+                <p><strong>{% trans 'تاريخ إغلاق الجلسة' %}:</strong> {{ sale.session.closed_at|date:'Y-m-d H:i' }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

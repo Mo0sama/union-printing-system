@@ -1,0 +1,91 @@
+{% extends 'adminlte/base.html' %}
+{% load static i18n core_tags humanize %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col">
+            <h1 class="h3">{{ title }}</h1>
+        </div>
+        <div class="col-auto">
+            <a href="{% url 'employees:advance_create' %}" class="btn btn-primary">
+                <i class="bi bi-plus-lg"></i> {% trans 'سلفة جديدة' %}
+            </a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <select name="employee" class="form-control">
+                        <option value="">{% trans 'جميع الموظفين' %}</option>
+                        {% for emp in employees %}
+                        <option value="{{ emp.pk }}" {% if employee_id == emp.pk|stringformat:'s' %}selected{% endif %}>{{ emp.full_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select name="repaid" class="form-control">
+                        <option value="">{% trans 'الكل' %}</option>
+                        <option value="false" {% if repaid_filter == 'false' %}selected{% endif %}>{% trans 'غير مسدد' %}</option>
+                        <option value="true" {% if repaid_filter == 'true' %}selected{% endif %}>{% trans 'مسدد' %}</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100"><i class="bi bi-search"></i> {% trans 'بحث' %}</button>
+                </div>
+                <div class="col-md-2">
+                    <a href="{% url 'employees:advance_list' %}" class="btn btn-secondary w-100"><i class="bi bi-x-circle"></i> {% trans 'مسح' %}</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-3">
+        <div class="col-md-4">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h6>{% trans 'إجمالي السلف' %}</h6>
+                    <h3>{{ total_advances|floatformat:2|intcomma }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>{% trans 'الموظف' %}</th>
+                            <th>{% trans 'المبلغ' %}</th>
+                            <th>{% trans 'التاريخ' %}</th>
+                            <th>{% trans 'السبب' %}</th>
+                            <th>{% trans 'مسدد' %}</th>
+                            <th>{% trans 'إجراءات' %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for advance in advances %}
+                        <tr>
+                            <td>{{ advance.employee.full_name }}</td>
+                            <td>{{ advance.amount|floatformat:2|intcomma }}</td>
+                            <td>{{ advance.date|date:'Y-m-d' }}</td>
+                            <td>{{ advance.reason|default:'---' }}</td>
+                            <td>{% if advance.repaid %}<span class="badge bg-success">{% trans 'نعم' %}</span>{% else %}<span class="badge bg-warning">{% trans 'لا' %}</span>{% endif %}</td>
+                            <td>---</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="6" class="text-center text-muted">{% trans 'لا توجد سلف.' %}</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

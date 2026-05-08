@@ -1,0 +1,93 @@
+{% load static i18n core_tags %}
+{% get_current_language as LANGUAGE_CODE %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}" dir="{% if LANGUAGE_CODE == 'ar' %}rtl{% else %}ltr{% endif %}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ company_settings.company_name }}{% endblock %}</title>
+    <link rel="icon" type="image/png" href="{% static 'images/favicon.png' %}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    {% if LANGUAGE_CODE == 'ar' %}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    {% endif %}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/union-style.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+    {% if user.is_authenticated %}
+    {% include 'adminlte/sidebar.html' %}
+    {% endif %}
+
+    <div class="{% if user.is_authenticated %}wrapper{% else %}login-page{% endif %}">
+
+        <div class="main-content">
+            {% if user.is_authenticated %}
+            <header class="main-header">
+                <div>
+                    <button class="btn btn-sm btn-outline-secondary d-md-none me-2" onclick="document.getElementById('sidebar').classList.toggle('show')">
+                        <i class="bi bi-list"></i>
+                    </button>
+                    {% block page_title %}{% endblock %}
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    <form action="{% url 'set_language' %}" method="post" class="m-0" id="lang-form">
+                        {% csrf_token %}
+                        <input name="next" type="hidden" value="{{ request.path }}">
+                        <button type="button" class="lang-toggle" onclick="toggleLanguage()">
+                            <i class="bi bi-globe2"></i>
+                            {% if LANGUAGE_CODE == 'ar' %}English{% else %}العربية{% endif %}
+                        </button>
+                    </form>
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                            <i class="bi bi-person-circle"></i> {{ user.get_full_name|default:user.username }}
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="{% url 'accounts:profile' %}"><i class="bi bi-person"></i> {% trans 'الملف الشخصي' %}</a></li>
+                            <li><a class="dropdown-item" href="{% url 'accounts:change_password' %}"><i class="bi bi-key"></i> {% trans 'تغيير كلمة المرور' %}</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="{% url 'logout' %}"><i class="bi bi-box-arrow-right"></i> {% trans 'تسجيل الخروج' %}</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </header>
+            {% endif %}
+
+            {% if messages %}
+            <div class="alert-container">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <main class="main-body">
+                {% block content %}{% endblock %}
+            </main>
+
+            <footer class="main-footer text-center">
+                &copy; {% now 'Y' %} {{ company_settings.company_name|default:'UNION FOR DIGITAL PRINTING' }} - {% trans 'جميع الحقوق محفوظة' %}
+            </footer>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="{% static 'js/union-script.js' %}"></script>
+    <script>
+    function toggleLanguage() {
+        var lang = '{{ LANGUAGE_CODE }}' === 'ar' ? 'en' : 'ar';
+        $('[name="language"]').remove();
+        $('#lang-form').append('<input type="hidden" name="language" value="' + lang + '">');
+        $('#lang-form').submit();
+    }
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

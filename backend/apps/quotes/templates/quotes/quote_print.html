@@ -1,0 +1,132 @@
+{% extends 'adminlte/base.html' %}
+{% load i18n %}
+{% load static %}
+
+{% block title %}{% trans 'طباعة عرض السعر' %}{% endblock %}
+
+{% block body_class %}sidebar-collapse{% endblock %}
+
+{% block content %}
+<div class="container" id="printArea">
+    <div class="row mb-4">
+        <div class="col text-center">
+            {% if company.logo %}
+            <img src="{{ company.logo.url }}" height="80" alt="{{ company.company_name }}">
+            {% endif %}
+            <h2>{{ company.company_name }}</h2>
+            <p>
+                {{ company.address|default:'' }}<br>
+                {{ company.phone|default:'' }} | {{ company.email|default:'' }}
+            </p>
+            <hr>
+            <h3>{% trans 'عرض سعر' %}</h3>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-6">
+            <table class="table table-sm table-bordered">
+                <tr>
+                    <th class="w-50">{% trans 'رقم عرض السعر' %}</th>
+                    <td>{{ quote.quote_number }}</td>
+                </tr>
+                <tr>
+                    <th>{% trans 'التاريخ' %}</th>
+                    <td>{{ quote.quote_date|date:'Y-m-d' }}</td>
+                </tr>
+                <tr>
+                    <th>{% trans 'صلاحية حتى' %}</th>
+                    <td>{{ quote.valid_until|date:'Y-m-d' }}</td>
+                </tr>
+            </table>
+        </div>
+        <div class="col-6">
+            <table class="table table-sm table-bordered">
+                <tr>
+                    <th class="w-50">{% trans 'العميل' %}</th>
+                    <td>{{ quote.customer }}</td>
+                </tr>
+                {% if quote.contact_person %}
+                <tr>
+                    <th>{% trans 'جهة الاتصال' %}</th>
+                    <td>{{ quote.contact_person }}</td>
+                </tr>
+                {% endif %}
+            </table>
+        </div>
+    </div>
+
+    <table class="table table-bordered table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>#</th>
+                <th>{% trans 'الوصف' %}</th>
+                <th>{% trans 'الكمية' %}</th>
+                <th>{% trans 'الوحدة' %}</th>
+                <th>{% trans 'سعر الوحدة' %}</th>
+                <th>{% trans 'الخصم %' %}</th>
+                <th>{% trans 'الإجمالي' %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in quote.items.all %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ item.description }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>{{ item.get_unit_display }}</td>
+                <td>{{ item.unit_price }}</td>
+                <td>{{ item.discount_percent|default:'-' }}</td>
+                <td class="text-start">{{ item.total }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="6" class="text-start fw-bold">{% trans 'المجموع الفرعي' %}</td>
+                <td class="text-start">{{ quote.subtotal }}</td>
+            </tr>
+            {% if quote.discount_type %}
+            <tr>
+                <td colspan="6" class="text-start">{% trans 'الخصم' %}</td>
+                <td class="text-start">-{{ quote.discount_value }}</td>
+            </tr>
+            {% endif %}
+            <tr>
+                <td colspan="6" class="text-start">{% trans 'الضريبة' %} ({{ quote.tax_percentage }}%)</td>
+                <td class="text-start">{{ quote.tax_amount }}</td>
+            </tr>
+            <tr class="fw-bold fs-5">
+                <td colspan="6" class="text-start">{% trans 'الإجمالي' %}</td>
+                <td class="text-start">{{ quote.total }}</td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <div class="row mt-4">
+        <div class="col-6">
+            {% if quote.notes %}
+            <h5>{% trans 'ملاحظات' %}</h5>
+            <p>{{ quote.notes|linebreaks }}</p>
+            {% endif %}
+        </div>
+        <div class="col-6">
+            {% if quote.terms_conditions %}
+            <h5>{% trans 'الشروط والأحكام' %}</h5>
+            <p>{{ quote.terms_conditions|linebreaks }}</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4 no-print">
+    <div class="col text-center">
+        <button onclick="window.print()" class="btn btn-primary">
+            <i class="fas fa-print"></i> {% trans 'طباعة' %}
+        </button>
+        <a href="{% url 'quotes:quote_detail' quote.pk %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-right"></i> {% trans 'عودة' %}
+        </a>
+    </div>
+</div>
+{% endblock %}

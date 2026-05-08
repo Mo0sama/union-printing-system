@@ -1,0 +1,123 @@
+{% extends 'adminlte/base.html' %}
+{% load static i18n core_tags humanize %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col">
+            <h1 class="h3">{{ title }}</h1>
+        </div>
+        <div class="col-auto">
+            <a href="{% url 'inventory:material_create' %}" class="btn btn-primary">
+                <i class="bi bi-plus-lg"></i> {% trans 'إضافة خامة' %}
+            </a>
+            {% if low_stock_count %}
+            <a href="{% url 'inventory:low_stock_report' %}" class="btn btn-warning">
+                <i class="bi bi-exclamation-triangle"></i> {% trans 'مخزون منخفض' %} ({{ low_stock_count }})
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <input type="text" name="q" class="form-control" placeholder="{% trans 'بحث بالكود أو الاسم...' %}" value="{{ request.GET.q }}">
+                        <button class="btn btn-outline-secondary" type="submit">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <select name="category" class="form-control" onchange="this.form.submit()">
+                        <option value="">{% trans 'جميع التصنيفات' %}</option>
+                        {% for cat in categories %}
+                        <option value="{{ cat.pk }}" {% if request.GET.category == cat.pk|stringformat:'s' %}selected{% endif %}>{{ cat.name_ar|default:cat.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <div class="form-check mt-2">
+                        <input type="checkbox" name="low_stock" value="1" class="form-check-input" id="lowStockFilter" {% if request.GET.low_stock %}checked{% endif %} onchange="this.form.submit()">
+                        <label class="form-check-label" for="lowStockFilter">{% trans 'مخزون منخفض فقط' %}</label>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <a href="{% url 'inventory:material_list' %}" class="btn btn-secondary w-100">
+                        <i class="bi bi-x-circle"></i> {% trans 'مسح' %}
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body table-responsive p-0">
+            <table class="table table-hover table-striped">
+                <thead>
+                    <tr>
+                        <th>{% trans 'الكود' %}</th>
+                        <th>{% trans 'الاسم (إنجليزي)' %}</th>
+                        <th>{% trans 'الاسم (عربي)' %}</th>
+                        <th>{% trans 'التصنيف' %}</th>
+                        <th>{% trans 'الوحدة' %}</th>
+                        <th>{% trans 'المخزون الحالي' %}</th>
+                        <th>{% trans 'الحد الأدنى' %}</th>
+                        <th>{% trans 'الموقع' %}</th>
+                        <th>{% trans 'إجراءات' %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for material in materials %}
+                    <tr class="{% if material.current_stock <= material.minimum_stock %}table-danger{% endif %}">
+                        <td>{{ material.code }}</td>
+                        <td>{{ material.name }}</td>
+                        <td>{{ material.name_ar }}</td>
+                        <td>{{ material.category.name_ar|default:material.category.name }}</td>
+                        <td>{{ material.get_unit_display }}</td>
+                        <td class="{% if material.current_stock <= material.minimum_stock %}text-danger fw-bold{% endif %}">
+                            {{ material.current_stock }}
+                        </td>
+                        <td>{{ material.minimum_stock }}</td>
+                        <td>{{ material.location|default:'-' }}</td>
+                        <td class="text-nowrap">
+                            <a href="{% url 'inventory:material_detail' material.pk %}" class="btn btn-info btn-sm" title="{% trans 'عرض' %}">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a href="{% url 'inventory:material_edit' material.pk %}" class="btn btn-warning btn-sm" title="{% trans 'تعديل' %}">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9" class="text-center">{% trans 'لا توجد خامات بعد.' %}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if materials.has_other_pages %}
+        <div class="card-footer clearfix">
+            <nav>
+                <ul class="pagination pagination-sm m-0 float-end">
+                    {% if materials.has_previous %}
+                    <li class="page-item"><a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page=1">&laquo;</a></li>
+                    <li class="page-item"><a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ materials.previous_page_number }}">{{ materials.previous_page_number }}</a></li>
+                    {% endif %}
+                    <li class="page-item active"><span class="page-link">{{ materials.number }}</span></li>
+                    {% if materials.has_next %}
+                    <li class="page-item"><a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ materials.next_page_number }}">{{ materials.next_page_number }}</a></li>
+                    <li class="page-item"><a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ materials.paginator.num_pages }}">&raquo;</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

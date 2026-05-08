@@ -1,0 +1,106 @@
+{% extends 'adminlte/base.html' %}
+{% load static i18n core_tags humanize %}
+
+{% block title %}{% trans "تقرير المخزون" %}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
+    <h1 class="h3"><i class="fas fa-warehouse ms-2"></i>{% trans "تقرير المخزون" %}</h1>
+    <div class="no-print">
+      <a href="{% url 'reports:export_report_excel' %}?type=inventory" class="btn btn-success btn-sm"><i class="fas fa-file-excel ms-1"></i>{% trans "تصدير Excel" %}</a>
+      <a href="{% url 'reports:print_report' %}?type=inventory" target="_blank" class="btn btn-info btn-sm"><i class="fas fa-print ms-1"></i>{% trans "طباعة" %}</a>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-12 col-md-3">
+      <div class="card text-white bg-primary shadow-sm">
+        <div class="card-body">
+          <h6 class="card-title">{% trans "إجمالي الأصناف" %}</h6>
+          <div class="stat-card h3 mb-0">{{ total_items|intcomma }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-md-3">
+      <div class="card text-white bg-success shadow-sm">
+        <div class="card-body">
+          <h6 class="card-title">{% trans "قيمة المخزون" %}</h6>
+          <div class="stat-card h3 mb-0">{{ total_value|floatformat:2|intcomma }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-md-3">
+      <div class="card text-white bg-warning shadow-sm">
+        <div class="card-body">
+          <h6 class="card-title">{% trans "منخفض المخزون" %}</h6>
+          <div class="stat-card h3 mb-0">{{ low_stock_count|intcomma }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-md-3">
+      <div class="card text-white bg-danger shadow-sm">
+        <div class="card-body">
+          <h6 class="card-title">{% trans "نفد من المخزون" %}</h6>
+          <div class="stat-card h3 mb-0">{{ out_of_stock_count|intcomma }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-12">
+      <div class="card shadow-sm">
+        <div class="card-header"><h5 class="mb-0">{% trans "المواد منخفضة المخزون" %}</h5></div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover table-striped mb-0">
+              <thead class="table-light"><tr><th>#</th><th>{% trans "المنتج" %}</th><th>{% trans "المخزون الحالي" %}</th><th>{% trans "الحد الأدنى" %}</th><th>{% trans "الكمية المطلوبة" %}</th></tr></thead>
+              <tbody>
+                {% for p in low_stock_products %}
+                <tr>
+                  <td>{{ forloop.counter }}</td>
+                  <td>{{ p.name }}</td>
+                  <td class="text-danger fw-bold">{{ p.current_stock|floatformat:0 }}</td>
+                  <td>{{ p.minimum_stock|floatformat:0 }}</td>
+                  <td>{{ p.minimum_stock|add:"0"|floatformat:0 }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="text-center text-muted">{% trans "لا توجد منتجات منخفضة المخزون" %}</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-12">
+      <div class="card shadow-sm">
+        <div class="card-header"><h5 class="mb-0">{% trans "آخر حركات المخزون" %}</h5></div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover mb-0">
+              <thead class="table-light"><tr><th>{% trans "التاريخ" %}</th><th>{% trans "المنتج" %}</th><th>{% trans "النوع" %}</th><th>{% trans "الكمية" %}</th></tr></thead>
+              <tbody>
+                {% for m in movements %}
+                <tr>
+                  <td>{{ m.created_at|date:"Y-m-d H:i" }}</td>
+                  <td>{{ m.material.name|default:m.material }}</td>
+                  <td>{{ m.get_movement_type_display|default:m.movement_type }}</td>
+                  <td>{{ m.quantity|floatformat:0 }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" class="text-center text-muted">{% trans "لا توجد حركات" %}</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

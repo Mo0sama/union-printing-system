@@ -1,0 +1,229 @@
+{% extends 'adminlte/base.html' %}
+{% load static i18n core_tags humanize %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col">
+            <h1 class="h3">{{ material.code }} - {{ material.name_ar|default:material.name }}</h1>
+            {% if material.current_stock <= material.minimum_stock %}
+            <span class="badge bg-danger fs-6 mt-2">
+                <i class="bi bi-exclamation-triangle"></i> {% trans 'مخزون منخفض' %} ({{ material.current_stock }} / {{ material.minimum_stock }})
+            </span>
+            {% endif %}
+        </div>
+        <div class="col-auto">
+            <a href="{% url 'inventory:material_list' %}" class="btn btn-secondary">
+                <i class="bi bi-arrow-right"></i> {% trans 'عودة' %}
+            </a>
+            <a href="{% url 'inventory:material_edit' material.pk %}" class="btn btn-warning">
+                <i class="bi bi-pencil"></i> {% trans 'تعديل' %}
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">{% trans 'معلومات الخامة' %}</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-bordered">
+                        <tr>
+                            <th class="w-25">{% trans 'الكود' %}</th>
+                            <td>{{ material.code }}</td>
+                        </tr>
+                        <tr>
+                            <th>{% trans 'الاسم (إنجليزي)' %}</th>
+                            <td>{{ material.name }}</td>
+                        </tr>
+                        <tr>
+                            <th>{% trans 'الاسم (عربي)' %}</th>
+                            <td>{{ material.name_ar }}</td>
+                        </tr>
+                        <tr>
+                            <th>{% trans 'التصنيف' %}</th>
+                            <td>{{ material.category.name_ar|default:material.category.name }}</td>
+                        </tr>
+                        <tr>
+                            <th>{% trans 'الوحدة' %}</th>
+                            <td>{{ material.get_unit_display }}</td>
+                        </tr>
+                        <tr>
+                            <th>{% trans 'الموقع' %}</th>
+                            <td>{{ material.location|default:'-' }}</td>
+                        </tr>
+                        <tr>
+                            <th>{% trans 'الوصف' %}</th>
+                            <td>{{ material.description|default:'-'|linebreaks }}</td>
+                        </tr>
+                        <tr>
+                            <th>{% trans 'الحالة' %}</th>
+                            <td>
+                                {% if material.is_active %}
+                                <span class="badge bg-success">{% trans 'نشط' %}</span>
+                                {% else %}
+                                <span class="badge bg-danger">{% trans 'غير نشط' %}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">{% trans 'معلومات الأسعار والمخزون' %}</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-bordered">
+                        <tr>
+                            <th class="w-25">{% trans 'سعر الشراء' %}</th>
+                            <td>{{ material.purchase_price|currency }}</td>
+                        </tr>
+                        <tr>
+                            <th>{% trans 'سعر البيع' %}</th>
+                            <td>{{ material.selling_price|default:'-'|currency }}</td>
+                        </tr>
+                        <tr>
+                            <th>{% trans 'المخزون الحالي' %}</th>
+                            <td class="{% if material.current_stock <= material.minimum_stock %}text-danger fw-bold{% else %}text-success fw-bold{% endif %}">
+                                {{ material.current_stock }} {{ material.get_unit_display }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>{% trans 'الحد الأدنى' %}</th>
+                            <td>{{ material.minimum_stock }} {{ material.get_unit_display }}</td>
+                        </tr>
+                        <tr>
+                            <th>{% trans 'قيمة المخزون' %}</th>
+                            <td>{{ material.current_stock|multiply:material.purchase_price|currency }}</td>
+                        </tr>
+                        <tr>
+                            <th>{% trans 'تاريخ الإنشاء' %}</th>
+                            <td>{{ material.created_at|date:'Y-m-d H:i' }}</td>
+                        </tr>
+                        <tr>
+                            <th>{% trans 'آخر تحديث' %}</th>
+                            <td>{{ material.updated_at|date:'Y-m-d H:i' }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <ul class="nav nav-tabs card-header-tabs" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" data-bs-toggle="tab" href="#batches">
+                        <i class="bi bi-boxes"></i> {% trans 'الدفعات' %} ({{ batches|length }})
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="tab" href="#movements">
+                        <i class="bi bi-arrow-left-right"></i> {% trans 'الحركات المخزنية' %}
+                    </a>
+                </li>
+            </ul>
+        </div>
+        <div class="card-body tab-content">
+            <div class="tab-pane fade show active" id="batches">
+                {% if batches %}
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover table-sm">
+                        <thead class="table-light">
+                            <tr>
+                                <th>{% trans 'رقم الدفعة' %}</th>
+                                <th>{% trans 'الكمية' %}</th>
+                                <th>{% trans 'المتبقي' %}</th>
+                                <th>{% trans 'سعر الوحدة' %}</th>
+                                <th>{% trans 'تاريخ الشراء' %}</th>
+                                <th>{% trans 'تاريخ الانتهاء' %}</th>
+                                <th>{% trans 'المورد' %}</th>
+                                <th>{% trans 'ملاحظات' %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for batch in batches %}
+                            <tr>
+                                <td>{{ batch.batch_number }}</td>
+                                <td>{{ batch.quantity }}</td>
+                                <td class="{% if batch.remaining_quantity == 0 %}text-muted{% endif %}">{{ batch.remaining_quantity }}</td>
+                                <td>{{ batch.unit_price|currency }}</td>
+                                <td>{{ batch.purchase_date|date:'Y-m-d' }}</td>
+                                <td>
+                                    {% if batch.expiry_date %}
+                                    <span class="{% if batch.expiry_date < today %}text-danger{% endif %}">{{ batch.expiry_date|date:'Y-m-d' }}</span>
+                                    {% else %}
+                                    -
+                                    {% endif %}
+                                </td>
+                                <td>{{ batch.supplier.company_name|default:'-' }}</td>
+                                <td>{{ batch.notes|default:'-'|truncatewords:5 }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted mb-0">{% trans 'لا توجد دفعات لهذه الخامة.' %}</p>
+                {% endif %}
+            </div>
+
+            <div class="tab-pane fade" id="movements">
+                {% if movements %}
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover table-sm">
+                        <thead class="table-light">
+                            <tr>
+                                <th>{% trans 'التاريخ' %}</th>
+                                <th>{% trans 'النوع' %}</th>
+                                <th>{% trans 'الكمية' %}</th>
+                                <th>{% trans 'المرجع' %}</th>
+                                <th>{% trans 'الدفعة' %}</th>
+                                <th>{% trans 'ملاحظات' %}</th>
+                                <th>{% trans 'بواسطة' %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for movement in movements %}
+                            <tr>
+                                <td>{{ movement.created_at|date:'Y-m-d H:i' }}</td>
+                                <td>
+                                    <span class="badge {% if movement.quantity > 0 %}bg-success{% else %}bg-danger{% endif %}">
+                                        {{ movement.get_movement_type_display }}
+                                    </span>
+                                </td>
+                                <td class="{% if movement.quantity > 0 %}text-success{% else %}text-danger{% endif %} fw-bold">
+                                    {{ movement.quantity }}
+                                </td>
+                                <td>
+                                    {% if movement.reference_type %}
+                                    {{ movement.reference_type }} #{{ movement.reference_id }}
+                                    {% else %}
+                                    -
+                                    {% endif %}
+                                </td>
+                                <td>{{ movement.batch.batch_number|default:'-' }}</td>
+                                <td>{{ movement.notes|default:'-'|truncatewords:5 }}</td>
+                                <td>{{ movement.created_by.get_full_name|default:movement.created_by.username }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted mb-0">{% trans 'لا توجد حركات مخزنية.' %}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

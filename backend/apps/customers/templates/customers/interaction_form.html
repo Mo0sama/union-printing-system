@@ -1,0 +1,36 @@
+{% extends 'adminlte/base.html' %}
+{% load i18n crispy_forms_tags %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">
+            <i class="bi bi-chat-dots"></i> {{ title }}
+        </h3>
+        <div class="card-tools">
+            <a href="{% url 'customers:customer_detail' customer.pk %}" class="btn btn-secondary btn-sm">
+                <i class="bi bi-arrow-right"></i> {% trans 'العودة' %}
+            </a>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="alert alert-info">
+            <strong>{% trans 'العميل' %}:</strong> {{ customer }}
+        </div>
+        <form method="post" novalidate>
+            {% csrf_token %}
+            {{ form|crispy }}
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-lg"></i> {% trans 'حفظ' %}
+                </button>
+                <a href="{% url 'customers:customer_detail' customer.pk %}" class="btn btn-secondary">
+                    <i class="bi bi-x-lg"></i> {% trans 'إلغاء' %}
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

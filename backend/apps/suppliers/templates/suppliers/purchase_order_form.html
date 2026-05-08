@@ -1,0 +1,265 @@
+{% extends 'adminlte/base.html' %}
+{% load static i18n core_tags humanize %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .formset-row { transition: background-color 0.2s; }
+    .formset-row:hover { background-color: #f8f9fa; }
+    .formset-row.deleted { display: none; }
+    .row-total { font-weight: 600; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col">
+            <h1 class="h3">{{ title }}</h1>
+        </div>
+    </div>
+
+    <form method="post" id="poForm">
+        {% csrf_token %}
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">{% trans 'معلومات أمر الشراء' %}</h3>
+                    </div>
+                    <div class="card-body">
+                        {% if form.non_field_errors %}
+                        <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+                        {% endif %}
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.supplier|as_crispy_field }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.expected_delivery|as_crispy_field }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                {{ form.status|as_crispy_field }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                {{ form.tax_percentage|as_crispy_field }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                {{ form.shipping_cost|as_crispy_field }}
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            {{ form.notes|as_crispy_field }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">{% trans 'الإجراءات' %}</h3>
+                    </div>
+                    <div class="card-body">
+                        <button type="submit" class="btn btn-success w-100 mb-2">
+                            <i class="bi bi-check-lg"></i> {% trans 'حفظ' %}
+                        </button>
+                        <a href="{% url 'suppliers:purchase_order_list' %}" class="btn btn-secondary w-100">
+                            <i class="bi bi-x-lg"></i> {% trans 'إلغاء' %}
+                        </a>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">{% trans 'ملخص المبالغ' %}</h3>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-sm">
+                            <tr>
+                                <td>{% trans 'المجموع الفرعي' %}</td>
+                                <td class="text-start" id="subtotal-display">0.00</td>
+                            </tr>
+                            <tr>
+                                <td>{% trans 'الضريبة' %}</td>
+                                <td class="text-start" id="tax-display">0.00</td>
+                            </tr>
+                            <tr>
+                                <td>{% trans 'الشحن' %}</td>
+                                <td class="text-start" id="shipping-display">0.00</td>
+                            </tr>
+                            <tr class="fw-bold fs-5">
+                                <td>{% trans 'الإجمالي' %}</td>
+                                <td class="text-start text-success" id="total-display">0.00</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header">
+                <h3 class="card-title">{% trans 'بنود أمر الشراء' %}</h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-success btn-sm" id="addItem">
+                        <i class="bi bi-plus-lg"></i> {% trans 'إضافة بند' %}
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="itemsTable">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>{% trans 'الخامة' %}</th>
+                                <th>{% trans 'الكمية' %}</th>
+                                <th>{% trans 'سعر الوحدة' %}</th>
+                                <th>{% trans 'الإجمالي' %}</th>
+                                <th>{% trans 'حذف' %}</th>
+                            </tr>
+                        </thead>
+                        <tbody id="itemsBody">
+                            {% for item in items %}
+                            <tr class="formset-row">
+                                <td class="row-counter">{{ forloop.counter }}</td>
+                                <td>
+                                    <select name="material[]" class="form-control material-select" required>
+                                        <option value="">{% trans '--- اختر ---' %}</option>
+                                        {% for mat in materials %}
+                                        <option value="{{ mat.pk }}" data-price="{{ mat.purchase_price }}" {% if item.material_id == mat.pk %}selected{% endif %}>
+                                            {{ mat.code }} - {{ mat.name_ar|default:mat.name }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </td>
+                                <td>
+                                    <input type="number" name="quantity[]" class="form-control qty-input" step="0.01" value="{{ item.quantity|default:'' }}" required>
+                                </td>
+                                <td>
+                                    <input type="number" name="unit_price[]" class="form-control price-input" step="0.01" value="{{ item.unit_price|default:'' }}" required>
+                                </td>
+                                <td class="row-total">{% if item.total %}{{ item.total }}{% else %}0.00{% endif %}</td>
+                                <td>
+                                    <button type="button" class="btn btn-danger btn-sm remove-item">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const itemsBody = document.getElementById('itemsBody');
+    const addBtn = document.getElementById('addItem');
+
+    function recalcRow(row) {
+        const qty = parseFloat(row.querySelector('.qty-input').value) || 0;
+        const price = parseFloat(row.querySelector('.price-input').value) || 0;
+        const total = qty * price;
+        row.querySelector('.row-total').textContent = total.toFixed(2);
+        recalcTotals();
+    }
+
+    function recalcTotals() {
+        let subtotal = 0;
+        document.querySelectorAll('.row-total').forEach(function(el) {
+            subtotal += parseFloat(el.textContent) || 0;
+        });
+        document.getElementById('subtotal-display').textContent = subtotal.toFixed(2);
+
+        const taxPct = parseFloat(document.getElementById('id_tax_percentage').value) || 0;
+        const shipping = parseFloat(document.getElementById('id_shipping_cost').value) || 0;
+        const taxAmt = subtotal * taxPct / 100;
+
+        document.getElementById('tax-display').textContent = taxAmt.toFixed(2);
+        document.getElementById('shipping-display').textContent = shipping.toFixed(2);
+        document.getElementById('total-display').textContent = (subtotal + taxAmt + shipping).toFixed(2);
+    }
+
+    function attachRowEvents(row) {
+        row.querySelectorAll('.qty-input, .price-input').forEach(function(el) {
+            el.addEventListener('input', function() { recalcRow(row); });
+            el.addEventListener('change', function() { recalcRow(row); });
+        });
+        row.querySelector('.material-select').addEventListener('change', function() {
+            const selected = this.options[this.selectedIndex];
+            const price = selected.getAttribute('data-price');
+            if (price) {
+                row.querySelector('.price-input').value = price;
+                recalcRow(row);
+            }
+        });
+        row.querySelector('.remove-item').addEventListener('click', function() {
+            if (document.querySelectorAll('.formset-row').length > 1) {
+                row.remove();
+                updateRowNumbers();
+                recalcTotals();
+            }
+        });
+        recalcRow(row);
+    }
+
+    function updateRowNumbers() {
+        document.querySelectorAll('.formset-row').forEach(function(row, idx) {
+            row.querySelector('.row-counter').textContent = idx + 1;
+        });
+    }
+
+    addBtn.addEventListener('click', function() {
+        const template = document.querySelector('.formset-row');
+        if (!template) {
+            const newRow = document.createElement('tr');
+            newRow.className = 'formset-row';
+            newRow.innerHTML = [
+                '<td class="row-counter">1</td>',
+                '<td><select name="material[]" class="form-control material-select" required>',
+                '<option value="">--- اختر ---</option>',
+                '{% for mat in materials %}',
+                '<option value="{{ mat.pk }}" data-price="{{ mat.purchase_price }}">{{ mat.code }} - {{ mat.name_ar|default:mat.name }}</option>',
+                '{% endfor %}',
+                '</select></td>',
+                '<td><input type="number" name="quantity[]" class="form-control qty-input" step="0.01" required></td>',
+                '<td><input type="number" name="unit_price[]" class="form-control price-input" step="0.01" required></td>',
+                '<td class="row-total">0.00</td>',
+                '<td><button type="button" class="btn btn-danger btn-sm remove-item"><i class="bi bi-trash"></i></button></td>'
+            ].join('');
+            itemsBody.appendChild(newRow);
+            attachRowEvents(newRow);
+            updateRowNumbers();
+        } else {
+            const clone = template.cloneNode(true);
+            clone.querySelectorAll('input').forEach(function(el) { el.value = ''; });
+            clone.querySelectorAll('select').forEach(function(el) { el.selectedIndex = 0; });
+            clone.querySelector('.row-total').textContent = '0.00';
+            itemsBody.appendChild(clone);
+            attachRowEvents(clone);
+            updateRowNumbers();
+        }
+    });
+
+    document.querySelectorAll('.formset-row').forEach(function(row) {
+        attachRowEvents(row);
+    });
+
+    document.querySelectorAll('#id_tax_percentage, #id_shipping_cost').forEach(function(el) {
+        el.addEventListener('change', recalcTotals);
+        el.addEventListener('input', recalcTotals);
+    });
+});
+</script>
+{% endblock %}

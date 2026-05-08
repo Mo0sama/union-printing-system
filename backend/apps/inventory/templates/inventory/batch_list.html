@@ -1,0 +1,96 @@
+{% extends 'adminlte/base.html' %}
+{% load static i18n core_tags humanize %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col">
+            <h1 class="h3">{{ title }}</h1>
+        </div>
+        <div class="col-auto">
+            <a href="{% url 'inventory:batch_create' %}" class="btn btn-primary">
+                <i class="bi bi-plus-lg"></i> {% trans 'إضافة دفعة' %}
+            </a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <input type="text" name="q" class="form-control" placeholder="{% trans 'بحث...' %}" value="{{ request.GET.q }}">
+                        <button class="btn btn-outline-secondary" type="submit">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <select name="material" class="form-control" onchange="this.form.submit()">
+                        <option value="">{% trans 'جميع الخامات' %}</option>
+                        {% if materials %}
+                        {% for material in materials %}
+                        <option value="{{ material.pk }}" {% if request.GET.material == material.pk|stringformat:'s' %}selected{% endif %}>{{ material.code }} - {{ material.name_ar|default:material.name }}</option>
+                        {% endfor %}
+                        {% endif %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <a href="{% url 'inventory:batch_list' %}" class="btn btn-secondary w-100">
+                        <i class="bi bi-x-circle"></i> {% trans 'مسح' %}
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body table-responsive p-0">
+            <table class="table table-hover table-striped">
+                <thead>
+                    <tr>
+                        <th>{% trans 'رقم الدفعة' %}</th>
+                        <th>{% trans 'الخامة' %}</th>
+                        <th>{% trans 'المورد' %}</th>
+                        <th>{% trans 'الكمية' %}</th>
+                        <th>{% trans 'المتبقي' %}</th>
+                        <th>{% trans 'سعر الوحدة' %}</th>
+                        <th>{% trans 'تاريخ الشراء' %}</th>
+                        <th>{% trans 'تاريخ الانتهاء' %}</th>
+                        <th>{% trans 'ملاحظات' %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for batch in batches %}
+                    <tr>
+                        <td>{{ batch.batch_number }}</td>
+                        <td>{{ batch.material.code }} - {{ batch.material.name_ar|default:batch.material.name }}</td>
+                        <td>{{ batch.supplier.company_name|default:'-' }}</td>
+                        <td>{{ batch.quantity }}</td>
+                        <td class="{% if batch.remaining_quantity <= 0 %}text-danger{% elif batch.remaining_quantity < batch.quantity %}text-warning{% endif %}">
+                            {{ batch.remaining_quantity }}
+                        </td>
+                        <td>{{ batch.unit_price|currency }}</td>
+                        <td>{{ batch.purchase_date|date:'Y-m-d' }}</td>
+                        <td>
+                            {% if batch.expiry_date %}
+                            <span class="{% if batch.expiry_date < today %}text-danger fw-bold{% endif %}">{{ batch.expiry_date|date:'Y-m-d' }}</span>
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                        <td>{{ batch.notes|default:'-'|truncatewords:5 }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9" class="text-center">{% trans 'لا توجد دفعات.' %}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

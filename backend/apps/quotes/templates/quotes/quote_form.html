@@ -1,0 +1,329 @@
+{% extends 'adminlte/base.html' %}
+{% load i18n %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block extra_head %}
+{{ form.media }}
+<style>
+    .formset-row { transition: background-color 0.2s; }
+    .formset-row:hover { background-color: #f8f9fa; }
+    .delete-row { color: #dc3545; cursor: pointer; }
+    .formset-row.deleted { display: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col">
+            <h1 class="h3">{{ title }}</h1>
+        </div>
+    </div>
+
+    <form method="post" id="quoteForm">
+        {% csrf_token %}
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">{% trans 'معلومات عرض السعر' %}</h3>
+                    </div>
+                    <div class="card-body">
+                        {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {{ form.non_field_errors }}
+                        </div>
+                        {% endif %}
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">{{ form.customer.label }}</label>
+                                <div class="input-group">
+                                    {{ form.customer }}
+                                    <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addCustomerModal">
+                                        <i class="bi bi-plus-lg"></i>
+                                    </button>
+                                </div>
+                                {{ form.customer.errors }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">{{ form.contact_person.label }}</label>
+                                {{ form.contact_person }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">{{ form.valid_until.label }}</label>
+                                {{ form.valid_until }}
+                                {{ form.valid_until.errors }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">{{ form.status.label }}</label>
+                                {{ form.status }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">{{ form.discount_type.label }}</label>
+                                {{ form.discount_type }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">{{ form.discount_value.label }}</label>
+                                {{ form.discount_value }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">{{ form.tax_percentage.label }}</label>
+                                {{ form.tax_percentage }}
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">{{ form.notes.label }}</label>
+                            {{ form.notes }}
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">{{ form.terms_conditions.label }}</label>
+                            {{ form.terms_conditions }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">{% trans 'إجراءات' %}</h3>
+                    </div>
+                    <div class="card-body">
+                        <button type="submit" class="btn btn-success w-100 mb-2">
+                            <i class="fas fa-save"></i> {% trans 'حفظ' %}
+                        </button>
+                        <a href="{% url 'quotes:quote_list' %}" class="btn btn-secondary w-100">
+                            <i class="fas fa-times"></i> {% trans 'إلغاء' %}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header">
+                <h3 class="card-title">{% trans 'البنود' %}</h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-success btn-sm" id="addItem">
+                        <i class="fas fa-plus"></i> {% trans 'إضافة بند' %}
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                {{ formset.management_form }}
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="itemsTable">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>{% trans 'الوصف' %}</th>
+                                <th>{% trans 'الكمية' %}</th>
+                                <th>{% trans 'الوحدة' %}</th>
+                                <th>{% trans 'سعر الوحدة' %}</th>
+                                <th>{% trans 'الخصم %' %}</th>
+                                <th>{% trans 'الإجمالي' %}</th>
+                                <th>{% trans 'ملاحظات' %}</th>
+                                <th>{% trans 'حذف' %}</th>
+                            </tr>
+                        </thead>
+                        <tbody id="itemsBody">
+                            {% for f in formset %}
+                            <tr class="formset-row">
+                                <td class="row-counter">{{ forloop.counter }}</td>
+                                <td>{{ f.id }}{{ f.description }}{{ f.description.errors }}</td>
+                                <td>{{ f.quantity }}{{ f.quantity.errors }}</td>
+                                <td>{{ f.unit }}</td>
+                                <td>{{ f.unit_price }}{{ f.unit_price.errors }}</td>
+                                <td>{{ f.discount_percent }}</td>
+                                <td class="row-total">0.00</td>
+                                <td>{{ f.notes }}</td>
+                                <td>
+                                    {% if f.DELETE %}
+                                    <div class="form-check d-none">
+                                        {{ f.DELETE }}
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-outline-danger delete-item" title="حذف">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr class="fw-bold">
+                                <td colspan="6" class="text-start">{% trans 'الإجمالي' %}</td>
+                                <td id="grandTotal">0.00</td>
+                                <td colspan="2"></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+<!-- Add Customer Modal -->
+<div class="modal fade" id="addCustomerModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{% trans 'إضافة عميل جديد' %}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">{% trans 'الاسم' %}</label>
+                    <input type="text" id="customer-name" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">{% trans 'رقم الهاتف' %}</label>
+                    <input type="text" id="customer-phone" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">{% trans 'الشركة' %}</label>
+                    <input type="text" id="customer-company" class="form-control">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans 'إلغاء' %}</button>
+                <button type="button" class="btn btn-primary" onclick="quickAddCustomer()">{% trans 'إضافة' %}</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+const emptyRow = `{% filter escapejs %}
+<tr class="formset-row">
+    <td class="row-counter">__prefix__</td>
+    <td>{{ formset.empty_form.description }}</td>
+    <td>{{ formset.empty_form.quantity }}</td>
+    <td>{{ formset.empty_form.unit }}</td>
+    <td>{{ formset.empty_form.unit_price }}</td>
+    <td>{{ formset.empty_form.discount_percent }}</td>
+    <td class="row-total">0.00</td>
+    <td>{{ formset.empty_form.notes }}</td>
+    <td>
+        <button type="button" class="btn btn-sm btn-outline-danger delete-item" title="حذف">
+            <i class="fas fa-times"></i>
+        </button>
+    </td>
+</tr>
+{% endfilter %}`;
+
+document.addEventListener('DOMContentLoaded', function() {
+    const totalForms = document.getElementById('id_items-TOTAL_FORMS');
+    const itemsBody = document.getElementById('itemsBody');
+    const addBtn = document.getElementById('addItem');
+
+    function recalcRow(row) {
+        const qty = parseFloat(row.querySelector('[name$="-quantity"]').value) || 0;
+        const price = parseFloat(row.querySelector('[name$="-unit_price"]').value) || 0;
+        const disc = parseFloat(row.querySelector('[name$="-discount_percent"]').value) || 0;
+        let total = qty * price;
+        if (disc) total -= total * (disc / 100);
+        row.querySelector('.row-total').textContent = total.toFixed(2);
+        recalcGrandTotal();
+    }
+
+    function recalcGrandTotal() {
+        let grand = 0;
+        document.querySelectorAll('.row-total').forEach(el => {
+            grand += parseFloat(el.textContent) || 0;
+        });
+        document.getElementById('grandTotal').textContent = grand.toFixed(2);
+    }
+
+    addBtn.addEventListener('click', function() {
+        const count = parseInt(totalForms.value);
+        const newRowHtml = emptyRow.replace(/__prefix__/g, count)
+            .replace(/__prefix__/g, count);
+        const temp = document.createElement('tbody');
+        temp.innerHTML = newRowHtml;
+        const row = temp.firstElementChild;
+        itemsBody.appendChild(row);
+        totalForms.value = count + 1;
+        row.querySelectorAll('input, select').forEach(el => {
+            el.addEventListener('input', () => recalcRow(row));
+            el.addEventListener('change', () => recalcRow(row));
+        });
+        updateRowNumbers();
+    });
+
+    function updateRowNumbers() {
+        document.querySelectorAll('.formset-row').forEach((row, idx) => {
+            row.querySelector('.row-counter').textContent = idx + 1;
+        });
+    }
+
+    document.querySelectorAll('.formset-row').forEach(row => {
+        row.querySelectorAll('input, select').forEach(el => {
+            el.addEventListener('input', () => recalcRow(row));
+            el.addEventListener('change', () => recalcRow(row));
+        });
+        recalcRow(row);
+    });
+
+    function handleDeleteRow(row) {
+        var deleteCheck = row.querySelector('[name$="-DELETE"]');
+        if (deleteCheck) {
+            deleteCheck.checked = true;
+            row.style.display = 'none';
+        } else {
+            row.remove();
+            totalForms.value = parseInt(totalForms.value) - 1;
+        }
+        updateRowNumbers();
+        recalcGrandTotal();
+    }
+
+    itemsBody.addEventListener('click', function(e) {
+        var btn = e.target.closest('.delete-item');
+        if (!btn) return;
+        var row = btn.closest('.formset-row');
+        if (row && confirm('هل تريد حذف هذا البند؟')) {
+            handleDeleteRow(row);
+        }
+    });
+
+    if (document.querySelectorAll('.formset-row').length === 0) {
+        addBtn.click();
+    }
+});
+
+function quickAddCustomer() {
+    var name = document.getElementById('customer-name').value;
+    var phone = document.getElementById('customer-phone').value;
+    var company = document.getElementById('customer-company').value;
+    if (!name || !phone) { alert('الاسم ورقم الهاتف مطلوبان'); return; }
+    fetch('{% url "customers:quick_add_customer" %}', {
+        method: 'POST',
+        headers: {'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value},
+        body: new URLSearchParams({contact_person: name, phone: phone, company_name: company})
+    }).then(function(r) { return r.json(); }).then(function(data) {
+        if (data.success) {
+            var sel = document.getElementById('id_customer');
+            var opt = document.createElement('option');
+            opt.value = data.id; opt.text = data.text; opt.selected = true;
+            sel.appendChild(opt);
+            bootstrap.Modal.getInstance(document.getElementById('addCustomerModal')).hide();
+            document.getElementById('customer-name').value = '';
+            document.getElementById('customer-phone').value = '';
+            document.getElementById('customer-company').value = '';
+        } else { alert(data.error); }
+    });
+}
+</script>
+{% endblock %}

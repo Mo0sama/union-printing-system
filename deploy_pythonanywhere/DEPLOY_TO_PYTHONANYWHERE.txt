@@ -1,0 +1,64 @@
+======================================================================
+DEPLOY TO PYTHONANYWHERE
+UNION FOR PRINTING SERVICES - Django System
+Username: mossama
+======================================================================
+
+PREREQUISITES:
+- PythonAnywhere account: https://www.pythonanywhere.com
+- Git & GitHub account (for easy updates)
+
+======================================================================
+METHOD 1: GIT (RECOMMENDED FOR EASY UPDATES)
+======================================================================
+
+LOCAL (run these commands):
+  1. cd C:\union-printing-system
+  2. git init
+  3. git add .
+  4. git commit -m "Initial commit"
+  5. Create a private repo on GitHub (e.g., union-printing-system)
+  6. git remote add origin https://github.com/YOUR_USER/union-printing-system.git
+  7. git push -u origin master
+
+ON PYTHONANYWHERE (Bash console):
+  1. git clone https://github.com/YOUR_USER/union-printing-system.git
+  2. cd ~/union-printing-system/backend
+  3. python3 -m venv venv
+  4. source venv/bin/activate
+  5. pip install -r requirements.txt
+  6. python manage.py migrate --settings=config.production_settings
+  7. python manage.py collectstatic --settings=config.production_settings
+
+Web App config:
+  - Source code: /home/mossama/union-printing-system/backend
+  - Working directory: /home/mossama/union-printing-system/backend
+  - Virtual env: /home/mossama/union-printing-system/backend/venv
+  - WSGI file: point to /home/mossama/union-printing-system/backend/config/wsgi_pa.py
+
+Future updates:
+  - Local: git add . && git commit -m "msg" && git push
+  - PA:     git pull && source venv/bin/activate && pip install -r requirements.txt
+            && python manage.py migrate && python manage.py collectstatic
+            && (reload web app from dashboard)
+
+======================================================================
+METHOD 2: ZIP UPLOAD
+======================================================================
+
+1. Clean locally (run in C:\union-printing-system):
+   Remove-Item -Recurse -Force backend/apps/*/migrations/__pycache__ -ErrorAction SilentlyContinue
+   Remove-Item -Recurse -Force venv, desktop, scripts, backend/media, backend/staticfiles -ErrorAction SilentlyContinue
+   Remove-Item -Recurse -Force .git -ErrorAction SilentlyContinue
+   Get-ChildItem -Path "backend" -Filter "__pycache__" -Directory -Recurse | Remove-Item -Recurse -Force
+
+2. Zip C:\union-printing-system folder
+
+3. Upload via PA Files page, then in Bash:
+   cd ~ && unzip union-printing-system.zip
+   cd ~/union-printing-system/backend
+   python3 -m venv venv && source venv/bin/activate && pip install -r requirements.txt
+   python manage.py migrate --settings=config.production_settings
+   python manage.py collectstatic --settings=config.production_settings
+
+4. Same web app config as above.

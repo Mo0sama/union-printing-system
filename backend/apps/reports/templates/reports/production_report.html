@@ -1,0 +1,74 @@
+{% extends 'adminlte/base.html' %}
+{% load static i18n core_tags humanize %}
+
+{% block title %}{% trans "تقرير الإنتاج" %}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
+    <h1 class="h3"><i class="fas fa-industry ms-2"></i>{% trans "تقرير الإنتاج" %}</h1>
+    <div class="no-print">
+      <a href="{% url 'reports:export_report_excel' %}?type=production" class="btn btn-success btn-sm"><i class="fas fa-file-excel ms-1"></i>{% trans "تصدير Excel" %}</a>
+      <a href="{% url 'reports:print_report' %}?type=production" target="_blank" class="btn btn-info btn-sm"><i class="fas fa-print ms-1"></i>{% trans "طباعة" %}</a>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-12 col-md-4">
+      <div class="card text-white bg-primary shadow-sm">
+        <div class="card-body">
+          <h6 class="card-title">{% trans "إجمالي الوظائف" %}</h6>
+          <div class="stat-card h3 mb-0">{{ total_jobs|intcomma }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-md-4">
+      <div class="card text-white bg-success shadow-sm">
+        <div class="card-body">
+          <h6 class="card-title">{% trans "الوظائف المكتملة" %}</h6>
+          <div class="stat-card h3 mb-0">{{ completed_count|intcomma }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-12">
+      <div class="card shadow-sm">
+        <div class="card-header"><h5 class="mb-0">{% trans "حالة الوظائف" %}</h5></div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover table-striped mb-0">
+              <thead class="table-light"><tr><th>{% trans "الحالة" %}</th><th>{% trans "العدد" %}</th><th>{% trans "النسبة" %}</th></tr></thead>
+              <tbody>
+                {% for s in status_counts %}
+                <tr>
+                  <td>{{ s.status|default:"---" }}</td>
+                  <td>{{ s.count }}</td>
+                  <td>{% widthratio s.count total_jobs 100 %}%</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="3" class="text-center text-muted">{% trans "لا توجد بيانات" %}</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-12">
+      <div class="card shadow-sm">
+        <div class="card-header"><h5 class="mb-0">{% trans "ملخص الإنتاج" %}</h5></div>
+        <div class="card-body">
+          <div class="d-flex justify-content-between mb-2 pb-2 border-bottom"><span>{% trans "إجمالي الوظائف" %}</span><strong>{{ total_jobs }}</strong></div>
+          <div class="d-flex justify-content-between mb-2 pb-2 border-bottom"><span>{% trans "الوظائف المكتملة" %}</span><strong>{{ completed_count }}</strong></div>
+          <div class="d-flex justify-content-between"><span>{% trans "نسبة الإنجاز" %}</span><strong>{% if total_jobs %}{% widthratio completed_count total_jobs 100 %}%{% else %}0%{% endif %}</strong></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

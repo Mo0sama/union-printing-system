@@ -1,0 +1,144 @@
+{% extends 'adminlte/base.html' %}
+{% load i18n %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col">
+            <h1 class="h3">{{ title }}</h1>
+        </div>
+        <div class="col-auto">
+            {% if perms.quotes.add_quote %}
+            <a href="{% url 'quotes:quote_create' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> {% trans 'عرض سعر جديد' %}
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">{% trans 'بحث وتصفية' %}</h3>
+            <div class="card-tools">
+                <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                    <i class="fas fa-minus"></i>
+                </button>
+            </div>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">{{ filter_form.search.label_tag }}{{ filter_form.search }}</div>
+                <div class="col-md-2">{{ filter_form.status.label_tag }}{{ filter_form.status }}</div>
+                <div class="col-md-2">{{ filter_form.customer.label_tag }}{{ filter_form.customer }}</div>
+                <div class="col-md-2">{{ filter_form.date_from.label_tag }}{{ filter_form.date_from }}</div>
+                <div class="col-md-2">{{ filter_form.date_to.label_tag }}{{ filter_form.date_to }}</div>
+                <div class="col-md-1 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body table-responsive p-0">
+            <table class="table table-hover table-striped">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>{% trans 'رقم عرض السعر' %}</th>
+                        <th>{% trans 'العميل' %}</th>
+                        <th>{% trans 'التاريخ' %}</th>
+                        <th>{% trans 'صلاحية حتى' %}</th>
+                        <th>{% trans 'الحالة' %}</th>
+                        <th>{% trans 'الإجمالي' %}</th>
+                        <th>{% trans 'تم بواسطة' %}</th>
+                        <th>{% trans 'إجراءات' %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for quote in page_obj %}
+                    <tr>
+                        <td>{{ forloop.counter0|add:page_obj.start_index }}</td>
+                        <td><a href="{% url 'quotes:quote_detail' quote.pk %}">{{ quote.quote_number }}</a></td>
+                        <td>{{ quote.customer }}</td>
+                        <td>{{ quote.quote_date|date:'Y-m-d' }}</td>
+                        <td>{{ quote.valid_until|date:'Y-m-d' }}</td>
+                        <td>
+                            {% if quote.status == 'draft' %}
+                                <span class="badge bg-secondary">{{ quote.get_status_display }}</span>
+                            {% elif quote.status == 'sent' %}
+                                <span class="badge bg-primary">{{ quote.get_status_display }}</span>
+                            {% elif quote.status == 'accepted' %}
+                                <span class="badge bg-success">{{ quote.get_status_display }}</span>
+                            {% elif quote.status == 'rejected' %}
+                                <span class="badge bg-danger">{{ quote.get_status_display }}</span>
+                            {% elif quote.status == 'expired' %}
+                                <span class="badge bg-warning">{{ quote.get_status_display }}</span>
+                            {% elif quote.status == 'converted' %}
+                                <span class="badge bg-info">{{ quote.get_status_display }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ quote.total }}</td>
+                        <td>{{ quote.created_by.get_full_name|default:quote.created_by.username }}</td>
+                        <td>
+                            <div class="btn-group">
+                                <a href="{% url 'quotes:quote_detail' quote.pk %}" class="btn btn-sm btn-info" title="{% trans 'عرض' %}">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                {% if perms.quotes.change_quote %}
+                                <a href="{% url 'quotes:quote_edit' quote.pk %}" class="btn btn-sm btn-warning" title="{% trans 'تعديل' %}">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                {% endif %}
+                                {% if perms.quotes.delete_quote %}
+                                <a href="{% url 'quotes:quote_delete' quote.pk %}" class="btn btn-sm btn-danger" title="{% trans 'حذف' %}">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                                {% endif %}
+                                <a href="{% url 'quotes:quote_print_pdf' quote.pk %}" class="btn btn-sm btn-secondary" target="_blank" title="{% trans 'طباعة' %}">
+                                    <i class="fas fa-print"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9" class="text-center">{% trans 'لا توجد عروض أسعار' %}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if page_obj.paginator.num_pages > 1 %}
+        <div class="card-footer clearfix">
+            <nav>
+                <ul class="pagination pagination-sm m-0 float-end">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page=1">&laquo;</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page_obj.previous_page_number }}">{{ page_obj.previous_page_number }}</a>
+                    </li>
+                    {% endif %}
+                    <li class="page-item active"><span class="page-link">{{ page_obj.number }}</span></li>
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page_obj.next_page_number }}">{{ page_obj.next_page_number }}</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page_obj.paginator.num_pages }}">&raquo;</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

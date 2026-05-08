@@ -1,0 +1,120 @@
+{% extends 'adminlte/base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">{{ title }}</h3>
+        <div class="card-tools">
+            <a href="{% url 'production:production_job_create' %}" class="btn btn-primary btn-sm">
+                <i class="fas fa-plus"></i> أمر إنتاج جديد
+            </a>
+        </div>
+    </div>
+    <div class="card-body">
+        <form method="get" class="row mb-3">
+            <div class="col-md-4">
+                <select name="department" class="form-control" onchange="this.form.submit()">
+                    <option value="">كل الأقسام</option>
+                    {% for dept in departments %}
+                    <option value="{{ dept.id }}" {% if selected_department == dept.id %}selected{% endif %}>{{ dept.name_ar }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </form>
+
+        <div class="row">
+            {% for status_key, status_label in status_groups.items %}
+            <div class="col-md-4 col-lg-2 mb-3">
+                <div class="card h-100">
+                    <div class="card-header text-center
+                        {% if status_key == 'pending' %}bg-warning
+                        {% elif status_key == 'in_progress' %}bg-info
+                        {% elif status_key == 'quality_check' %}bg-primary
+                        {% elif status_key == 'completed' %}bg-success
+                        {% elif status_key == 'rejected' %}bg-danger
+                        {% elif status_key == 'paused' %}bg-secondary
+                        {% endif %} text-white">
+                        <h6>{{ status_label.0.get_status_display }}</h6>
+                        <span class="badge badge-light">{{ status_label.1|length }}</span>
+                    </div>
+                    <div class="card-body p-2" style="min-height: 200px; max-height: 400px; overflow-y: auto;">
+                        {% for job in status_label.1 %}
+                        <div class="card mb-2 {% if job.priority == 'urgent' %}border-danger{% elif job.priority == 'high' %}border-warning{% endif %}">
+                            <div class="card-body p-2">
+                                <a href="{% url 'production:production_job_detail' job.pk %}" class="small font-weight-bold d-block">
+                                    {{ job.job_number }}
+                                </a>
+                                <small class="d-block text-muted">{{ job.order.order_number }}</small>
+                                <small class="d-block">{{ job.department.name_ar }}</small>
+                                {% if job.assigned_to %}
+                                <span class="badge badge-info badge-sm">{{ job.assigned_to }}</span>
+                                {% endif %}
+                                {% if job.priority == 'urgent' %}
+                                <span class="badge badge-danger badge-sm">عاجل</span>
+                                {% elif job.priority == 'high' %}
+                                <span class="badge badge-warning badge-sm">عالي</span>
+                                {% endif %}
+                                <small class="d-block mt-1">{{ job.quantity }} قطعة</small>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <p class="text-muted text-center small">لا يوجد</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+{% if total_jobs is not None %}
+<div class="row">
+    <div class="col-md-3">
+        <div class="info-box bg-info">
+            <div class="info-box-content">
+                <span class="info-box-text">إجمالي الوظائف</span>
+                <span class="info-box-number">{{ total_jobs }}</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="info-box bg-success">
+            <div class="info-box-content">
+                <span class="info-box-text">مكتمل</span>
+                <span class="info-box-number">{{ completed_count }}</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="info-box bg-danger">
+            <div class="info-box-content">
+                <span class="info-box-text">مرفوض</span>
+                <span class="info-box-number">{{ rejected_count }}</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="info-box bg-warning">
+            <div class="info-box-content">
+                <span class="info-box-text">معدل الإنجاز</span>
+                <span class="info-box-number">{{ completion_rate|floatformat:1 }}%</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(function() {
+    setInterval(function() {
+        location.reload();
+    }, 60000);
+});
+</script>
+{% endblock %}

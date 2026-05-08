@@ -1,0 +1,108 @@
+{% extends 'adminlte/base.html' %}
+{% load static i18n core_tags humanize %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col">
+            <h1 class="h3">{{ title }}</h1>
+        </div>
+        <div class="col-auto">
+            <a href="{% url 'suppliers:supplier_create' %}" class="btn btn-primary">
+                <i class="bi bi-plus-lg"></i> {% trans 'إضافة مورد' %}
+            </a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <input type="text" name="q" class="form-control" placeholder="{% trans 'بحث...' %}" value="{{ request.GET.q }}">
+                        <button class="btn btn-outline-secondary" type="submit">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <select name="supply_type" class="form-control" onchange="this.form.submit()">
+                        <option value="">{% trans 'جميع أنواع التوريد' %}</option>
+                        {% for type in supply_types %}
+                        <option value="{{ type }}" {% if request.GET.supply_type == type %}selected{% endif %}>{{ type }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <div class="form-check mt-2">
+                        <input type="checkbox" name="active_only" value="1" class="form-check-input" id="activeFilter" {% if request.GET.active_only %}checked{% endif %} onchange="this.form.submit()">
+                        <label class="form-check-label" for="activeFilter">{% trans 'النشطون فقط' %}</label>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <a href="{% url 'suppliers:supplier_list' %}" class="btn btn-secondary w-100">
+                        <i class="bi bi-x-circle"></i> {% trans 'مسح' %}
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body table-responsive p-0">
+            <table class="table table-hover table-striped">
+                <thead>
+                    <tr>
+                        <th>{% trans 'الكود' %}</th>
+                        <th>{% trans 'الشركة' %}</th>
+                        <th>{% trans 'الشخص المسؤول' %}</th>
+                        <th>{% trans 'الهاتف' %}</th>
+                        <th>{% trans 'نوع التوريد' %}</th>
+                        <th>{% trans 'الرصيد' %}</th>
+                        <th>{% trans 'الحالة' %}</th>
+                        <th>{% trans 'إجراءات' %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for supplier in suppliers %}
+                    <tr>
+                        <td>{{ supplier.code }}</td>
+                        <td>{{ supplier.company_name }}</td>
+                        <td>{{ supplier.contact_person }}</td>
+                        <td dir="ltr">{{ supplier.phone }}</td>
+                        <td>{{ supplier.supply_type|default:'-' }}</td>
+                        <td class="{% if supplier.current_balance > 0 %}text-success{% elif supplier.current_balance < 0 %}text-danger{% endif %}">
+                            {{ supplier.current_balance|currency }}
+                        </td>
+                        <td>
+                            {% if supplier.is_active %}
+                            <span class="badge bg-success">{% trans 'نشط' %}</span>
+                            {% else %}
+                            <span class="badge bg-danger">{% trans 'غير نشط' %}</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-nowrap">
+                            <a href="{% url 'suppliers:supplier_detail' supplier.pk %}" class="btn btn-info btn-sm" title="{% trans 'عرض' %}">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a href="{% url 'suppliers:supplier_edit' supplier.pk %}" class="btn btn-warning btn-sm" title="{% trans 'تعديل' %}">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a href="{% url 'suppliers:supplier_delete' supplier.pk %}" class="btn btn-danger btn-sm" title="{% trans 'حذف' %}">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center">{% trans 'لا يوجد موردين بعد.' %}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

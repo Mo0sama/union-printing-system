@@ -1,0 +1,91 @@
+{% extends 'adminlte/base.html' %}
+{% load static i18n %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-md-4">
+      <div class="card card-primary card-outline">
+        <div class="card-body box-profile">
+          <div class="text-center mb-3">
+            {% if employee.photo %}
+            <img src="{{ employee.photo.url }}" class="profile-user-img img-fluid img-circle" alt="صورة">
+            {% else %}
+            <div class="profile-user-img img-fluid img-circle d-flex align-items-center justify-content-center bg-secondary text-white" style="width:100px;height:100px;margin:auto;font-size:40px;">
+              <i class="fas fa-user"></i>
+            </div>
+            {% endif %}
+          </div>
+          <h3 class="profile-username text-center">{{ employee.full_name }}</h3>
+          <p class="text-muted text-center">{{ employee.get_department_display }} - {{ employee.position }}</p>
+          <ul class="list-group list-group-unbordered mb-3">
+            <li class="list-group-item"><b>الكود</b> <span class="float-end">{{ employee.employee_code }}</span></li>
+            <li class="list-group-item"><b>الهاتف</b> <span class="float-end">{{ employee.phone }}</span></li>
+            <li class="list-group-item"><b>البريد</b> <span class="float-end">{{ employee.email|default:'---' }}</span></li>
+            <li class="list-group-item"><b>تاريخ التعيين</b> <span class="float-end">{{ employee.hire_date }}</span></li>
+            <li class="list-group-item"><b>نوع الراتب</b> <span class="float-end">{{ employee.get_salary_type_display }}</span></li>
+            <li class="list-group-item"><b>الراتب الأساسي</b> <span class="float-end">{{ employee.base_salary }}</span></li>
+            <li class="list-group-item"><b>الحالة</b> <span class="float-end">{% if employee.is_active %}<span class="badge bg-success">نشط</span>{% else %}<span class="badge bg-danger">غير نشط</span>{% endif %}</span></li>
+          </ul>
+          <a href="{% url 'employees:employee_edit' employee.pk %}" class="btn btn-warning btn-block"><i class="fas fa-edit"></i> تعديل</a>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-8">
+      <div class="card">
+        <div class="card-header p-2">
+          <ul class="nav nav-pills">
+            <li class="nav-item"><a class="nav-link active" href="#attendance" data-bs-toggle="tab">الحضور</a></li>
+            <li class="nav-item"><a class="nav-link" href="#leaves" data-bs-toggle="tab">الإجازات</a></li>
+            <li class="nav-item"><a class="nav-link" href="#salaries" data-bs-toggle="tab">الرواتب</a></li>
+            <li class="nav-item"><a class="nav-link" href="#advances" data-bs-toggle="tab">السلف</a></li>
+          </ul>
+        </div>
+        <div class="card-body">
+          <div class="tab-content">
+            <div class="tab-pane active" id="attendance">
+              <table class="table table-sm">
+                <thead><tr><th>التاريخ</th><th>الحضور</th><th>الانصراف</th><th>الحالة</th></tr></thead>
+                <tbody>{% for a in attendances %}<tr><td>{{ a.date }}</td><td>{{ a.check_in|time:'H:i' }}</td><td>{{ a.check_out|time:'H:i'|default:'---' }}</td><td>{{ a.get_status_display }}</td></tr>{% empty %}<tr><td colspan="4" class="text-center">لا توجد سجلات</td></tr>{% endfor %}</tbody>
+              </table>
+            </div>
+            <div class="tab-pane" id="leaves">
+              <table class="table table-sm">
+                <thead><tr><th>النوع</th><th>من</th><th>إلى</th><th>الأيام</th><th>الحالة</th></tr></thead>
+                <tbody>{% for l in leaves %}<tr><td>{{ l.get_leave_type_display }}</td><td>{{ l.start_date }}</td><td>{{ l.end_date }}</td><td>{{ l.days_count }}</td><td>{{ l.get_status_display }}</td></tr>{% empty %}<tr><td colspan="5" class="text-center">لا توجد إجازات</td></tr>{% endfor %}</tbody>
+              </table>
+            </div>
+            <div class="tab-pane" id="salaries">
+              <table class="table table-sm">
+                <thead><tr><th>الشهر</th><th>الأساسي</th><th>المكافآت</th><th>الخصومات</th><th>الصافي</th><th>مدفوع</th></tr></thead>
+                <tbody>{% for s in salaries %}<tr><td>{{ s.month }}</td><td>{{ s.base_salary }}</td><td>{{ s.bonuses }}</td><td>{{ s.deductions }}</td><td>{{ s.net_salary }}</td><td>{% if s.paid %}<span class="badge bg-success">نعم</span>{% else %}<span class="badge bg-warning">لا</span>{% endif %}</td></tr>{% empty %}<tr><td colspan="6" class="text-center">لا توجد رواتب</td></tr>{% endfor %}</tbody>
+              </table>
+            </div>
+            <div class="tab-pane" id="advances">
+              <table class="table table-sm">
+                <thead><tr><th>التاريخ</th><th>المبلغ</th><th>السبب</th><th>مسددة</th></tr></thead>
+                <tbody>{% for a in advances %}<tr><td>{{ a.date }}</td><td>{{ a.amount }}</td><td>{{ a.reason|default:'---' }}</td><td>{% if a.repaid %}<span class="badge bg-success">نعم</span>{% else %}<span class="badge bg-danger">لا</span>{% endif %}</td></tr>{% empty %}<tr><td colspan="4" class="text-center">لا توجد سلف</td></tr>{% endfor %}</tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><h5>معلومات إضافية</h5></div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6"><strong>الاسم بالعربية:</strong> {{ employee.full_name_ar|default:'---' }}</div>
+            <div class="col-md-6"><strong>رقم الهوية:</strong> {{ employee.id_number|default:'---' }}</div>
+            <div class="col-md-6"><strong>جهة اتصال طارئة:</strong> {{ employee.emergency_contact|default:'---' }}</div>
+            <div class="col-md-6"><strong>هاتف الطوارئ:</strong> {{ employee.emergency_phone|default:'---' }}</div>
+            <div class="col-md-6"><strong>الحساب البنكي:</strong> {{ employee.bank_account|default:'---' }}</div>
+            <div class="col-md-6"><strong>نسبة العمولة:</strong> {{ employee.commission_percentage }}%</div>
+            <div class="col-12"><strong>العنوان:</strong> {{ employee.address|default:'---'|linebreaks }}</div>
+            <div class="col-12"><strong>ملاحظات:</strong> {{ employee.notes|default:'---'|linebreaks }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

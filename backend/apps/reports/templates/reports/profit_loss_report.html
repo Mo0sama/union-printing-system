@@ -1,0 +1,99 @@
+{% extends 'adminlte/base.html' %}
+{% load static i18n core_tags humanize %}
+
+{% block title %}{% trans "تقرير الأرباح والخسائر" %}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
+    <h1 class="h3"><i class="fas fa-chart-line ms-2"></i>{% trans "تقرير الأرباح والخسائر" %}</h1>
+    <div class="no-print">
+      <a href="{% url 'reports:export_report_excel' %}?type=profit_loss" class="btn btn-success btn-sm"><i class="fas fa-file-excel ms-1"></i>{% trans "تصدير Excel" %}</a>
+      <a href="{% url 'reports:print_report' %}?type=profit_loss" target="_blank" class="btn btn-info btn-sm"><i class="fas fa-print ms-1"></i>{% trans "طباعة" %}</a>
+    </div>
+  </div>
+
+  <div class="card shadow-sm mb-4 no-print">
+    <div class="card-body">
+      <form method="get" class="row g-3 align-items-end">
+        <div class="col-md-4">{{ form.start_date.label_tag }}{{ form.start_date }}</div>
+        <div class="col-md-4">{{ form.end_date.label_tag }}{{ form.end_date }}</div>
+        <div class="col-md-4"><button type="submit" class="btn btn-primary w-100"><i class="fas fa-search ms-1"></i>{% trans "بحث" %}</button></div>
+      </form>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-12 col-md-4">
+      <div class="card text-white bg-success shadow-sm">
+        <div class="card-body">
+          <h6 class="card-title">{% trans "إجمالي الإيرادات" %}</h6>
+          <div class="stat-card h3 mb-0">{{ total_income|floatformat:2|intcomma }} {% trans "ج.م" %}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-md-4">
+      <div class="card text-white bg-danger shadow-sm">
+        <div class="card-body">
+          <h6 class="card-title">{% trans "إجمالي المصروفات" %}</h6>
+          <div class="stat-card h3 mb-0">{{ total_expenses|floatformat:2|intcomma }} {% trans "ج.م" %}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-md-4">
+      <div class="card text-white {% if net_profit >= 0 %}bg-primary{% else %}bg-warning{% endif %} shadow-sm">
+        <div class="card-body">
+          <h6 class="card-title">{% trans "صافي الربح / الخسارة" %}</h6>
+          <div class="stat-card h3 mb-0">{{ net_profit|floatformat:2|intcomma }} {% trans "ج.م" %}</div>
+          <small>{% trans "هامش الربح" %}: {{ profit_margin|floatformat:1 }}%</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-12 col-md-6">
+      <div class="card shadow-sm h-100">
+        <div class="card-header bg-success text-white"><h5 class="mb-0">{% trans "الإيرادات" %}</h5></div>
+        <div class="card-body p-0">
+          <table class="table table-hover mb-0">
+            <thead class="table-light"><tr><th>{% trans "البيان" %}</th><th>{% trans "المبلغ" %}</th></tr></thead>
+            <tbody>
+              <tr><td>{% trans "إجمالي المبيعات" %}</td><td>{{ total_income|floatformat:2|intcomma }}</td></tr>
+              <tr class="table-success fw-bold"><td>{% trans "إجمالي الإيرادات" %}</td><td>{{ total_income|floatformat:2|intcomma }}</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-md-6">
+      <div class="card shadow-sm h-100">
+        <div class="card-header bg-danger text-white"><h5 class="mb-0">{% trans "المصروفات" %}</h5></div>
+        <div class="card-body p-0">
+          <table class="table table-hover mb-0">
+            <thead class="table-light"><tr><th>{% trans "البيان" %}</th><th>{% trans "المبلغ" %}</th></tr></thead>
+            <tbody>
+              <tr><td>{% trans "الرواتب" %}</td><td>{{ total_expenses|floatformat:2|intcomma }}</td></tr>
+              <tr class="table-danger fw-bold"><td>{% trans "إجمالي المصروفات" %}</td><td>{{ total_expenses|floatformat:2|intcomma }}</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card shadow-sm">
+    <div class="card-header {% if net_profit >= 0 %}bg-primary{% else %}bg-warning{% endif %} text-white"><h5 class="mb-0">{% trans "ملخص الأرباح والخسائر" %}</h5></div>
+    <div class="card-body">
+      <table class="table table-bordered mb-0">
+        <tbody>
+          <tr class="table-success"><td><strong>{% trans "إجمالي الإيرادات" %}</strong></td><td class="text-start"><strong>{{ total_income|floatformat:2|intcomma }} {% trans "ج.م" %}</strong></td></tr>
+          <tr class="table-danger"><td><strong>{% trans "إجمالي المصروفات" %}</strong></td><td class="text-start"><strong>({{ total_expenses|floatformat:2|intcomma }}) {% trans "ج.م" %}</strong></td></tr>
+          <tr class="{% if net_profit >= 0 %}table-primary{% else %}table-warning{% endif %}"><td><strong>{% trans "صافي الربح / الخسارة" %}</strong></td><td class="text-start"><strong>{{ net_profit|floatformat:2|intcomma }} {% trans "ج.م" %}</strong></td></tr>
+          <tr><td><strong>{% trans "هامش الربح" %}</strong></td><td class="text-start"><strong>{{ profit_margin|floatformat:1 }}%</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

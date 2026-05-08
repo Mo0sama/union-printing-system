@@ -1,0 +1,113 @@
+{% extends 'adminlte/base.html' %}
+{% load static i18n core_tags humanize %}
+
+{% block title %}{% trans "تقرير الموظفين" %}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
+    <h1 class="h3"><i class="fas fa-user-tie ms-2"></i>{% trans "تقرير الموظفين" %}</h1>
+    <div class="no-print">
+      <a href="{% url 'reports:export_report_excel' %}?type=employees" class="btn btn-success btn-sm"><i class="fas fa-file-excel ms-1"></i>{% trans "تصدير Excel" %}</a>
+      <a href="{% url 'reports:print_report' %}?type=employees" target="_blank" class="btn btn-info btn-sm"><i class="fas fa-print ms-1"></i>{% trans "طباعة" %}</a>
+    </div>
+  </div>
+
+  <div class="card shadow-sm mb-4 no-print">
+    <div class="card-body">
+      <form method="get" class="row g-3 align-items-end">
+        <div class="col-md-4">
+          <label class="form-label">{% trans "القسم" %}</label>
+          <select name="department" class="form-control">
+            <option value="">{% trans "--- الكل ---" %}</option>
+            {% for d, dname in departments %}<option value="{{ d }}" {% if department == d %}selected{% endif %}>{{ dname }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="col-md-4"><button type="submit" class="btn btn-primary w-100"><i class="fas fa-search ms-1"></i>{% trans "بحث" %}</button></div>
+      </form>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-12 col-md-3">
+      <div class="card text-white bg-primary shadow-sm">
+        <div class="card-body">
+          <h6 class="card-title">{% trans "إجمالي الموظفين" %}</h6>
+          <div class="stat-card h3 mb-0">{{ total_employees|intcomma }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-md-3">
+      <div class="card text-white bg-success shadow-sm">
+        <div class="card-body">
+          <h6 class="card-title">{% trans "الموظفون النشطون" %}</h6>
+          <div class="stat-card h3 mb-0">{{ active_employees|intcomma }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-md-3">
+      <div class="card text-white bg-info shadow-sm">
+        <div class="card-body">
+          <h6 class="card-title">{% trans "تكلفة الرواتب" %}</h6>
+          <div class="stat-card h3 mb-0">{{ salary_cost|floatformat:2|intcomma }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-12">
+      <div class="card shadow-sm">
+        <div class="card-header"><h5 class="mb-0">{% trans "إحصائيات حسب القسم" %}</h5></div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover table-striped mb-0">
+              <thead class="table-light"><tr><th>{% trans "القسم" %}</th><th>{% trans "عدد الموظفين" %}</th><th>{% trans "إجمالي الرواتب" %}</th></tr></thead>
+              <tbody>
+                {% for d in dept_stats %}
+                <tr>
+                  <td>{{ d.department|default:"---" }}</td>
+                  <td>{{ d.count }}</td>
+                  <td>{{ d.total_salary|floatformat:2|intcomma }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="3" class="text-center text-muted">{% trans "لا توجد بيانات" %}</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-12">
+      <div class="card shadow-sm">
+        <div class="card-header"><h5 class="mb-0">{% trans "قائمة الموظفين" %}</h5></div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover mb-0">
+              <thead class="table-light"><tr><th>#</th><th>{% trans "الاسم" %}</th><th>{% trans "الكود" %}</th><th>{% trans "القسم" %}</th><th>{% trans "الراتب الأساسي" %}</th><th>{% trans "الحالة" %}</th></tr></thead>
+              <tbody>
+                {% for e in employees %}
+                <tr>
+                  <td>{{ forloop.counter }}</td>
+                  <td>{{ e.full_name|default:e.name }}</td>
+                  <td>{{ e.employee_code }}</td>
+                  <td>{{ e.get_department_display|default:e.department }}</td>
+                  <td>{{ e.base_salary|floatformat:2|intcomma }}</td>
+                  <td>{% if e.is_active %}<span class="badge bg-success">{% trans "نشط" %}</span>{% else %}<span class="badge bg-secondary">{% trans "غير نشط" %}</span>{% endif %}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="text-center text-muted">{% trans "لا توجد بيانات" %}</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

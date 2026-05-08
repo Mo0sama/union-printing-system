@@ -1,0 +1,151 @@
+{% load static i18n core_tags humanize %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}" dir="{% if LANGUAGE_CODE == 'ar' %}rtl{% else %}ltr{% endif %}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% trans 'إيصال' %} - {{ sale.sale_number }}</title>
+    <style>
+        @page { size: 80mm auto; margin: 0; }
+        body {
+            font-family: 'Courier New', 'Cairo', monospace;
+            font-size: 12px;
+            width: 72mm;
+            margin: 0 auto;
+            padding: 5mm 4mm;
+            direction: {{ LANGUAGE_CODE|default:'rtl' }};
+        }
+        .header { text-align: center; margin-bottom: 8px; }
+        .header h2 { margin: 0; font-size: 16px; font-weight: 800; }
+        .header p { margin: 2px 0; font-size: 11px; color: #555; }
+        .divider { border-top: 1px dashed #000; margin: 8px 0; }
+        .sale-info { font-size: 11px; margin-bottom: 8px; }
+        .sale-info table { width: 100%; }
+        .sale-info td { padding: 1px 0; }
+        .items-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+        .items-table th { border-bottom: 1px solid #000; padding: 4px 2px; text-align: center; font-weight: 700; }
+        .items-table td { padding: 3px 2px; border-bottom: 1px dotted #ccc; }
+        .items-table .desc { text-align: right; }
+        .items-table .qty { text-align: center; }
+        .items-table .price { text-align: center; }
+        .items-table .total { text-align: left; }
+        [dir="ltr"] .items-table .desc { text-align: left; }
+        [dir="ltr"] .items-table .total { text-align: right; }
+        .totals { width: 100%; font-size: 12px; margin-top: 6px; }
+        .totals td { padding: 2px 0; }
+        .totals .label { text-align: right; }
+        .totals .value { text-align: left; }
+        [dir="ltr"] .totals .label { text-align: left; }
+        [dir="ltr"] .totals .value { text-align: right; }
+        .grand-total { font-size: 16px; font-weight: 800; }
+        .payment-info { font-size: 11px; margin-top: 6px; }
+        .footer { text-align: center; margin-top: 10px; font-size: 11px; }
+        .footer .thank-you { font-size: 13px; font-weight: 700; }
+        @media print {
+            .no-print { display: none; }
+        }
+    </style>
+</head>
+<body onload="window.print()">
+    <div class="header">
+        <h2>{{ company_settings.company_name|default:'UNION FOR DIGITAL PRINTING' }}</h2>
+        {% if company_settings.address %}<p>{{ company_settings.address }}</p>{% endif %}
+        <p>{% if company_settings.phone %}{{ company_settings.phone }}{% endif %}{% if company_settings.email %} | {{ company_settings.email }}{% endif %}</p>
+        {% if company_settings.tax_number %}<p>{% trans 'الرقم الضريبي' %}: {{ company_settings.tax_number }}</p>{% endif %}
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="sale-info">
+        <table>
+            <tr><td>{% trans 'رقم الفاتورة' %}:</td><td style="text-align:left;font-weight:700">{{ sale.sale_number }}</td></tr>
+            <tr><td>{% trans 'التاريخ' %}:</td><td style="text-align:left">{{ sale.sale_date|date:'Y-m-d H:i' }}</td></tr>
+            <tr><td>{% trans 'الكاشير' %}:</td><td style="text-align:left">{{ sale.session.cashier|default:sale.created_by.get_full_name }}</td></tr>
+            {% if sale.customer %}
+            <tr><td>{% trans 'العميل' %}:</td><td style="text-align:left">{{ sale.customer }}</td></tr>
+            {% endif %}
+        </table>
+    </div>
+
+    <div class="divider"></div>
+
+    <table class="items-table">
+        <thead>
+            <tr>
+                <th class="desc">{% trans 'البيان' %}</th>
+                <th class="qty">{% trans 'الكمية' %}</th>
+                <th class="price">{% trans 'السعر' %}</th>
+                <th class="total">{% trans 'الإجمالي' %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr>
+                <td class="desc">{{ item.description }}</td>
+                <td class="qty">{{ item.quantity }}</td>
+                <td class="price">{{ item.unit_price|floatformat:2 }}</td>
+                <td class="total">{{ item.total|floatformat:2 }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="divider"></div>
+
+    <table class="totals">
+        <tr>
+            <td class="label">{% trans 'المجموع الفرعي' %}</td>
+            <td class="value">{{ sale.subtotal|floatformat:2 }}</td>
+        </tr>
+        {% if sale.discount %}
+        <tr>
+            <td class="label">{% trans 'الخصم' %}</td>
+            <td class="value">-{{ sale.discount|floatformat:2 }}</td>
+        </tr>
+        {% endif %}
+        {% if sale.tax %}
+        <tr>
+            <td class="label">{% trans 'الضريبة' %}</td>
+            <td class="value">{{ sale.tax|floatformat:2 }}</td>
+        </tr>
+        {% endif %}
+        <tr class="grand-total">
+            <td class="label">{% trans 'الإجمالي' %}</td>
+            <td class="value">{{ sale.total|floatformat:2 }} {{ company_settings.currency|default:'EGP' }}</td>
+        </tr>
+        <tr>
+            <td class="label">{% trans 'المدفوع' %}</td>
+            <td class="value">{{ sale.paid_amount|floatformat:2 }}</td>
+        </tr>
+        {% if sale.change_amount %}
+        <tr>
+            <td class="label">{% trans 'الباقي' %}</td>
+            <td class="value">{{ sale.change_amount|floatformat:2 }}</td>
+        </tr>
+        {% endif %}
+    </table>
+
+    <div class="payment-info">
+        <strong>{% trans 'طريقة الدفع' %}:</strong>
+        {% if sale.payment_method == 'cash' %}
+        {% trans 'نقدي' %}
+        {% elif sale.payment_method == 'card' %}
+        {% trans 'بطاقة ائتمان' %}
+        {% elif sale.payment_method == 'bank_transfer' %}
+        {% trans 'تحويل بنكي' %}
+        {% endif %}
+    </div>
+
+    <div class="footer">
+        <div class="divider"></div>
+        <div class="thank-you">{% trans 'شكراً لتعاملكم معنا' %}</div>
+        <p style="font-size:10px;color:#888;margin-top:4px">{% trans 'تم بواسطة' %} {{ sale.created_by.get_full_name|default:sale.created_by.username }}</p>
+        <p style="font-size:10px;color:#888">{{ sale.sale_date|date:'Y-m-d H:i:s' }}</p>
+    </div>
+
+    <div class="no-print" style="text-align:center;margin-top:15px">
+        <button onclick="window.print()" style="padding:8px 20px;font-size:14px;cursor:pointer">{% trans 'طباعة' %}</button>
+        <button onclick="window.close()" style="padding:8px 20px;font-size:14px;cursor:pointer">{% trans 'إغلاق' %}</button>
+    </div>
+</body>
+</html>

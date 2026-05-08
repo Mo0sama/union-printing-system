@@ -1,0 +1,111 @@
+{% extends 'adminlte/base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans 'كشف حساب' %} - {{ customer }}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">
+            <i class="bi bi-file-text"></i> {% trans 'كشف حساب' %} - {{ customer }}
+        </h3>
+        <div class="card-tools">
+            <a href="{% url 'customers:customer_detail' customer.pk %}" class="btn btn-secondary btn-sm">
+                <i class="bi bi-arrow-right"></i> {% trans 'العودة للعميل' %}
+            </a>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="info-box bg-info">
+                    <div class="info-box-content">
+                        <span class="info-box-text">{% trans 'الرصيد الحالي' %}</span>
+                        <span class="info-box-number">{{ customer.current_balance }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="info-box bg-success">
+                    <div class="info-box-content">
+                        <span class="info-box-text">{% trans 'إجمالي المدفوعات' %}</span>
+                        <span class="info-box-number">{{ total_paid }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="info-box bg-warning">
+                    <div class="info-box-content">
+                        <span class="info-box-text">{% trans 'الحد الائتماني' %}</span>
+                        <span class="info-box-number">{{ customer.credit_limit }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h5>{% trans 'سجل المدفوعات' %}</h5>
+        <div class="table-responsive mb-4">
+            <table class="table table-bordered table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>{% trans '# ' %}</th>
+                        <th>{% trans 'التاريخ' %}</th>
+                        <th>{% trans 'المبلغ' %}</th>
+                        <th>{% trans 'طريقة الدفع' %}</th>
+                        <th>{% trans 'المرجع' %}</th>
+                        <th>{% trans 'ملاحظات' %}</th>
+                        <th>{% trans 'بواسطة' %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for payment in payments %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ payment.payment_date|date:'Y-m-d' }}</td>
+                        <td class="text-success">{{ payment.amount }}</td>
+                        <td>{{ payment.get_payment_method_display }}</td>
+                        <td>{{ payment.reference|default:'-' }}</td>
+                        <td>{{ payment.notes|default:'-' }}</td>
+                        <td>{{ payment.created_by }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center">{% trans 'لا توجد مدفوعات.' %}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <h5>{% trans 'سجل التفاعلات' %}</h5>
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>{% trans '# ' %}</th>
+                        <th>{% trans 'التاريخ' %}</th>
+                        <th>{% trans 'النوع' %}</th>
+                        <th>{% trans 'الملخص' %}</th>
+                        <th>{% trans 'بواستة' %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for interaction in interactions %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ interaction.created_at|date:'Y-m-d H:i' }}</td>
+                        <td>{{ interaction.get_interaction_type_display }}</td>
+                        <td>{{ interaction.summary }}</td>
+                        <td>{{ interaction.created_by }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center">{% trans 'لا توجد تفاعلات.' %}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

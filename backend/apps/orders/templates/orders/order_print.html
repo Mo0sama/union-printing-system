@@ -1,0 +1,200 @@
+{% extends 'adminlte/base.html' %}
+{% load static i18n core_tags humanize %}
+
+{% block title %}{% trans 'طباعة الطلب' %}{% endblock %}
+
+{% block body_class %}sidebar-collapse{% endblock %}
+
+{% block content %}
+<div class="container" id="printArea">
+    <div class="row mb-4">
+        <div class="col text-center">
+            {% if company.logo %}
+            <img src="{{ company.logo.url }}" height="80" alt="{{ company.company_name }}">
+            {% endif %}
+            <h2>{{ company.company_name }}</h2>
+            <p>
+                {{ company.address|default:'' }}<br>
+                {{ company.phone|default:'' }} | {{ company.email|default:'' }}
+            </p>
+            <hr>
+            <h3>{% trans 'طلب' %} #{{ order.order_number }}</h3>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-6">
+            <table class="table table-sm table-bordered">
+                <tr>
+                    <th class="w-50">{% trans 'رقم الطلب' %}</th>
+                    <td>{{ order.order_number }}</td>
+                </tr>
+                <tr>
+                    <th>{% trans 'التاريخ' %}</th>
+                    <td>{{ order.order_date|date:'Y-m-d' }}</td>
+                </tr>
+                <tr>
+                    <th>{% trans 'تاريخ التسليم' %}</th>
+                    <td>{{ order.delivery_date|date:'Y-m-d' }}</td>
+                </tr>
+                <tr>
+                    <th>{% trans 'الحالة' %}</th>
+                    <td>{{ order.get_status_display }}</td>
+                </tr>
+                <tr>
+                    <th>{% trans 'الأولوية' %}</th>
+                    <td>{{ order.get_priority_display }}</td>
+                </tr>
+            </table>
+        </div>
+        <div class="col-6">
+            <table class="table table-sm table-bordered">
+                <tr>
+                    <th class="w-50">{% trans 'العميل' %}</th>
+                    <td>{{ order.customer }}</td>
+                </tr>
+                <tr>
+                    <th>{% trans 'الهاتف' %}</th>
+                    <td>{{ order.customer.phone|default:'-' }}</td>
+                </tr>
+                <tr>
+                    <th>{% trans 'العنوان' %}</th>
+                    <td>{{ order.customer.address|default:'-' }}</td>
+                </tr>
+                {% if order.delivery_address %}
+                <tr>
+                    <th>{% trans 'عنوان التسليم' %}</th>
+                    <td>{{ order.delivery_address|linebreaks }}</td>
+                </tr>
+                {% endif %}
+            </table>
+        </div>
+    </div>
+
+    <table class="table table-bordered table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>#</th>
+                <th>{% trans 'الوصف' %}</th>
+                <th>{% trans 'النوع' %}</th>
+                <th>{% trans 'الكمية' %}</th>
+                <th>{% trans 'الوحدة' %}</th>
+                <th>{% trans 'سعر الوحدة' %}</th>
+                <th>{% trans 'الخصم %' %}</th>
+                <th>{% trans 'الإجمالي' %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in order.items.all %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ item.description }}</td>
+                <td>{{ item.get_item_type_display }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>{{ item.get_unit_display }}</td>
+                <td>{{ item.unit_price|currency }}</td>
+                <td>{{ item.discount_percent|default:'-' }}</td>
+                <td class="text-start">{{ item.total|currency }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="7" class="text-start fw-bold">{% trans 'المجموع الفرعي' %}</td>
+                <td class="text-start">{{ order.subtotal|currency }}</td>
+            </tr>
+            {% if order.discount_type %}
+            <tr>
+                <td colspan="7" class="text-start">{% trans 'الخصم' %}
+                    {% if order.discount_type == 'percentage' %}({{ order.discount_value }}%){% endif %}
+                </td>
+                <td class="text-start">-{{ order.discount_value|currency }}</td>
+            </tr>
+            {% endif %}
+            <tr>
+                <td colspan="7" class="text-start">{% trans 'الضريبة' %} ({{ order.tax_percentage }}%)</td>
+                <td class="text-start">{{ order.tax_amount|currency }}</td>
+            </tr>
+            {% if order.shipping_cost %}
+            <tr>
+                <td colspan="7" class="text-start">{% trans 'الشحن' %}</td>
+                <td class="text-start">{{ order.shipping_cost|currency }}</td>
+            </tr>
+            {% endif %}
+            <tr class="fw-bold fs-5">
+                <td colspan="7" class="text-start">{% trans 'الإجمالي' %}</td>
+                <td class="text-start">{{ order.total|currency }}</td>
+            </tr>
+        </tfoot>
+    </table>
+
+    {% if order.payments.all %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <h5>{% trans 'المدفوعات' %}</h5>
+            <table class="table table-sm table-bordered">
+                <thead>
+                    <tr>
+                        <th>{% trans 'المبلغ' %}</th>
+                        <th>{% trans 'الطريقة' %}</th>
+                        <th>{% trans 'التاريخ' %}</th>
+                        <th>{% trans 'المرجع' %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in order.payments.all %}
+                    <tr>
+                        <td>{{ p.amount|currency }}</td>
+                        <td>{{ p.get_payment_method_display }}</td>
+                        <td>{{ p.payment_date|date:'Y-m-d' }}</td>
+                        <td>{{ p.reference|default:'-' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr class="fw-bold">
+                        <td colspan="3" class="text-start">{% trans 'المدفوع' %}</td>
+                        <td>{{ order.paid_amount|currency }}</td>
+                    </tr>
+                    <tr class="fw-bold">
+                        <td colspan="3" class="text-start">{% trans 'المتبقي' %}</td>
+                        <td>{{ order.due_amount|currency }}</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if order.notes %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <h5>{% trans 'ملاحظات' %}</h5>
+            <p>{{ order.notes|linebreaks }}</p>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row mt-5">
+        <div class="col-6 text-center">
+            <hr style="width:70%">
+            <small>{% trans 'توقيع العميل' %}</small>
+        </div>
+        <div class="col-6 text-center">
+            <hr style="width:70%">
+            <small>{% trans 'ختم الشركة' %}</small>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4 no-print">
+    <div class="col text-center">
+        <button onclick="window.print()" class="btn btn-primary">
+            <i class="bi bi-printer"></i> {% trans 'طباعة' %}
+        </button>
+        <a href="{% url 'orders:order_detail' order.pk %}" class="btn btn-secondary">
+            <i class="bi bi-arrow-right"></i> {% trans 'عودة' %}
+        </a>
+    </div>
+</div>
+{% endblock %}

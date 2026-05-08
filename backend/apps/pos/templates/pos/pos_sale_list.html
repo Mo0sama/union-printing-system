@@ -1,0 +1,115 @@
+{% extends 'adminlte/base.html' %}
+{% load static i18n core_tags humanize %}
+{% block title %}{{ title }} - {{ block.super }}{% endblock %}
+{% block page_title %}<h5 class="mb-0 fw-bold"><i class="bi bi-receipt"></i> {{ title }}</h5>{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <span>{% trans 'فواتير البيع' %}</span>
+        <div>
+            <a href="{% url 'pos:pos_dashboard' %}" class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-lg"></i> {% trans 'فاتورة جديدة' %}
+            </a>
+        </div>
+    </div>
+    <div class="card-body">
+        <form method="get" class="row g-3 mb-3">
+            <div class="col-md-3">
+                <label class="form-label">{% trans 'من تاريخ' %}</label>
+                <input type="date" name="date_from" class="form-control" value="{{ date_from }}">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">{% trans 'إلى تاريخ' %}</label>
+                <input type="date" name="date_to" class="form-control" value="{{ date_to }}">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">{% trans 'الحالة' %}</label>
+                <select name="status" class="form-select">
+                    <option value="">{% trans 'الكل' %}</option>
+                    <option value="completed" {% if status_filter == 'completed' %}selected{% endif %}>{% trans 'مكتملة' %}</option>
+                    <option value="refunded" {% if status_filter == 'refunded' %}selected{% endif %}>{% trans 'مسترجعة' %}</option>
+                    <option value="voided" {% if status_filter == 'voided' %}selected{% endif %}>{% trans 'ملغاة' %}</option>
+                </select>
+            </div>
+            <div class="col-md-3 d-flex align-items-end gap-2">
+                <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> {% trans 'بحث' %}</button>
+                <a href="{% url 'pos:pos_sale_list' %}" class="btn btn-secondary">{% trans 'إعادة تعيين' %}</a>
+            </div>
+        </form>
+
+        <div class="table-responsive">
+            <table class="table table-custom">
+                <thead>
+                    <tr>
+                        <th>{% trans 'رقم الفاتورة' %}</th>
+                        <th>{% trans 'التاريخ' %}</th>
+                        <th>{% trans 'العميل' %}</th>
+                        <th>{% trans 'الجلسة' %}</th>
+                        <th>{% trans 'الإجمالي' %}</th>
+                        <th>{% trans 'طريقة الدفع' %}</th>
+                        <th>{% trans 'الحالة' %}</th>
+                        <th>{% trans 'إجراءات' %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sale in sales %}
+                    <tr>
+                        <td><a href="{% url 'pos:pos_sale_detail' sale.pk %}">{{ sale.sale_number }}</a></td>
+                        <td>{{ sale.sale_date|date:'Y-m-d H:i' }}</td>
+                        <td>{{ sale.customer|default:'-' }}</td>
+                        <td><small>{{ sale.session.session_number }}</small></td>
+                        <td class="fw-bold">{{ sale.total|currency }}</td>
+                        <td>
+                            {% if sale.payment_method == 'cash' %}
+                            <span class="badge bg-success">{% trans 'نقدي' %}</span>
+                            {% elif sale.payment_method == 'card' %}
+                            <span class="badge bg-primary">{% trans 'بطاقة' %}</span>
+                            {% elif sale.payment_method == 'bank_transfer' %}
+                            <span class="badge bg-info">{% trans 'تحويل بنكي' %}</span>
+                            {% else %}
+                            <span class="badge bg-secondary">{{ sale.get_payment_method_display }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if sale.status == 'completed' %}
+                            <span class="badge-status badge-completed">{% trans 'مكتملة' %}</span>
+                            {% elif sale.status == 'refunded' %}
+                            <span class="badge-status badge-cancelled">{% trans 'مسترجعة' %}</span>
+                            {% elif sale.status == 'voided' %}
+                            <span class="badge-status badge-cancelled">{% trans 'ملغاة' %}</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-nowrap">
+                            <a href="{% url 'pos:pos_sale_detail' sale.pk %}" class="btn btn-sm btn-info" title="{% trans 'عرض' %}">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a href="{% url 'pos:pos_receipt' sale.pk %}" class="btn btn-sm btn-secondary" title="{% trans 'طباعة الإيصال' %}" target="_blank">
+                                <i class="bi bi-printer"></i>
+                            </a>
+                            {% if sale.status == 'completed' %}
+                            <a href="{% url 'pos:pos_sale_refund' sale.pk %}" class="btn btn-sm btn-warning confirm-delete" title="{% trans 'استرجاع' %}" data-confirm="{% trans 'هل تريد استرجاع هذه الفاتورة؟' %}">
+                                <i class="bi bi-arrow-return-left"></i>
+                            </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center text-muted py-4">{% trans 'لا توجد فواتير بيع' %}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                {% if sales %}
+                <tfoot>
+                    <tr class="fw-bold">
+                        <td colspan="4" class="text-center">{% trans 'الإجمالي' %}</td>
+                        <td>{{ total_amount|currency }}</td>
+                        <td colspan="3"></td>
+                    </tr>
+                </tfoot>
+                {% endif %}
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

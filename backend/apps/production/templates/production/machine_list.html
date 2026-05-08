@@ -1,0 +1,84 @@
+{% extends 'adminlte/base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">{{ title }}</h3>
+        <div class="card-tools">
+            <a href="{% url 'production:machine_create' %}" class="btn btn-primary btn-sm">
+                <i class="fas fa-plus"></i> إضافة ماكينة
+            </a>
+        </div>
+    </div>
+    <div class="card-body">
+        <form method="get" class="row mb-3">
+            <div class="col-md-4">
+                <select name="department" class="form-control" onchange="this.form.submit()">
+                    <option value="">كل الأقسام</option>
+                    {% for dept in departments %}
+                    <option value="{{ dept.id }}" {% if request.GET.department == dept.id|stringformat:'s' %}selected{% endif %}>{{ dept.name_ar }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <select name="machine_type" class="form-control" onchange="this.form.submit()">
+                    <option value="">كل الأنواع</option>
+                    <option value="large_format" {% if request.GET.machine_type == 'large_format' %}selected{% endif %}>Large Format</option>
+                    <option value="offset" {% if request.GET.machine_type == 'offset' %}selected{% endif %}>Offset</option>
+                    <option value="uv" {% if request.GET.machine_type == 'uv' %}selected{% endif %}>UV</option>
+                    <option value="sublimation" {% if request.GET.machine_type == 'sublimation' %}selected{% endif %}>Sublimation</option>
+                    <option value="laser" {% if request.GET.machine_type == 'laser' %}selected{% endif %}>Laser</option>
+                    <option value="finishing" {% if request.GET.machine_type == 'finishing' %}selected{% endif %}>Finishing</option>
+                    <option value="other" {% if request.GET.machine_type == 'other' %}selected{% endif %}>أخرى</option>
+                </select>
+            </div>
+        </form>
+
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>الاسم</th>
+                        <th>النوع</th>
+                        <th>القسم</th>
+                        <th>الموديل</th>
+                        <th>الرقم التسلسلي</th>
+                        <th>الحالة</th>
+                        <th>إجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for machine in machines %}
+                    <tr>
+                        <td>{{ machine.name }}</td>
+                        <td>{{ machine.get_machine_type_display }}</td>
+                        <td>{{ machine.department.name_ar }}</td>
+                        <td>{{ machine.model|default:'-' }}</td>
+                        <td>{{ machine.serial_number|default:'-' }}</td>
+                        <td>
+                            <span class="badge
+                                {% if machine.status == 'active' %}badge-success
+                                {% elif machine.status == 'maintenance' %}badge-warning
+                                {% else %}badge-danger
+                                {% endif %}">
+                                {{ machine.get_status_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <a href="{% url 'production:machine_edit' machine.pk %}" class="btn btn-warning btn-sm">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="7" class="text-center">لا توجد ماكينات</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

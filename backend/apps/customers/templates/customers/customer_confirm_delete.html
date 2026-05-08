@@ -1,0 +1,38 @@
+{% extends 'adminlte/base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans 'حذف العميل' %}{% endblock %}
+
+{% block content %}
+<div class="card card-danger">
+    <div class="card-header">
+        <h3 class="card-title">
+            <i class="bi bi-exclamation-triangle"></i> {% trans 'تأكيد الحذف' %}
+        </h3>
+    </div>
+    <div class="card-body">
+        <p>{% trans 'هل أنت متأكد من حذف العميل التالي؟' %}</p>
+        <div class="alert alert-warning">
+            <strong>{{ customer }}</strong>
+            <br>
+            {% trans 'كود العميل' %}: {{ customer.code }}
+            <br>
+            {% trans 'رقم الهاتف' %}: {{ customer.phone }}
+            <br>
+            {% trans 'الرصيد الحالي' %}: {{ customer.current_balance }}
+        </div>
+        <p class="text-danger">{% trans 'هذا الإجراء لا يمكن التراجع عنه.' %}</p>
+    </div>
+    <div class="card-footer">
+        <form method="post" style="display:inline">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">
+                <i class="bi bi-trash"></i> {% trans 'نعم، احذف' %}
+            </button>
+        </form>
+        <a href="{% url 'customers:customer_detail' customer.pk %}" class="btn btn-secondary">
+            <i class="bi bi-x-lg"></i> {% trans 'إلغاء' %}
+        </a>
+    </div>
+</div>
+{% endblock %}

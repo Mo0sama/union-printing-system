@@ -31,7 +31,10 @@
         <div class="main-content">
             {% if user.is_authenticated %}
             <header class="main-header">
-                <div>
+                <div class="d-flex align-items-center">
+                    {% if company_settings.logo %}
+                    <img src="{{ company_settings.logo.url }}" alt="{{ company_settings.company_name }}" style="height:36px;width:36px;border-radius:50%;object-fit:cover;margin-inline-end:8px;">
+                    {% endif %}
                     {% if not request.path|slice:':12' == '/calculator/' %}
                     <button class="btn btn-sm btn-outline-secondary d-md-none me-2" onclick="document.getElementById('sidebar').classList.toggle('show')">
                         <i class="bi bi-list"></i>

@@ -1,6 +1,11 @@
 {% load i18n core_tags %}
 <div class="sidebar" id="sidebar">
     <div class="sidebar-brand">
+        {% if company_settings.logo %}
+        <div class="text-center mb-2">
+            <img src="{{ company_settings.logo.url }}" alt="{{ company_settings.company_name }}" style="max-height:60px;max-width:100%;border-radius:8px;">
+        </div>
+        {% endif %}
         <div>
             <h5>{{ company_settings.company_name|default:'UNION FOR DIGITAL PRINTING' }}</h5>
             <small>{% trans 'نظام الإدارة المتكامل' %}</small>

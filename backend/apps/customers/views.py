@@ -1,4 +1,5 @@
 import openpyxl
+from apps.core.validators import sanitize_excel_value
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from apps.accounts.decorators import app_permission_required
@@ -246,19 +247,19 @@ def customer_export(request):
 
     for customer in customers:
         ws.append([
-            customer.code,
-            customer.get_customer_type_display(),
-            customer.name or customer.contact_person or customer.company_name,
-            customer.company_name,
-            customer.contact_person,
-            customer.phone,
-            customer.secondary_phone,
-            customer.email,
-            customer.city,
+            sanitize_excel_value(customer.code),
+            sanitize_excel_value(customer.get_customer_type_display()),
+            sanitize_excel_value(customer.name or customer.contact_person or customer.company_name),
+            sanitize_excel_value(customer.company_name),
+            sanitize_excel_value(customer.contact_person),
+            sanitize_excel_value(customer.phone),
+            sanitize_excel_value(customer.secondary_phone),
+            sanitize_excel_value(customer.email),
+            sanitize_excel_value(customer.city),
             str(customer.current_balance),
             str(customer.credit_limit),
-            customer.tax_number,
-            customer.notes,
+            sanitize_excel_value(customer.tax_number),
+            sanitize_excel_value(customer.notes),
         ])
 
     response = HttpResponse(

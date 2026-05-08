@@ -3,6 +3,12 @@ from django.core.exceptions import ValidationError
 from django.template.defaultfilters import filesizeformat
 
 
+def sanitize_excel_value(value):
+    if value and isinstance(value, str) and value.startswith(('=', '+', '-', '@')):
+        return "'" + value
+    return value
+
+
 ALLOWED_EXTENSIONS = (
     '.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.bmp',
     '.pdf', '.ai', '.eps', '.cdr', '.psd', '.tif', '.tiff', '.indd',

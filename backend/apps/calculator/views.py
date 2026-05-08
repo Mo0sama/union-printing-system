@@ -1,4 +1,5 @@
 import json
+import time
 
 from django.contrib import messages
 from django.contrib.auth import login
@@ -226,11 +227,17 @@ def client_register(request):
     if request.user.is_authenticated:
         return redirect('calculator:calculator_home')
 
+    last_reg = request.session.get('last_registration_time', 0)
+    if time.time() - last_reg < 300:
+        messages.error(request, _('يمكنك إنشاء حساب جديد مرة واحدة كل 5 دقائق'))
+        return redirect('calculator:calculator_home')
+
     if request.method == 'POST':
         form = ClientRegistrationForm(request.POST)
         if form.is_valid():
             user = form.save()
             login(request, user)
+            request.session['last_registration_time'] = time.time()
             messages.success(request, _('تم إنشاء الحساب بنجاح! مرحباً بك!'))
             return redirect('calculator:calculator_home')
     else:

@@ -8,6 +8,8 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.translation import gettext_lazy as _
 from django.core.paginator import Paginator
 
+from apps.orders.models import Order, OrderPayment
+
 from .forms import (
     CustomerContactForm, CustomerForm,
     CustomerInteractionForm, CustomerPaymentForm,
@@ -56,12 +58,22 @@ def customer_list(request):
 def customer_detail(request, pk):
     customer = get_object_or_404(Customer, pk=pk)
     interactions = customer.interactions.all()[:20]
-    payments = customer.payments.all()[:20]
+
+    orders = Order.objects.filter(customer=customer).prefetch_related('payments').order_by('-created_at')
+    order_payments = OrderPayment.objects.filter(order__customer=customer).select_related('order').order_by('-payment_date')[:50]
+    customer_payments = CustomerPayment.objects.filter(customer=customer)[:20]
+
+    total_order_amount = sum(o.total for o in orders if o.status != 'cancelled')
+    total_paid = sum(p.amount for p in order_payments)
 
     context = {
         'customer': customer,
         'interactions': interactions,
-        'payments': payments,
+        'orders': orders,
+        'order_payments': order_payments,
+        'customer_payments': customer_payments,
+        'total_order_amount': total_order_amount,
+        'total_paid': total_paid,
     }
     return render(request, 'customers/customer_detail.html', context)
 
@@ -190,16 +202,25 @@ def add_payment(request, pk):
 @app_permission_required('customers_view')
 def customer_statement(request, pk):
     customer = get_object_or_404(Customer, pk=pk)
-    payments = customer.payments.all().order_by('-payment_date')
     interactions = customer.interactions.all().order_by('-created_at')
 
-    total_paid = payments.aggregate(total=Sum('amount'))['total'] or 0
+    orders = Order.objects.filter(customer=customer).prefetch_related('payments').order_by('-created_at')
+    order_payments = OrderPayment.objects.filter(order__customer=customer).select_related('order').order_by('-payment_date')
+    customer_payments = customer.payments.all().order_by('-payment_date')
+
+    total_order_amount = sum(o.total for o in orders if o.status != 'cancelled')
+    total_paid_orders = sum(p.amount for p in order_payments)
+    total_paid_direct = sum(p.amount for p in customer_payments)
 
     context = {
         'customer': customer,
-        'payments': payments,
+        'orders': orders,
+        'order_payments': order_payments,
+        'customer_payments': customer_payments,
         'interactions': interactions,
-        'total_paid': total_paid,
+        'total_order_amount': total_order_amount,
+        'total_paid_orders': total_paid_orders,
+        'total_paid_direct': total_paid_direct,
     }
     return render(request, 'customers/customer_statement.html', context)
 

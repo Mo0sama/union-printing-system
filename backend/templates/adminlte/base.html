@@ -101,6 +101,8 @@
     <script>
     function toggleLanguage() {
         var lang = '{{ LANGUAGE_CODE }}' === 'ar' ? 'en' : 'ar';
+        var path = window.location.pathname.replace(/^\/(en|ar)(\/|$)/, '/');
+        $('#lang-form input[name="next"]').val(path);
         $('[name="language"]').remove();
         $('#lang-form').append('<input type="hidden" name="language" value="' + lang + '">');
         $('#lang-form').submit();

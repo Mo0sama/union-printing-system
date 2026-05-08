@@ -293,7 +293,7 @@ document.addEventListener('DOMContentLoaded', function() {
         var btn = e.target.closest('.delete-item');
         if (!btn) return;
         var row = btn.closest('.formset-row');
-        if (row && confirm('هل تريد حذف هذا البند؟')) {
+        if (row && confirm('{% trans "هل تريد حذف هذا البند؟" %}')) {
             handleDeleteRow(row);
         }
     });
@@ -307,7 +307,7 @@ function quickAddCustomer() {
     var name = document.getElementById('customer-name').value;
     var phone = document.getElementById('customer-phone').value;
     var company = document.getElementById('customer-company').value;
-    if (!name || !phone) { alert('الاسم ورقم الهاتف مطلوبان'); return; }
+    if (!name || !phone) { alert('{% trans "الاسم ورقم الهاتف مطلوبان" %}'); return; }
     fetch('{% url "customers:quick_add_customer" %}', {
         method: 'POST',
         headers: {'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value},

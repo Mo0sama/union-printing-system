@@ -32,7 +32,7 @@
                     </tr>
                     <tr>
                         <th>{% trans 'العميل' %}</th>
-                        <td>{{ sale.customer|default:'عميل نقدي' }}</td>
+                        <td>{% if sale.customer %}{{ sale.customer }}{% else %}{% trans 'عميل نقدي' %}{% endif %}</td>
                         <th>{% trans 'الجلسة' %}</th>
                         <td>{{ sale.session.session_number }}</td>
                     </tr>

@@ -107,7 +107,7 @@
                     `<div class="col-6 col-md-4 mb-2">
                         <button type="button" class="btn btn-outline-primary w-100" onclick="addToCart(${item.id}, '${item.name}', ${item.price})">
                             <strong>${item.name}</strong><br>
-                            <small>${item.price} ج.م</small>
+                            <small>${item.price} {% trans "ج.م" %}</small>
                         </button>
                     </div>`
                 ).join('');

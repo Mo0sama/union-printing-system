@@ -595,3 +595,112 @@ msgstr "Close Session"
 
 msgid "فتح جلسة"
 msgstr "Open Session"
+
+# Employees
+msgid "إضافة موظف"
+msgstr "Add Employee"
+
+msgid "الكود"
+msgstr "Code"
+
+msgid "المسمى الوظيفي"
+msgstr "Job Title"
+
+msgid "عرض"
+msgstr "View"
+
+msgid "حذف"
+msgstr "Delete"
+
+msgid "تأكيد الحذف؟"
+msgstr "Confirm delete?"
+
+msgid "لا يوجد موظفين"
+msgstr "No employees found"
+
+msgid "صورة"
+msgstr "Photo"
+
+msgid "تاريخ التعيين"
+msgstr "Hire Date"
+
+msgid "الراتب الأساسي"
+msgstr "Base Salary"
+
+msgid "الإجازات"
+msgstr "Leaves"
+
+msgid "السلف"
+msgstr "Advances"
+
+msgid "الانصراف"
+msgstr "Check-out"
+
+msgid "لا توجد سجلات"
+msgstr "No records found"
+
+msgid "الأيام"
+msgstr "Days"
+
+msgid "لا توجد إجازات"
+msgstr "No leaves found"
+
+msgid "الشهر"
+msgstr "Month"
+
+msgid "الأساسي"
+msgstr "Base"
+
+msgid "المكافآت"
+msgstr "Bonuses"
+
+msgid "الخصومات"
+msgstr "Deductions"
+
+msgid "الصافي"
+msgstr "Net"
+
+msgid "مدفوع"
+msgstr "Paid"
+
+msgid "لا توجد رواتب"
+msgstr "No salaries found"
+
+msgid "المبلغ"
+msgstr "Amount"
+
+msgid "السبب"
+msgstr "Reason"
+
+msgid "مسددة"
+msgstr "Repaid"
+
+msgid "لا توجد سلف"
+msgstr "No advances found"
+
+msgid "معلومات إضافية"
+msgstr "Additional Info"
+
+msgid "الاسم بالعربية"
+msgstr "Name in Arabic"
+
+msgid "رقم الهوية"
+msgstr "ID Number"
+
+msgid "جهة اتصال طارئة"
+msgstr "Emergency Contact"
+
+msgid "هاتف الطوارئ"
+msgstr "Emergency Phone"
+
+msgid "الحساب البنكي"
+msgstr "Bank Account"
+
+msgid "نسبة العمولة"
+msgstr "Commission Rate"
+
+msgid "هل تريد حذف هذا البند؟"
+msgstr "Do you want to delete this item?"
+
+msgid "الاسم ورقم الهاتف مطلوبان"
+msgstr "Name and phone number are required"

@@ -172,7 +172,7 @@ class DesignFileForm(forms.ModelForm):
         model = DesignFile
         fields = ['file', 'version', 'notes']
         widgets = {
-            'file': forms.FileInput(attrs={'class': 'form-control', 'multiple': True}),
+            'file': forms.FileInput(attrs={'class': 'form-control'}),
             'version': forms.NumberInput(attrs={'class': 'form-control'}),
             'notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
         }

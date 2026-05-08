@@ -445,16 +445,12 @@
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label">{{ design_file_form.file.label }}</label>
-                        {{ design_file_form.file }}
+                        <label class="form-label">{% trans 'ملفات التصميم' %}</label>
+                        <input type="file" name="file" class="form-control" multiple>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">{{ design_file_form.version.label }}</label>
-                        {{ design_file_form.version }}
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">{{ design_file_form.notes.label }}</label>
-                        {{ design_file_form.notes }}
+                        <label class="form-label">{% trans 'ملاحظات' %}</label>
+                        <textarea name="notes" class="form-control" rows="3"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">

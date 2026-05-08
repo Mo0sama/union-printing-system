@@ -9,7 +9,7 @@
     .category-section { margin-bottom: 2.5rem; }
     .category-title { font-size: 1.5rem; font-weight: 700; color: #333; border-bottom: 3px solid #e65100; padding-bottom: 0.5rem; margin-bottom: 1.5rem; }
     .product-card { border: 1px solid #e0e0e0; border-radius: 0.75rem; padding: 1.25rem; margin-bottom: 1rem; transition: all 0.2s; background: #fff; }
-    .product-card:hover { border-color: #e65100; box-shadow: 0 2px 12px rgba(230,81,0,0.1); }
+    .product-card:active { border-color: #e65100; }
     .product-name { font-weight: 700; font-size: 1.1rem; margin-bottom: 0.25rem; }
     .product-desc { color: #666; font-size: 0.9rem; margin-bottom: 0.75rem; }
     .tier-display { font-size: 0.85rem; color: #888; }
@@ -22,12 +22,19 @@
     .cart-item:last-child { border-bottom: none; }
     .summary-row { display: flex; justify-content: space-between; padding: 0.4rem 0; font-size: 0.95rem; }
     .summary-row.total { font-size: 1.3rem; font-weight: 800; color: #e65100; border-top: 2px solid #e65100; padding-top: 0.75rem; margin-top: 0.5rem; }
-    .calc-header { background: linear-gradient(135deg, #1a1a1a 0%, #e65100 50%, #bf360c 100%); padding: 2rem 1rem; text-align: center; color: white; margin: -1rem -1rem 2rem -1rem; }
+    .calc-header { background: linear-gradient(135deg, #1a1a1a 0%, #e65100 50%, #bf360c 100%); padding: 2rem 1rem; text-align: center; color: white; }
     .calc-header h1 { font-size: 1.75rem; font-weight: 800; }
     .calc-header .breadcrumb-custom a { color: rgba(255,255,255,0.8); text-decoration: none; }
-    @media (max-width: 768px) { .cart-sidebar { position: static; margin-top: 2rem; } }
+    @media (max-width: 768px) {
+        .cart-sidebar { position: fixed; bottom: 0; left: 0; right: 0; z-index: 1050; margin: 0 !important; border-radius: 16px 16px 0 0 !important; box-shadow: 0 -4px 20px rgba(0,0,0,0.15) !important; max-height: 50vh; overflow-y: auto; }
+        .cart-sidebar .card-header { cursor: pointer; border-radius: 16px 16px 0 0 !important; }
+        .cart-sidebar .card-body { padding-bottom: env(safe-area-inset-bottom, 0.5rem); }
+        .calc-container { padding-bottom: 220px; }
+    }
 </style>
 {% endblock %}
+
+{% block body_class %}calculator-page{% endblock %}
 
 {% block content %}
 <div class="calc-header">
@@ -48,7 +55,7 @@
                 {% if product.is_active %}
                 <div class="product-card" data-product-id="{{ product.id }}">
                     <div class="row align-items-center">
-                        <div class="col-md-5">
+                        <div class="col-12 col-md-5">
                             <div class="product-name">{{ product.name_ar }}</div>
                             {% if product.description %}
                             <div class="product-desc">{{ product.description }}</div>
@@ -61,7 +68,7 @@
                                 {% endfor %}
                             </div>
                         </div>
-                        <div class="col-md-5">
+                        <div class="col-7 col-md-5 mt-2 mt-md-0">
                             <div class="row g-1">
                                 {% if product.has_options and product.options.all %}
                                 <div class="col-6">
@@ -74,14 +81,14 @@
                                     </select>
                                 </div>
                                 {% endif %}
-                                <div class="col-6">
+                                <div class="{% if product.has_options and product.options.all %}col-6{% else %}col-12{% endif %}">
                                     <label class="form-label small mb-1">{% trans 'الكمية' %}</label>
                                     <input type="number" class="form-control form-control-sm qty-input" value="0" min="0" data-product-id="{{ product.id }}">
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-2 text-md-end">
-                            <span class="item-total" data-product-id="{{ product.id }}">0.00</span>
+                        <div class="col-5 col-md-2 text-start text-md-end mt-2 mt-md-0">
+                            <span class="item-total d-block" data-product-id="{{ product.id }}">0.00</span>
                         </div>
                     </div>
                 </div>
@@ -94,9 +101,9 @@
         </div>
 
         <div class="col-lg-4">
-            <div class="card cart-sidebar">
-                <div class="card-header bg-dark text-white">
-                    <h5 class="mb-0"><i class="bi bi-cart3 me-1"></i> {% trans 'عرض السعر' %}</h5>
+            <div class="card cart-sidebar" id="cartSidebar">
+                <div class="card-header bg-dark text-white" id="cartToggle">
+                    <h5 class="mb-0"><i class="bi bi-cart3 me-1"></i> {% trans 'عرض السعر' %} <span class="float-start" id="mobileTotalBadge"></span></h5>
                 </div>
                 <div class="card-body" id="cartBody">
                     <div class="cart-empty" id="cartEmpty" style="display:none;">
@@ -291,7 +298,16 @@ document.querySelectorAll('.qty-input, .option-select').forEach(el => {
     });
 });
 
-document.getElementById('requestQuoteBtn').addEventListener('click', function() {
+    // Mobile cart toggle
+    var cartToggle = document.getElementById('cartToggle');
+    var cartSidebar = document.getElementById('cartSidebar');
+    if (cartToggle && window.innerWidth < 768) {
+        cartToggle.addEventListener('click', function() {
+            cartSidebar.classList.toggle('collapsed');
+        });
+    }
+
+    document.getElementById('requestQuoteBtn').addEventListener('click', function() {
     if (getCartItems().length === 0) {
         alert('{% trans "يرجى اختيار منتج واحد على الأقل" %}');
         return;

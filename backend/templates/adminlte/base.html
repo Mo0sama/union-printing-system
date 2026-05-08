@@ -32,9 +32,11 @@
             {% if user.is_authenticated %}
             <header class="main-header">
                 <div>
+                    {% if not request.path|slice:':12' == '/calculator/' %}
                     <button class="btn btn-sm btn-outline-secondary d-md-none me-2" onclick="document.getElementById('sidebar').classList.toggle('show')">
                         <i class="bi bi-list"></i>
                     </button>
+                    {% endif %}
                     {% block page_title %}{% endblock %}
                 </div>
                 <div class="d-flex align-items-center gap-3">

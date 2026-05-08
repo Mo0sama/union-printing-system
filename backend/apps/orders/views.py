@@ -111,6 +111,9 @@ def order_create(request):
                     formset.save()
                     order.calculate_totals()
                     order.update_payment_status()
+                    customer = order.customer
+                    customer.current_balance += order.total
+                    customer.save(update_fields=['current_balance'])
                 messages.success(request, _('تم إنشاء الطلب بنجاح'))
                 return redirect('orders:order_detail', pk=order.pk)
             except Exception as e:
@@ -152,10 +155,14 @@ def order_edit(request, pk):
         if form.is_valid() and formset.is_valid():
             try:
                 with transaction.atomic():
+                    old_total = Order.objects.get(pk=order.pk).total
                     order = form.save()
                     formset.save()
                     order.calculate_totals()
                     order.update_payment_status()
+                    customer = order.customer
+                    customer.current_balance += order.total - old_total
+                    customer.save(update_fields=['current_balance'])
                 messages.success(request, _('تم تحديث الطلب بنجاح'))
                 return redirect('orders:order_detail', pk=order.pk)
             except Exception as e:
@@ -181,6 +188,9 @@ def order_edit(request, pk):
 def order_delete(request, pk):
     order = get_object_or_404(Order, pk=pk)
     if request.method == 'POST':
+        customer = order.customer
+        customer.current_balance -= order.total
+        customer.save(update_fields=['current_balance'])
         order.delete()
         messages.success(request, _('تم حذف الطلب بنجاح'))
         return redirect('orders:order_list')
@@ -207,6 +217,9 @@ def add_payment(request, pk):
                         payment.payment_date = timezone.now().date()
                     payment.save()
                     order.update_payment_status()
+                    customer = order.customer
+                    customer.current_balance -= payment.amount
+                    customer.save(update_fields=['current_balance'])
                 messages.success(request, _('تم إضافة الدفعة بنجاح'))
                 return redirect('orders:payment_receipt', pk=pk, payment_pk=payment.pk)
             except Exception as e:

@@ -12,8 +12,8 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'config.production_settings'
 # Set your PythonAnywhere domain (for ALLOWED_HOSTS and CSRF_TRUSTED_ORIGINS)
 os.environ['PA_DOMAIN'] = 'mossama.pythonanywhere.com'
 
-# Set your secret key
-os.environ['DJANGO_SECRET_KEY'] = 'your-random-secret-key-here'
+# IMPORTANT: Set DJANGO_SECRET_KEY in PythonAnywhere Web tab -> Environment variables
+# os.environ['DJANGO_SECRET_KEY'] = 'your-random-secret-key-here'
 
 # Load Django WSGI application
 from django.core.wsgi import get_wsgi_application

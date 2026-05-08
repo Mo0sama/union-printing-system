@@ -2,6 +2,7 @@ import datetime
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
+from apps.core.validators import validate_image_file, validate_image_size_5mb
 
 User = get_user_model()
 
@@ -101,7 +102,8 @@ class Employee(models.Model):
     notes = models.TextField(blank=True, verbose_name='ملاحظات')
     is_active = models.BooleanField(default=True, verbose_name='نشط')
     photo = models.ImageField(
-        upload_to='employees/', blank=True, verbose_name='صورة'
+        upload_to='employees/', blank=True, verbose_name='صورة',
+        validators=[validate_image_file, validate_image_size_5mb]
     )
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='تاريخ الإنشاء')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='آخر تحديث')

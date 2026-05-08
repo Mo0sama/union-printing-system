@@ -4,6 +4,7 @@ from django.utils.translation import gettext_lazy as _
 
 from apps.customers.models import Customer
 from apps.quotes.models import Quote
+from apps.core.validators import validate_design_file, validate_file_size_10mb
 
 
 class Order(models.Model):
@@ -216,7 +217,8 @@ class OrderItem(models.Model):
         null=True, blank=True, verbose_name=_('الخامة')
     )
     design_file = models.FileField(
-        _('ملف التصميم'), upload_to='designs/', blank=True
+        _('ملف التصميم'), upload_to='designs/', blank=True,
+        validators=[validate_design_file, validate_file_size_10mb]
     )
     quantity = models.IntegerField(_('الكمية'))
     unit = models.CharField(
@@ -304,7 +306,8 @@ class DesignFile(models.Model):
         related_name='design_files', verbose_name=_('الطلب')
     )
     file = models.FileField(
-        _('الملف'), upload_to='designs/%Y/%m/'
+        _('الملف'), upload_to='designs/%Y/%m/',
+        validators=[validate_design_file, validate_file_size_10mb]
     )
     version = models.IntegerField(_('الإصدار'), default=1)
     uploaded_by = models.ForeignKey(

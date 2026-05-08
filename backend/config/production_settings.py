@@ -28,6 +28,8 @@ STORAGES = {
     },
 }
 
+MIDDLEWARE.insert(1, 'csp.middleware.CSPMiddleware')
+
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 CSRF_TRUSTED_ORIGINS = [f'https://{PA_DOMAIN}']
 CSRF_COOKIE_SECURE = True
@@ -43,6 +45,21 @@ X_FRAME_OPTIONS = 'DENY'
 LANGUAGE_CODE = 'ar'
 USE_I18N = True
 LOCALE_PATHS = [BASE_DIR / 'locale']
+
+# django-axes: brute force protection
+AXES_ENABLED = True
+AXES_FAILURE_LIMIT = 5
+AXES_COOLOFF_TIME = 0.5  # 30 minutes
+AXES_LOCK_OUT_BY_COMBINATION_USER_AND_IP = True
+AXES_RESET_ON_SUCCESS = True
+
+# CSP
+CSP_DEFAULT_SRC = ("'self'",)
+CSP_STYLE_SRC = ("'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://fonts.googleapis.com", "https://fonts.gstatic.com")
+CSP_SCRIPT_SRC = ("'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://code.jquery.com")
+CSP_FONT_SRC = ("'self'", "https://cdn.jsdelivr.net", "https://fonts.gstatic.com")
+CSP_IMG_SRC = ("'self'", "data:", "blob:")
+CSP_CONNECT_SRC = ("'self'",)
 
 # Email
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

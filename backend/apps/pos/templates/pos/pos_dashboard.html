@@ -91,7 +91,7 @@ body.pos-mode { background: #0f172a; overflow: hidden; }
         </div>
         <div class="pos-items-grid" id="pos-items-grid">
             {% for product in products %}
-            <div class="pos-item-btn" data-name="{{ product.name }}" data-price="{{ product.selling_price }}" data-id="{{ product.id }}" onclick="addToCart('{{ product.name|escapejs }}', {{ product.selling_price }})">
+            <div class="pos-item-btn" data-name="{{ product.name|escape }}" data-price="{{ product.selling_price }}" data-id="{{ product.id }}" onclick="addToCart('{{ product.name|escapejs }}', {{ product.selling_price }})">
                 <span class="item-price">{{ product.selling_price|floatformat:2 }}</span>
                 <span class="item-name">{{ product.name }}</span>
             </div>

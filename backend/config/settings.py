@@ -3,7 +3,7 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-union-printing-system-change-in-production'
+SECRET_KEY = 'DYhN1YKUWkwygrbuRWV86qnxQLS8ttixddY3L1KhdDWs6rpzEBt2U84e3ImxJkUlIH0'
 
 DEBUG = True
 
@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'apps.reports',
     'apps.calculator',
     'apps.accounting',
+    'axes',
 ]
 
 MIDDLEWARE = [
@@ -48,6 +49,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'axes.middleware.AxesMiddleware',
     'simple_history.middleware.HistoryRequestMiddleware',
 ]
 
@@ -84,6 +86,11 @@ DATABASES = {
 }
 
 AUTH_USER_MODEL = 'accounts.User'
+
+AUTHENTICATION_BACKENDS = [
+    'axes.backends.AxesBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},

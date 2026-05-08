@@ -11,3 +11,5 @@ reportlab>=4.0
 whitenoise>=6.5
 polib>=1.2
 gunicorn>=21.2
+django-axes>=6.0
+django-csp>=3.7

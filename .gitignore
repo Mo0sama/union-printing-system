@@ -16,3 +16,4 @@ dist/
 .env
 
 data/db.sqlite3
+data/backups/

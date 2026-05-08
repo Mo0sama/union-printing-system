@@ -84,6 +84,16 @@ class CustomerForm(forms.ModelForm):
         widget=forms.CheckboxInput(attrs={'class': 'form-check-input'})
     )
 
+    def clean_name(self):
+        name = self.cleaned_data.get('name', '').strip()
+        if name:
+            qs = Customer.objects.filter(name__iexact=name)
+            if self.instance.pk:
+                qs = qs.exclude(pk=self.instance.pk)
+            if qs.exists():
+                raise forms.ValidationError(_('عميل بهذا الاسم موجود بالفعل'))
+        return name
+
     def clean(self):
         cleaned_data = super().clean()
         customer_type = cleaned_data.get('customer_type')

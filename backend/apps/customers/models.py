@@ -16,7 +16,7 @@ class Customer(models.Model):
         _('كود العميل'), max_length=20, unique=True, editable=False
     )
     name = models.CharField(
-        _('الاسم'), max_length=200, blank=True,
+        _('الاسم'), max_length=200, blank=True, unique=True,
         help_text=_('الاسم الأساسي للعميل (اسم الشخص للفرد، أو اسم الشركة للشركة)')
     )
     company_name = models.CharField(

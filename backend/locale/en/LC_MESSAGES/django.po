@@ -704,3 +704,43 @@ msgstr "Do you want to delete this item?"
 
 msgid "الاسم ورقم الهاتف مطلوبان"
 msgstr "Name and phone number are required"
+
+# Sidebar missing translations
+msgid "تقييم المخزون (FIFO)"
+msgstr "Inventory Valuation (FIFO)"
+
+msgid "المحاسبة"
+msgstr "Accounting"
+
+msgid "دليل الحسابات"
+msgstr "Chart of Accounts"
+
+msgid "القيود المحاسبية"
+msgstr "Journal Entries"
+
+msgid "قائمة الأرباح والخسائر"
+msgstr "Profit & Loss Statement"
+
+msgid "الميزانية العمومية"
+msgstr "Balance Sheet"
+
+msgid "تقرير المبيعات"
+msgstr "Sales Report"
+
+msgid "حاسبة الأسعار"
+msgstr "Price Calculator"
+
+msgid "حاسبة العملاء"
+msgstr "Customer Calculator"
+
+msgid "إدارة الأسعار"
+msgstr "Price Management"
+
+msgid "المستخدمين والصلاحيات"
+msgstr "Users & Permissions"
+
+msgid "المستخدمين"
+msgstr "Users"
+
+msgid "الإعدادات المتقدمة"
+msgstr "Advanced Settings"

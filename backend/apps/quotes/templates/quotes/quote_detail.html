@@ -13,27 +13,27 @@
         <div class="col-auto">
             <div class="btn-group">
                 <a href="{% url 'quotes:quote_list' %}" class="btn btn-secondary">
-                    <i class="fas fa-arrow-right"></i> {% trans 'عودة' %}
+                    <i class="bi bi-arrow-right"></i> {% trans 'عودة' %}
                 </a>
                 {% if perms.quotes.change_quote and quote.status != 'converted' %}
                 <a href="{% url 'quotes:quote_edit' quote.pk %}" class="btn btn-warning">
-                    <i class="fas fa-edit"></i> {% trans 'تعديل' %}
+                    <i class="bi bi-pencil"></i> {% trans 'تعديل' %}
                 </a>
                 {% endif %}
                 <a href="{% url 'quotes:quote_print_pdf' quote.pk %}" class="btn btn-secondary" target="_blank">
-                    <i class="fas fa-print"></i> {% trans 'طباعة' %}
+                    <i class="bi bi-printer"></i> {% trans 'طباعة' %}
                 </a>
                 <a href="{% url 'quotes:quote_send_email' quote.pk %}" class="btn btn-info">
-                    <i class="fas fa-envelope"></i> {% trans 'إرسال بريد' %}
+                    <i class="bi bi-envelope"></i> {% trans 'إرسال بريد' %}
                 </a>
                 {% if perms.quotes.change_quote and quote.status != 'converted' and quote.status != 'rejected' %}
                 <a href="{% url 'quotes:quote_convert_to_order' quote.pk %}" class="btn btn-success" onclick="return confirm('{% trans 'هل تريد تحويل عرض السعر إلى طلب؟' %}')">
-                    <i class="fas fa-exchange-alt"></i> {% trans 'تحويل لطلب' %}
+                    <i class="bi bi-arrow-left-right"></i> {% trans 'تحويل لطلب' %}
                 </a>
                 {% endif %}
                 {% if perms.quotes.delete_quote %}
                 <a href="{% url 'quotes:quote_delete' quote.pk %}" class="btn btn-danger">
-                    <i class="fas fa-trash"></i> {% trans 'حذف' %}
+                    <i class="bi bi-trash"></i> {% trans 'حذف' %}
                 </a>
                 {% endif %}
             </div>

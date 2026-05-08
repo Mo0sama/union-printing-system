@@ -6,10 +6,10 @@
 {% block content %}
 <div class="container-fluid">
   <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
-    <h1 class="h3"><i class="fas fa-file-invoice-dollar ms-2"></i>{% trans "تقرير الضرائب" %}</h1>
+    <h1 class="h3"><i class="bi bi-receipt ms-2"></i>{% trans "تقرير الضرائب" %}</h1>
     <div class="no-print">
-      <a href="{% url 'reports:export_report_excel' %}?type=tax" class="btn btn-success btn-sm"><i class="fas fa-file-excel ms-1"></i>{% trans "تصدير Excel" %}</a>
-      <a href="{% url 'reports:print_report' %}?type=tax" target="_blank" class="btn btn-info btn-sm"><i class="fas fa-print ms-1"></i>{% trans "طباعة" %}</a>
+      <a href="{% url 'reports:export_report_excel' %}?type=tax" class="btn btn-success btn-sm"><i class="bi bi-file-earmark-excel ms-1"></i>{% trans "تصدير Excel" %}</a>
+      <a href="{% url 'reports:print_report' %}?type=tax" target="_blank" class="btn btn-info btn-sm"><i class="bi bi-printer ms-1"></i>{% trans "طباعة" %}</a>
     </div>
   </div>
 
@@ -18,7 +18,7 @@
       <form method="get" class="row g-3 align-items-end">
         <div class="col-md-4">{{ form.start_date.label_tag }}{{ form.start_date }}</div>
         <div class="col-md-4">{{ form.end_date.label_tag }}{{ form.end_date }}</div>
-        <div class="col-md-4"><button type="submit" class="btn btn-primary w-100"><i class="fas fa-search ms-1"></i>{% trans "بحث" %}</button></div>
+        <div class="col-md-4"><button type="submit" class="btn btn-primary w-100"><i class="bi bi-search ms-1"></i>{% trans "بحث" %}</button></div>
       </form>
     </div>
   </div>
@@ -103,7 +103,7 @@
         <div class="card-header"><h5 class="mb-0">{% trans "تصدير الإقرار الضريبي" %}</h5></div>
         <div class="card-body text-center">
           <p class="text-muted">{% trans "يمكنك تصدير بيانات الضرائب للإقرار الضريبي" %}</p>
-          <a href="{% url 'reports:export_report_excel' %}?type=tax" class="btn btn-success"><i class="fas fa-file-excel ms-1"></i>{% trans "تصدير Excel" %}</a>
+          <a href="{% url 'reports:export_report_excel' %}?type=tax" class="btn btn-success"><i class="bi bi-file-earmark-excel ms-1"></i>{% trans "تصدير Excel" %}</a>
         </div>
       </div>
     </div>

@@ -12,7 +12,7 @@
             <img src="{{ employee.photo.url }}" class="profile-user-img img-fluid img-circle" alt="صورة">
             {% else %}
             <div class="profile-user-img img-fluid img-circle d-flex align-items-center justify-content-center bg-secondary text-white" style="width:100px;height:100px;margin:auto;font-size:40px;">
-              <i class="fas fa-user"></i>
+              <i class="bi bi-person"></i>
             </div>
             {% endif %}
           </div>
@@ -27,7 +27,7 @@
             <li class="list-group-item"><b>الراتب الأساسي</b> <span class="float-end">{{ employee.base_salary }}</span></li>
             <li class="list-group-item"><b>الحالة</b> <span class="float-end">{% if employee.is_active %}<span class="badge bg-success">نشط</span>{% else %}<span class="badge bg-danger">غير نشط</span>{% endif %}</span></li>
           </ul>
-          <a href="{% url 'employees:employee_edit' employee.pk %}" class="btn btn-warning btn-block"><i class="fas fa-edit"></i> تعديل</a>
+          <a href="{% url 'employees:employee_edit' employee.pk %}" class="btn btn-warning btn-block"><i class="bi bi-pencil"></i> تعديل</a>
         </div>
       </div>
     </div>

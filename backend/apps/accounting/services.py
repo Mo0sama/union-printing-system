@@ -134,7 +134,7 @@ def post_cogs(reference_type, reference_id, user=None):
             reference_id=reference_id,
             status='posted',
             posted_at=timezone.now(),
-            created_by=user or valuations.first().batch.material,
+            created_by=user,
         )
 
         cogs = Account.objects.get(code='51')

@@ -72,21 +72,31 @@ def sales_report(request):
 def revenue_report(request):
     form = DateRangeForm(request.GET or None)
     from apps.pos.models import POSSale
-    from apps.orders.models import Order
+    from apps.orders.models import Order, OrderPayment
 
     sales_qs = POSSale.objects.filter(status='completed')
-    orders_qs = Order.objects.all() if 'Order' in dir() else POSSale.objects.none()
+    payment_qs = OrderPayment.objects.all()
 
     if form.is_valid():
         start = form.cleaned_data.get('start_date')
         end = form.cleaned_data.get('end_date')
         if start:
             sales_qs = sales_qs.filter(sale_date__date__gte=start)
+            payment_qs = payment_qs.filter(payment_date__gte=start)
         if end:
             sales_qs = sales_qs.filter(sale_date__date__lte=end)
+            payment_qs = payment_qs.filter(payment_date__lte=end)
 
     period = request.GET.get('group_by', 'month')
-    trunc_fn = TruncMonth('sale_date') if period == 'month' else TruncDay('sale_date') if period == 'day' else TruncYear('sale_date')
+
+    from django.db.models.functions import TruncDay as TD, TruncMonth as TM, TruncYear as TY
+
+    if period == 'day':
+        trunc_fn = TD('sale_date')
+    elif period == 'year':
+        trunc_fn = TY('sale_date')
+    else:
+        trunc_fn = TM('sale_date')
 
     revenue_by_period = sales_qs.annotate(
         period=trunc_fn
@@ -95,14 +105,19 @@ def revenue_report(request):
         count=Count('id'),
     ).order_by('period')
 
+    order_revenue = payment_qs.aggregate(
+        total=Coalesce(Sum('amount'), Value(0), output_field=DecimalField())
+    )['total']
+
     by_payment = sales_qs.values('payment_method').annotate(
         total=Coalesce(Sum('total'), Value(0), output_field=DecimalField()),
         count=Count('id'),
     )
 
-    total_revenue = sales_qs.aggregate(
+    total_pos_revenue = sales_qs.aggregate(
         total=Coalesce(Sum('total'), Value(0), output_field=DecimalField())
     )['total']
+    total_revenue = total_pos_revenue + order_revenue
 
     from apps.pos.models import PAYMENT_METHOD_CHOICES
     payment_labels = dict(PAYMENT_METHOD_CHOICES)
@@ -112,6 +127,7 @@ def revenue_report(request):
         'revenue_by_period': revenue_by_period,
         'by_payment': by_payment,
         'total_revenue': total_revenue,
+        'order_revenue': order_revenue,
         'payment_labels': payment_labels,
         'title': 'تقرير الإيرادات',
     }
@@ -383,6 +399,85 @@ def tax_report(request):
     return render(request, 'reports/tax_report.html', context)
 
 
+def _export_sales(ws):
+    from apps.pos.models import POSSale
+    ws.append(['رقم الفاتورة', 'التاريخ', 'الإجمالي', 'طريقة الدفع', 'الحالة'])
+    for sale in POSSale.objects.all()[:1000]:
+        ws.append([sale.sale_number, sale.sale_date.strftime('%Y-%m-%d %H:%M'),
+                   float(sale.total), sale.get_payment_method_display(), sale.get_status_display()])
+
+
+def _export_revenue(ws):
+    from apps.orders.models import OrderPayment
+    ws.append(['التاريخ', 'الطلب', 'المبلغ', 'طريقة الدفع'])
+    for p in OrderPayment.objects.all()[:1000]:
+        ws.append([p.payment_date.strftime('%Y-%m-%d'), str(p.order.order_number),
+                   float(p.amount), p.get_payment_method_display()])
+
+
+def _export_profit_loss(ws):
+    from apps.orders.models import Order
+    ws.append(['رقم الطلب', 'العميل', 'التاريخ', 'الإجمالي', 'المدفوع', 'المتبقي'])
+    for o in Order.objects.all()[:500]:
+        ws.append([o.order_number, str(o.customer), o.created_at.strftime('%Y-%m-%d'),
+                   float(o.total), float(o.paid_amount), float(o.due_amount)])
+
+
+def _export_customers(ws):
+    from apps.customers.models import Customer
+    ws.append(['الكود', 'الاسم', 'الهاتف', 'الرصيد', 'الحد الائتماني', 'تاريخ التسجيل'])
+    for c in Customer.objects.all()[:500]:
+        ws.append([c.code, str(c), c.phone, float(c.current_balance),
+                   float(c.credit_limit), c.created_at.strftime('%Y-%m-%d')])
+
+
+def _export_production(ws):
+    from apps.production.models import ProductionJob
+    ws.append(['رقم الأمر', 'الطلب', 'القسم', 'الحالة', 'تاريخ البدء', 'تاريخ الانتهاء'])
+    for j in ProductionJob.objects.all()[:500]:
+        ws.append([j.job_number, j.order.order_number, j.department.name_ar,
+                   j.get_status_display(),
+                   j.start_date.strftime('%Y-%m-%d %H:%M') if j.start_date else '',
+                   j.end_date.strftime('%Y-%m-%d %H:%M') if j.end_date else ''])
+
+
+def _export_inventory(ws):
+    from apps.inventory.models import Material
+    ws.append(['الكود', 'الاسم', 'التصنيف', 'الوحدة', 'المخزون', 'سعر الشراء', 'سعر البيع'])
+    for m in Material.objects.all()[:500]:
+        ws.append([m.code, m.name_ar or m.name, m.category.name_ar if m.category else '',
+                   m.get_unit_display(), float(m.current_stock),
+                   float(m.purchase_price), float(m.selling_price or 0)])
+
+
+def _export_employees(ws):
+    from apps.employees.models import Employee
+    ws.append(['الكود', 'الاسم', 'القسم', 'الراتب', 'الحالة'])
+    for emp in Employee.objects.all():
+        ws.append([emp.employee_code, emp.full_name, emp.get_department_display(),
+                   float(emp.base_salary), 'نشط' if emp.is_active else 'غير نشط'])
+
+
+def _export_tax(ws):
+    from apps.orders.models import Order
+    ws.append(['رقم الطلب', 'العميل', 'التاريخ', 'الإجمالي', 'الضريبة', 'نسبة الضريبة'])
+    for o in Order.objects.filter(tax_amount__gt=0)[:500]:
+        ws.append([o.order_number, str(o.customer), o.created_at.strftime('%Y-%m-%d'),
+                   float(o.total), float(o.tax_amount), f'{o.tax_percentage}%'])
+
+
+EXPORT_HANDLERS = {
+    'sales': _export_sales,
+    'revenue': _export_revenue,
+    'profit_loss': _export_profit_loss,
+    'customers': _export_customers,
+    'production': _export_production,
+    'inventory': _export_inventory,
+    'employees': _export_employees,
+    'tax': _export_tax,
+}
+
+
 @app_permission_required('reports_view')
 def export_report_excel(request):
     import openpyxl
@@ -393,84 +488,9 @@ def export_report_excel(request):
     ws = wb.active
     ws.title = 'التقرير'
 
-    if report_type == 'sales':
-        from apps.pos.models import POSSale
-        ws.append(['رقم الفاتورة', 'التاريخ', 'الإجمالي', 'طريقة الدفع', 'الحالة'])
-        for sale in POSSale.objects.all()[:1000]:
-            ws.append([
-                sale.sale_number,
-                sale.sale_date.strftime('%Y-%m-%d %H:%M'),
-                float(sale.total),
-                sale.get_payment_method_display(),
-                sale.get_status_display(),
-            ])
-    elif report_type == 'revenue':
-        from apps.orders.models import OrderPayment
-        ws.append(['التاريخ', 'الطلب', 'المبلغ', 'طريقة الدفع'])
-        for p in OrderPayment.objects.all()[:1000]:
-            ws.append([
-                p.payment_date.strftime('%Y-%m-%d'),
-                str(p.order.order_number),
-                float(p.amount),
-                p.get_payment_method_display(),
-            ])
-    elif report_type == 'profit_loss':
-        from apps.orders.models import Order
-        ws.append(['رقم الطلب', 'العميل', 'التاريخ', 'الإجمالي', 'المدفوع', 'المتبقي'])
-        for o in Order.objects.all()[:500]:
-            ws.append([
-                o.order_number, str(o.customer),
-                o.created_at.strftime('%Y-%m-%d'),
-                float(o.total), float(o.paid_amount), float(o.due_amount),
-            ])
-    elif report_type == 'customers':
-        from apps.customers.models import Customer
-        ws.append(['الكود', 'الاسم', 'الهاتف', 'الرصيد', 'الحد الائتماني', 'تاريخ التسجيل'])
-        for c in Customer.objects.all()[:500]:
-            ws.append([
-                c.code, str(c), c.phone,
-                float(c.current_balance), float(c.credit_limit),
-                c.created_at.strftime('%Y-%m-%d'),
-            ])
-    elif report_type == 'production':
-        from apps.production.models import ProductionJob
-        ws.append(['رقم الأمر', 'الطلب', 'القسم', 'الحالة', 'تاريخ البدء', 'تاريخ الانتهاء'])
-        for j in ProductionJob.objects.all()[:500]:
-            ws.append([
-                j.job_number, j.order.order_number,
-                j.department.name_ar, j.get_status_display(),
-                j.start_date.strftime('%Y-%m-%d %H:%M') if j.start_date else '',
-                j.end_date.strftime('%Y-%m-%d %H:%M') if j.end_date else '',
-            ])
-    elif report_type == 'inventory':
-        from apps.inventory.models import Material
-        ws.append(['الكود', 'الاسم', 'التصنيف', 'الوحدة', 'المخزون', 'سعر الشراء', 'سعر البيع'])
-        for m in Material.objects.all()[:500]:
-            ws.append([
-                m.code, m.name_ar or m.name,
-                m.category.name_ar if m.category else '',
-                m.get_unit_display(), float(m.current_stock),
-                float(m.purchase_price), float(m.selling_price or 0),
-            ])
-    elif report_type == 'employees':
-        from apps.employees.models import Employee
-        ws.append(['الكود', 'الاسم', 'القسم', 'الراتب', 'الحالة'])
-        for emp in Employee.objects.all():
-            ws.append([
-                emp.employee_code, emp.full_name,
-                emp.get_department_display(),
-                float(emp.base_salary),
-                'نشط' if emp.is_active else 'غير نشط',
-            ])
-    elif report_type == 'tax':
-        from apps.orders.models import Order
-        ws.append(['رقم الطلب', 'العميل', 'التاريخ', 'الإجمالي', 'الضريبة', 'نسبة الضريبة'])
-        for o in Order.objects.filter(tax_amount__gt=0)[:500]:
-            ws.append([
-                o.order_number, str(o.customer),
-                o.created_at.strftime('%Y-%m-%d'),
-                float(o.total), float(o.tax_amount), f'{o.tax_percentage}%',
-            ])
+    handler = EXPORT_HANDLERS.get(report_type)
+    if handler:
+        handler(ws)
 
     response = HttpResponse(
         content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'

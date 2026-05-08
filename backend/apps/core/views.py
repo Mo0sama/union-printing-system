@@ -4,6 +4,7 @@ from django import forms
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from apps.accounts.decorators import app_permission_required
+from django.contrib.auth.decorators import login_required
 from django.db.models import Count, F, Q, Sum
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
@@ -118,6 +119,148 @@ def settings_view(request):
     return render(request, 'core/settings.html', context)
 
 
+LOOKUP_LABELS = {
+    'material_unit': 'وحدات القياس', 'payment_method': 'أنواع الدفع',
+    'order_type': 'أنواع الطلبات', 'machine_type': 'أنواع الماكينات',
+    'employee_dept': 'أقسام الموظفين', 'supplier_type': 'أنواع الموردين',
+    'customer_type': 'أنواع العملاء', 'vat': 'الضرائب',
+    'order_status': 'حالات الطلبات', 'order_priority': 'أولويات الطلبات',
+    'order_item_type': 'أنواع بنود الطلب', 'order_item_status': 'حالات بنود الطلب',
+    'unit': 'وحدات القياس', 'discount_type': 'أنواع الخصم',
+    'delivery_note_status': 'حالات مذكرات التسليم',
+    'production_job_status': 'حالات أوامر الإنتاج',
+    'production_stage_status': 'حالات مراحل الإنتاج',
+    'quality_check_result': 'نتائج فحص الجودة', 'machine_status': 'حالات الماكينات',
+    'quote_status': 'حالات عروض الأسعار', 'stock_movement_type': 'أنواع الحركات المخزنية',
+    'pos_session_status': 'حالات جلسات البيع', 'pos_sale_status': 'حالات فواتير البيع',
+    'pos_item_type': 'أنواع بنود الفواتير',
+    'purchase_order_status': 'حالات أوامر الشراء',
+    'interaction_type': 'أنواع التفاعلات', 'customer_payment_method': 'طرق دفع العملاء',
+    'leave_type': 'أنواع الإجازات', 'leave_status': 'حالات الإجازات',
+    'attendance_status': 'حالات الحضور', 'employee_salary_type': 'أنواع الرواتب',
+}
+
+LOOKUP_TYPES = list(LOOKUP_LABELS.keys())
+
+
+def _handle_category_action(request, action, pk):
+    from apps.inventory.models import Category
+    name_ar = request.POST.get('name_ar', '').strip()
+    if action == 'add':
+        if name_ar:
+            Category.objects.create(
+                name=request.POST.get('name', name_ar), name_ar=name_ar,
+                parent_id=request.POST.get('parent') or None,
+                description=request.POST.get('description', ''),
+            )
+            messages.success(request, 'تمت إضافة التصنيف بنجاح')
+        else:
+            messages.error(request, 'الاسم بالعربية مطلوب')
+    elif action == 'edit' and pk:
+        cat = get_object_or_404(Category, pk=pk)
+        if name_ar:
+            cat.name = request.POST.get('name', name_ar)
+            cat.name_ar = name_ar
+            cat.parent_id = request.POST.get('parent') or None
+            cat.description = request.POST.get('description', '')
+            cat.save()
+            messages.success(request, 'تم تحديث التصنيف بنجاح')
+        else:
+            messages.error(request, 'الاسم بالعربية مطلوب')
+    elif action == 'delete' and pk:
+        Category.objects.filter(pk=pk).delete()
+        messages.success(request, 'تم حذف التصنيف بنجاح')
+
+
+def _handle_department_action(request, action, pk):
+    from apps.production.models import Department
+    name_ar = request.POST.get('name_ar', '').strip()
+    code = request.POST.get('code', '').strip()
+    if action == 'add':
+        if name_ar and code:
+            Department.objects.create(
+                name=request.POST.get('name', name_ar), name_ar=name_ar, code=code,
+                sort_order=int(request.POST.get('sort_order', 0)),
+                description=request.POST.get('description', ''),
+            )
+            messages.success(request, 'تمت إضافة القسم بنجاح')
+        else:
+            messages.error(request, 'الاسم والكود مطلوبان')
+    elif action == 'edit' and pk:
+        dept = get_object_or_404(Department, pk=pk)
+        if name_ar and code:
+            dept.name = request.POST.get('name', name_ar)
+            dept.name_ar = name_ar
+            dept.code = code
+            dept.sort_order = int(request.POST.get('sort_order', 0))
+            dept.description = request.POST.get('description', '')
+            dept.save()
+            messages.success(request, 'تم تحديث القسم بنجاح')
+        else:
+            messages.error(request, 'الاسم والكود مطلوبان')
+    elif action == 'delete' and pk:
+        Department.objects.filter(pk=pk).delete()
+        messages.success(request, 'تم حذف القسم بنجاح')
+
+
+def _handle_machine_action(request, action, pk):
+    from apps.production.models import Machine
+    if action == 'delete' and pk:
+        Machine.objects.filter(pk=pk).delete()
+        messages.success(request, 'تم حذف الماكينة بنجاح')
+    elif action in ('add', 'edit'):
+        name = request.POST.get('name', '').strip()
+        dept_id = request.POST.get('department')
+        if name and dept_id:
+            if action == 'add':
+                Machine.objects.create(
+                    name=name, machine_type=request.POST.get('machine_type', 'other'),
+                    department_id=dept_id, model=request.POST.get('model', ''),
+                    status=request.POST.get('status', 'active'), notes=request.POST.get('notes', ''),
+                )
+                messages.success(request, 'تمت إضافة الماكينة بنجاح')
+            elif action == 'edit' and pk:
+                mach = get_object_or_404(Machine, pk=pk)
+                mach.name = name
+                mach.machine_type = request.POST.get('machine_type', 'other')
+                mach.department_id = dept_id
+                mach.model = request.POST.get('model', '')
+                mach.status = request.POST.get('status', 'active')
+                mach.notes = request.POST.get('notes', '')
+                mach.save()
+                messages.success(request, 'تم تحديث الماكينة بنجاح')
+        else:
+            messages.error(request, 'الاسم والقسم مطلوبان')
+
+
+def _handle_lookup_action(request, action, pk, item_type):
+    from .models import Lookup
+    if action == 'delete' and pk:
+        Lookup.objects.filter(pk=pk).delete()
+        messages.success(request, 'تم الحذف بنجاح')
+    elif action in ('add', 'edit'):
+        name_ar = request.POST.get('name_ar', '').strip()
+        code = request.POST.get('code', '').strip()
+        if name_ar and code:
+            if action == 'add':
+                Lookup.objects.create(
+                    type=item_type, code=code,
+                    name=request.POST.get('name', name_ar), name_ar=name_ar,
+                    sort_order=int(request.POST.get('sort_order', 0)),
+                )
+                messages.success(request, 'تمت الإضافة بنجاح')
+            elif action == 'edit' and pk:
+                item = get_object_or_404(Lookup, pk=pk)
+                item.code = code
+                item.name = request.POST.get('name', name_ar)
+                item.name_ar = name_ar
+                item.sort_order = int(request.POST.get('sort_order', 0))
+                item.save()
+                messages.success(request, 'تم التحديث بنجاح')
+        else:
+            messages.error(request, 'الاسم والكود مطلوبان')
+
+
 @app_permission_required('advanced_settings_view')
 def advanced_settings(request):
     from apps.inventory.models import Category
@@ -132,7 +275,6 @@ def advanced_settings(request):
     for lt in Lookup.Type.values:
         lookup_sections[lt] = Lookup.objects.filter(type=lt, is_active=True)
 
-    model_sections = ['category', 'department', 'machine']
     lookup_type_map = {lt: lt for lt in Lookup.Type.values}
 
     if request.method == 'POST':
@@ -141,180 +283,31 @@ def advanced_settings(request):
         pk = request.POST.get('pk')
 
         try:
-            # Handle model-based sections
-            if item_type == 'category':
-                if action == 'add':
-                    name_ar = request.POST.get('name_ar', '').strip()
-                    if name_ar:
-                        Category.objects.create(
-                            name=request.POST.get('name', name_ar),
-                            name_ar=name_ar,
-                            parent_id=request.POST.get('parent') or None,
-                            description=request.POST.get('description', ''),
-                        )
-                        messages.success(request, 'تمت إضافة التصنيف بنجاح')
-                    else:
-                        messages.error(request, 'الاسم بالعربية مطلوب')
-                elif action == 'edit' and pk:
-                    cat = get_object_or_404(Category, pk=pk)
-                    name_ar = request.POST.get('name_ar', '').strip()
-                    if name_ar:
-                        cat.name = request.POST.get('name', name_ar)
-                        cat.name_ar = name_ar
-                        cat.parent_id = request.POST.get('parent') or None
-                        cat.description = request.POST.get('description', '')
-                        cat.save()
-                        messages.success(request, 'تم تحديث التصنيف بنجاح')
-                    else:
-                        messages.error(request, 'الاسم بالعربية مطلوب')
-                elif action == 'delete' and pk:
-                    Category.objects.filter(pk=pk).delete()
-                    messages.success(request, 'تم حذف التصنيف بنجاح')
-
-            elif item_type == 'department':
-                if action == 'add':
-                    name_ar = request.POST.get('name_ar', '').strip()
-                    code = request.POST.get('code', '').strip()
-                    if name_ar and code:
-                        Department.objects.create(
-                            name=request.POST.get('name', name_ar),
-                            name_ar=name_ar,
-                            code=code,
-                            sort_order=int(request.POST.get('sort_order', 0)),
-                            description=request.POST.get('description', ''),
-                        )
-                        messages.success(request, 'تمت إضافة القسم بنجاح')
-                    else:
-                        messages.error(request, 'الاسم والكود مطلوبان')
-                elif action == 'edit' and pk:
-                    dept = get_object_or_404(Department, pk=pk)
-                    name_ar = request.POST.get('name_ar', '').strip()
-                    code = request.POST.get('code', '').strip()
-                    if name_ar and code:
-                        dept.name = request.POST.get('name', name_ar)
-                        dept.name_ar = name_ar
-                        dept.code = code
-                        dept.sort_order = int(request.POST.get('sort_order', 0))
-                        dept.description = request.POST.get('description', '')
-                        dept.save()
-                        messages.success(request, 'تم تحديث القسم بنجاح')
-                    else:
-                        messages.error(request, 'الاسم والكود مطلوبان')
-                elif action == 'delete' and pk:
-                    Department.objects.filter(pk=pk).delete()
-                    messages.success(request, 'تم حذف القسم بنجاح')
-
-            elif item_type == 'machine':
-                if action == 'delete' and pk:
-                    Machine.objects.filter(pk=pk).delete()
-                    messages.success(request, 'تم حذف الماكينة بنجاح')
-                elif action in ('add', 'edit'):
-                    name = request.POST.get('name', '').strip()
-                    dept_id = request.POST.get('department')
-                    if name and dept_id:
-                        if action == 'add':
-                            Machine.objects.create(
-                                name=name,
-                                machine_type=request.POST.get('machine_type', 'other'),
-                                department_id=dept_id,
-                                model=request.POST.get('model', ''),
-                                status=request.POST.get('status', 'active'),
-                                notes=request.POST.get('notes', ''),
-                            )
-                            messages.success(request, 'تمت إضافة الماكينة بنجاح')
-                        elif action == 'edit' and pk:
-                            mach = get_object_or_404(Machine, pk=pk)
-                            mach.name = name
-                            mach.machine_type = request.POST.get('machine_type', 'other')
-                            mach.department_id = dept_id
-                            mach.model = request.POST.get('model', '')
-                            mach.status = request.POST.get('status', 'active')
-                            mach.notes = request.POST.get('notes', '')
-                            mach.save()
-                            messages.success(request, 'تم تحديث الماكينة بنجاح')
-                    else:
-                        messages.error(request, 'الاسم والقسم مطلوبان')
-
-            # Handle Lookup-based sections (material_unit, payment_method, etc.)
+            handler_map = {
+                'category': _handle_category_action,
+                'department': _handle_department_action,
+                'machine': _handle_machine_action,
+            }
+            handler = handler_map.get(item_type)
+            if handler:
+                handler(request, action, pk)
             elif item_type in lookup_type_map:
-                if action == 'delete' and pk:
-                    Lookup.objects.filter(pk=pk).delete()
-                    messages.success(request, 'تم الحذف بنجاح')
-                elif action in ('add', 'edit'):
-                    name_ar = request.POST.get('name_ar', '').strip()
-                    code = request.POST.get('code', '').strip()
-                    if name_ar and code:
-                        if action == 'add':
-                            Lookup.objects.create(
-                                type=item_type,
-                                code=code,
-                                name=request.POST.get('name', name_ar),
-                                name_ar=name_ar,
-                                sort_order=int(request.POST.get('sort_order', 0)),
-                            )
-                            messages.success(request, 'تمت الإضافة بنجاح')
-                        elif action == 'edit' and pk:
-                            item = get_object_or_404(Lookup, pk=pk)
-                            item.code = code
-                            item.name = request.POST.get('name', name_ar)
-                            item.name_ar = name_ar
-                            item.sort_order = int(request.POST.get('sort_order', 0))
-                            item.save()
-                            messages.success(request, 'تم التحديث بنجاح')
-                    else:
-                        messages.error(request, 'الاسم والكود مطلوبان')
-
+                _handle_lookup_action(request, action, pk, item_type)
         except Exception as e:
             messages.error(request, f'حدث خطأ: {str(e)}')
 
         return redirect('core:advanced_settings')
 
-    # Build structured context for template
-    sections = []
-    sections.append(('category', 'التصنيفات', 'categories', categories))
-    sections.append(('department', 'أقسام الإنتاج', 'departments', departments))
-    sections.append(('machine', 'الماكينات', 'machines', machines))
-
-    lookup_labels = {
-        'material_unit': 'وحدات القياس', 'payment_method': 'أنواع الدفع',
-        'order_type': 'أنواع الطلبات', 'machine_type': 'أنواع الماكينات',
-        'employee_dept': 'أقسام الموظفين', 'supplier_type': 'أنواع الموردين',
-        'customer_type': 'أنواع العملاء', 'vat': 'الضرائب',
-        'order_status': 'حالات الطلبات', 'order_priority': 'أولويات الطلبات',
-        'order_item_type': 'أنواع بنود الطلب', 'order_item_status': 'حالات بنود الطلب',
-        'unit': 'وحدات القياس', 'discount_type': 'أنواع الخصم',
-        'delivery_note_status': 'حالات مذكرات التسليم',
-        'production_job_status': 'حالات أوامر الإنتاج',
-        'production_stage_status': 'حالات مراحل الإنتاج',
-        'quality_check_result': 'نتائج فحص الجودة', 'machine_status': 'حالات الماكينات',
-        'quote_status': 'حالات عروض الأسعار', 'stock_movement_type': 'أنواع الحركات المخزنية',
-        'pos_session_status': 'حالات جلسات البيع', 'pos_sale_status': 'حالات فواتير البيع',
-        'pos_item_type': 'أنواع بنود الفواتير',
-        'purchase_order_status': 'حالات أوامر الشراء',
-        'interaction_type': 'أنواع التفاعلات', 'customer_payment_method': 'طرق دفع العملاء',
-        'leave_type': 'أنواع الإجازات', 'leave_status': 'حالات الإجازات',
-        'attendance_status': 'حالات الحضور', 'employee_salary_type': 'أنواع الرواتب',
-    }
-
-    lookup_types = [
-        'material_unit', 'payment_method', 'order_type', 'machine_type',
-        'employee_dept', 'supplier_type', 'customer_type', 'vat',
-        'order_status', 'order_priority', 'order_item_type', 'order_item_status',
-        'unit', 'discount_type', 'delivery_note_status',
-        'production_job_status', 'production_stage_status', 'quality_check_result',
-        'machine_status', 'quote_status', 'stock_movement_type',
-        'pos_session_status', 'pos_sale_status', 'pos_item_type',
-        'purchase_order_status', 'interaction_type', 'customer_payment_method',
-        'leave_type', 'leave_status', 'attendance_status', 'employee_salary_type',
+    sections = [
+        ('category', 'التصنيفات', 'categories', categories),
+        ('department', 'أقسام الإنتاج', 'departments', departments),
+        ('machine', 'الماكينات', 'machines', machines),
     ]
 
     context = {
-        'categories': categories,
-        'departments': departments,
-        'machines': machines,
-        'lookup_sections': lookup_sections,
-        'lookup_labels': lookup_labels,
-        'lookup_types': lookup_types,
+        'categories': categories, 'departments': departments, 'machines': machines,
+        'lookup_sections': lookup_sections, 'lookup_labels': LOOKUP_LABELS,
+        'lookup_types': LOOKUP_TYPES,
     }
     return render(request, 'core/advanced_settings.html', context)
 
@@ -324,3 +317,23 @@ def advanced_settings(request):
 def clear_notifications(request):
     messages.success(request, 'Notifications cleared.')
     return redirect('core:dashboard')
+
+
+@login_required
+def notification_list(request):
+    notifications = Notification.objects.filter(recipient=request.user)
+    notifications.update(read=True)
+    context = {
+        'notifications': notifications,
+        'title': 'الإشعارات',
+    }
+    return render(request, 'core/notification_list.html', context)
+
+
+@require_POST
+@login_required
+def notification_mark_read(request, pk):
+    notification = get_object_or_404(Notification, pk=pk, recipient=request.user)
+    notification.read = True
+    notification.save()
+    return redirect(request.POST.get('next', 'core:notification_list'))

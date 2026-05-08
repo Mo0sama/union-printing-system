@@ -9,7 +9,7 @@
         <h3 class="card-title">{{ title }}</h3>
         <div class="card-tools">
             <a href="{% url 'production:production_job_create' %}" class="btn btn-primary btn-sm">
-                <i class="fas fa-plus"></i> جديد
+                <i class="bi bi-plus"></i> جديد
             </a>
         </div>
     </div>
@@ -52,7 +52,7 @@
                 <input type="date" name="date_to" class="form-control" value="{{ request.GET.date_to }}">
             </div>
             <div class="col-md-12 mt-2">
-                <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-search"></i> بحث</button>
+                <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-search"></i> بحث</button>
                 <a href="{% url 'production:production_job_list' %}" class="btn btn-secondary btn-sm">إعادة تعيين</a>
             </div>
         </form>
@@ -106,7 +106,7 @@
                         <td>{{ job.created_at|date:'Y-m-d' }}</td>
                         <td>
                             <a href="{% url 'production:production_job_edit' job.pk %}" class="btn btn-warning btn-sm" title="تعديل">
-                                <i class="fas fa-edit"></i>
+                                <i class="bi bi-pencil"></i>
                             </a>
                         </td>
                     </tr>

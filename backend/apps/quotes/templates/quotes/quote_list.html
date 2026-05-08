@@ -13,7 +13,7 @@
         <div class="col-auto">
             {% if perms.quotes.add_quote %}
             <a href="{% url 'quotes:quote_create' %}" class="btn btn-primary">
-                <i class="fas fa-plus"></i> {% trans 'عرض سعر جديد' %}
+                <i class="bi bi-plus"></i> {% trans 'عرض سعر جديد' %}
             </a>
             {% endif %}
         </div>
@@ -24,7 +24,7 @@
             <h3 class="card-title">{% trans 'بحث وتصفية' %}</h3>
             <div class="card-tools">
                 <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                    <i class="fas fa-minus"></i>
+                    <i class="bi bi-dash"></i>
                 </button>
             </div>
         </div>
@@ -37,7 +37,7 @@
                 <div class="col-md-2">{{ filter_form.date_to.label_tag }}{{ filter_form.date_to }}</div>
                 <div class="col-md-1 d-flex align-items-end">
                     <button type="submit" class="btn btn-primary w-100">
-                        <i class="fas fa-search"></i>
+                        <i class="bi bi-search"></i>
                     </button>
                 </div>
             </form>
@@ -88,20 +88,20 @@
                         <td>
                             <div class="btn-group">
                                 <a href="{% url 'quotes:quote_detail' quote.pk %}" class="btn btn-sm btn-info" title="{% trans 'عرض' %}">
-                                    <i class="fas fa-eye"></i>
+                                    <i class="bi bi-eye"></i>
                                 </a>
                                 {% if perms.quotes.change_quote %}
                                 <a href="{% url 'quotes:quote_edit' quote.pk %}" class="btn btn-sm btn-warning" title="{% trans 'تعديل' %}">
-                                    <i class="fas fa-edit"></i>
+                                    <i class="bi bi-pencil"></i>
                                 </a>
                                 {% endif %}
                                 {% if perms.quotes.delete_quote %}
                                 <a href="{% url 'quotes:quote_delete' quote.pk %}" class="btn btn-sm btn-danger" title="{% trans 'حذف' %}">
-                                    <i class="fas fa-trash"></i>
+                                    <i class="bi bi-trash"></i>
                                 </a>
                                 {% endif %}
                                 <a href="{% url 'quotes:quote_print_pdf' quote.pk %}" class="btn btn-sm btn-secondary" target="_blank" title="{% trans 'طباعة' %}">
-                                    <i class="fas fa-print"></i>
+                                    <i class="bi bi-printer"></i>
                                 </a>
                             </div>
                         </td>

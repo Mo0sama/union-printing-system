@@ -11,7 +11,7 @@
                 <h3 class="card-title">{{ job.job_number }}</h3>
                 <div class="card-tools">
                     <a href="{% url 'production:production_job_edit' job.pk %}" class="btn btn-warning btn-sm">
-                        <i class="fas fa-edit"></i> تعديل
+                        <i class="bi bi-pencil"></i> تعديل
                     </a>
                 </div>
             </div>
@@ -144,7 +144,7 @@
                 <h3 class="card-title">فحوصات الجودة</h3>
                 <div class="card-tools">
                     <a href="{% url 'production:quality_check_create' job.pk %}" class="btn btn-primary btn-sm">
-                        <i class="fas fa-plus"></i> فحص جديد
+                        <i class="bi bi-plus"></i> فحص جديد
                     </a>
                 </div>
             </div>

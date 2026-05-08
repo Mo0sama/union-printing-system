@@ -1,0 +1,53 @@
+{% extends 'adminlte/base.html' %}
+{% load i18n core_tags %}
+
+{% block title %}{% trans 'الإشعارات' %} - {{ company_settings.company_name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">{% trans 'الإشعارات' %}</h5>
+            <span class="badge bg-primary">{{ notifications.count }} {% trans 'إشعار' %}</span>
+        </div>
+        <div class="card-body p-0">
+            {% if notifications %}
+            <div class="list-group list-group-flush">
+                {% for n in notifications %}
+                <div class="list-group-item list-group-item-action d-flex align-items-start {% if not n.read %}list-group-item-warning{% endif %}">
+                    <div class="me-3 mt-1">
+                        {% if n.notification_type == 'order' %}
+                        <i class="bi bi-cart3 fs-4 text-primary"></i>
+                        {% elif n.notification_type == 'production' %}
+                        <i class="bi bi-gear fs-4 text-success"></i>
+                        {% elif n.notification_type == 'payment' %}
+                        <i class="bi bi-cash fs-4 text-info"></i>
+                        {% elif n.notification_type == 'inventory' %}
+                        <i class="bi bi-box fs-4 text-warning"></i>
+                        {% else %}
+                        <i class="bi bi-bell fs-4 text-secondary"></i>
+                        {% endif %}
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="d-flex justify-content-between">
+                            <h6 class="mb-1">{{ n.title }}</h6>
+                            <small class="text-muted">{{ n.created_at|date:'Y-m-d H:i' }}</small>
+                        </div>
+                        <p class="mb-1 small">{{ n.message }}</p>
+                        {% if n.link %}
+                        <a href="{{ n.link }}" class="btn btn-sm btn-outline-primary mt-1">{% trans 'عرض' %}</a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-bell-slash fs-1 text-muted"></i>
+                <p class="mt-2 text-muted">{% trans 'لا توجد إشعارات' %}</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

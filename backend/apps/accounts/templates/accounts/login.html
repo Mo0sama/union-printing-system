@@ -144,6 +144,9 @@
                                     {% trans 'تذكرني' %}
                                 </label>
                             </div>
+                            <a href="{% url 'accounts:password_reset' %}" class="small text-decoration-none">
+                                {% trans 'نسيت كلمة المرور؟' %}
+                            </a>
                         </div>
 
                         <button type="submit" class="btn btn-primary w-100">

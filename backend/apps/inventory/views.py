@@ -195,8 +195,8 @@ def stock_adjustment(request):
             movement.save()
 
             material = movement.material
-            if movement.quantity > 0:
-                material.current_stock = F('current_stock') + movement.quantity
+            if movement.movement_type.endswith('_out'):
+                material.current_stock = F('current_stock') - movement.quantity
             else:
                 material.current_stock = F('current_stock') + movement.quantity
             material.save()

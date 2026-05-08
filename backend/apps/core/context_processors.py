@@ -24,6 +24,10 @@ def today_date(request):
 
 
 def unread_notifications(request):
+    count = 0
+    if request.user.is_authenticated:
+        from .models import Notification
+        count = Notification.objects.filter(recipient=request.user, read=False).count()
     return {
-        'unread_notifications': 0,
+        'unread_notifications': count,
     }

@@ -98,10 +98,10 @@
                     </div>
                     <div class="card-body">
                         <button type="submit" class="btn btn-success w-100 mb-2">
-                            <i class="fas fa-save"></i> {% trans 'حفظ' %}
+                            <i class="bi bi-save"></i> {% trans 'حفظ' %}
                         </button>
                         <a href="{% url 'quotes:quote_list' %}" class="btn btn-secondary w-100">
-                            <i class="fas fa-times"></i> {% trans 'إلغاء' %}
+                            <i class="bi bi-x"></i> {% trans 'إلغاء' %}
                         </a>
                     </div>
                 </div>
@@ -113,7 +113,7 @@
                 <h3 class="card-title">{% trans 'البنود' %}</h3>
                 <div class="card-tools">
                     <button type="button" class="btn btn-success btn-sm" id="addItem">
-                        <i class="fas fa-plus"></i> {% trans 'إضافة بند' %}
+                        <i class="bi bi-plus"></i> {% trans 'إضافة بند' %}
                     </button>
                 </div>
             </div>
@@ -151,7 +151,7 @@
                                         {{ f.DELETE }}
                                     </div>
                                     <button type="button" class="btn btn-sm btn-outline-danger delete-item" title="حذف">
-                                        <i class="fas fa-times"></i>
+                                        <i class="bi bi-x"></i>
                                     </button>
                                     {% endif %}
                                 </td>
@@ -217,7 +217,7 @@ const emptyRow = `{% filter escapejs %}
     <td>{{ formset.empty_form.notes }}</td>
     <td>
         <button type="button" class="btn btn-sm btn-outline-danger delete-item" title="حذف">
-            <i class="fas fa-times"></i>
+            <i class="bi bi-x"></i>
         </button>
     </td>
 </tr>

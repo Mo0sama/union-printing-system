@@ -125,6 +125,10 @@ CRISPY_TEMPLATE_PACK = 'bootstrap5'
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 
+# Email (console backend for dev; override in production_settings)
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+DEFAULT_FROM_EMAIL = 'noreply@unionprinting.com'
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 

@@ -1,4 +1,33 @@
 // UNION FOR DIGITAL PRINTING - Management System JavaScript
+
+// Global loading overlay
+function showLoading(show) {
+    var overlay = $('#loading-overlay');
+    if (show) {
+        if (!overlay.length) {
+            $('body').append('<div id="loading-overlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(255,255,255,0.7);z-index:9999;display:flex;align-items:center;justify-content:center;"><div class="spinner-border text-primary" role="status" style="width:3rem;height:3rem;"><span class="visually-hidden">Loading...</span></div></div>');
+        } else {
+            overlay.show();
+        }
+    } else {
+        overlay.hide();
+    }
+}
+
+// Show spinner on form submit buttons
+$(document).on('submit', 'form', function() {
+    var btn = $(this).find('button[type="submit"]');
+    if (btn.length && !btn.hasClass('no-spinner')) {
+        btn.prop('disabled', true);
+        btn.html('<span class="spinner-border spinner-border-sm me-1"></span> ' + btn.text().trim());
+    }
+});
+
+// Show spinner on AJAX links/buttons
+$(document).on('click', '.ajax-loading', function() {
+    showLoading(true);
+});
+
 $(document).ready(function() {
     // Auto-hide alerts after 5 seconds
     setTimeout(function() {

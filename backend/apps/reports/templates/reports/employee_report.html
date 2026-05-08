@@ -6,10 +6,10 @@
 {% block content %}
 <div class="container-fluid">
   <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
-    <h1 class="h3"><i class="fas fa-user-tie ms-2"></i>{% trans "تقرير الموظفين" %}</h1>
+    <h1 class="h3"><i class="bi bi-person-badge ms-2"></i>{% trans "تقرير الموظفين" %}</h1>
     <div class="no-print">
-      <a href="{% url 'reports:export_report_excel' %}?type=employees" class="btn btn-success btn-sm"><i class="fas fa-file-excel ms-1"></i>{% trans "تصدير Excel" %}</a>
-      <a href="{% url 'reports:print_report' %}?type=employees" target="_blank" class="btn btn-info btn-sm"><i class="fas fa-print ms-1"></i>{% trans "طباعة" %}</a>
+      <a href="{% url 'reports:export_report_excel' %}?type=employees" class="btn btn-success btn-sm"><i class="bi bi-file-earmark-excel ms-1"></i>{% trans "تصدير Excel" %}</a>
+      <a href="{% url 'reports:print_report' %}?type=employees" target="_blank" class="btn btn-info btn-sm"><i class="bi bi-printer ms-1"></i>{% trans "طباعة" %}</a>
     </div>
   </div>
 
@@ -23,7 +23,7 @@
             {% for d, dname in departments %}<option value="{{ d }}" {% if department == d %}selected{% endif %}>{{ dname }}</option>{% endfor %}
           </select>
         </div>
-        <div class="col-md-4"><button type="submit" class="btn btn-primary w-100"><i class="fas fa-search ms-1"></i>{% trans "بحث" %}</button></div>
+        <div class="col-md-4"><button type="submit" class="btn btn-primary w-100"><i class="bi bi-search ms-1"></i>{% trans "بحث" %}</button></div>
       </form>
     </div>
   </div>

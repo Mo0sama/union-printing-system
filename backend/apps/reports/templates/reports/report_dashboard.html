@@ -6,7 +6,7 @@
 {% block content %}
 <div class="container-fluid">
   <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
-    <h1 class="h3"><i class="fas fa-chart-bar ms-2"></i>{% trans "التقارير" %}</h1>
+    <h1 class="h3"><i class="bi bi-bar-chart ms-2"></i>{% trans "التقارير" %}</h1>
   </div>
 
   <div class="row g-4">
@@ -30,7 +30,7 @@
       <a href="{% url 'reports:sales_report' %}" class="text-decoration-none">
         <div class="card report-card h-100 shadow-sm border-0">
           <div class="card-body text-center p-4">
-            <div class="report-icon mb-3"><i class="fas fa-shopping-cart fa-3x text-primary"></i></div>
+            <div class="report-icon mb-3"><i class="bi bi-cart3 fa-3x text-primary"></i></div>
             <h5 class="card-title fw-bold">{% trans "تقرير المبيعات" %}</h5>
             <p class="card-text text-muted small">{% trans "عرض المبيعات اليومية والشهرية مع إحصائيات detalied" %}</p>
           </div>
@@ -41,7 +41,7 @@
       <a href="{% url 'reports:revenue_report' %}" class="text-decoration-none">
         <div class="card report-card h-100 shadow-sm border-0">
           <div class="card-body text-center p-4">
-            <div class="report-icon mb-3"><i class="fas fa-dollar-sign fa-3x text-success"></i></div>
+            <div class="report-icon mb-3"><i class="bi bi-currency-dollar fa-3x text-success"></i></div>
             <h5 class="card-title fw-bold">{% trans "تقرير الإيرادات" %}</h5>
             <p class="card-text text-muted small">{% trans "تحليل الإيرادات حسب نوع الخدمة وطريقة الدفع" %}</p>
           </div>
@@ -52,7 +52,7 @@
       <a href="{% url 'reports:profit_loss_report' %}" class="text-decoration-none">
         <div class="card report-card h-100 shadow-sm border-0">
           <div class="card-body text-center p-4">
-            <div class="report-icon mb-3"><i class="fas fa-chart-line fa-3x text-warning"></i></div>
+            <div class="report-icon mb-3"><i class="bi bi-graph-up fa-3x text-warning"></i></div>
             <h5 class="card-title fw-bold">{% trans "تقرير الأرباح والخسائر" %}</h5>
             <p class="card-text text-muted small">{% trans "ملخص الإيرادات والمصروفات وصافي الربح" %}</p>
           </div>
@@ -63,7 +63,7 @@
       <a href="{% url 'reports:customer_report' %}" class="text-decoration-none">
         <div class="card report-card h-100 shadow-sm border-0">
           <div class="card-body text-center p-4">
-            <div class="report-icon mb-3"><i class="fas fa-users fa-3x text-info"></i></div>
+            <div class="report-icon mb-3"><i class="bi bi-persons fa-3x text-info"></i></div>
             <h5 class="card-title fw-bold">{% trans "تقرير العملاء" %}</h5>
             <p class="card-text text-muted small">{% trans "أفضل العملاء وإحصائيات العملاء الجدد" %}</p>
           </div>
@@ -74,7 +74,7 @@
       <a href="{% url 'reports:production_report' %}" class="text-decoration-none">
         <div class="card report-card h-100 shadow-sm border-0">
           <div class="card-body text-center p-4">
-            <div class="report-icon mb-3"><i class="fas fa-industry fa-3x text-secondary"></i></div>
+            <div class="report-icon mb-3"><i class="bi bi-building-gear fa-3x text-secondary"></i></div>
             <h5 class="card-title fw-bold">{% trans "تقرير الإنتاج" %}</h5>
             <p class="card-text text-muted small">{% trans "حالة الوظائف الإنتاجية وأوقات التنفيذ" %}</p>
           </div>
@@ -85,7 +85,7 @@
       <a href="{% url 'reports:inventory_report' %}" class="text-decoration-none">
         <div class="card report-card h-100 shadow-sm border-0">
           <div class="card-body text-center p-4">
-            <div class="report-icon mb-3"><i class="fas fa-warehouse fa-3x text-danger"></i></div>
+            <div class="report-icon mb-3"><i class="bi bi-boxes fa-3x text-danger"></i></div>
             <h5 class="card-title fw-bold">{% trans "تقرير المخزون" %}</h5>
             <p class="card-text text-muted small">{% trans "تقييم المخزون والمواد منخفضة المخزون" %}</p>
           </div>
@@ -96,7 +96,7 @@
       <a href="{% url 'reports:employee_report' %}" class="text-decoration-none">
         <div class="card report-card h-100 shadow-sm border-0">
           <div class="card-body text-center p-4">
-            <div class="report-icon mb-3"><i class="fas fa-user-tie fa-3x text-purple"></i></div>
+            <div class="report-icon mb-3"><i class="bi bi-person-badge fa-3x text-purple"></i></div>
             <h5 class="card-title fw-bold">{% trans "تقرير الموظفين" %}</h5>
             <p class="card-text text-muted small">{% trans "تكاليف الرواتب وإحصائيات الحضور" %}</p>
           </div>
@@ -107,7 +107,7 @@
       <a href="{% url 'reports:tax_report' %}" class="text-decoration-none">
         <div class="card report-card h-100 shadow-sm border-0">
           <div class="card-body text-center p-4">
-            <div class="report-icon mb-3"><i class="fas fa-file-invoice-dollar fa-3x text-orange"></i></div>
+            <div class="report-icon mb-3"><i class="bi bi-receipt fa-3x text-orange"></i></div>
             <h5 class="card-title fw-bold">{% trans "تقرير الضرائب" %}</h5>
             <p class="card-text text-muted small">{% trans "ملخص الضرائب المحصلة والتقارير الضريبية" %}</p>
           </div>

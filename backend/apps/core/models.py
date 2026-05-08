@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.db import models
-from .validators import validate_image_file, validate_image_size_5mb, validate_document_file, validate_file_size_10mb
+from .validators import validate_file_extension, validate_file_size
 
 User = get_user_model()
 
@@ -12,7 +12,7 @@ class CompanySetting(models.Model):
     ]
 
     company_name = models.CharField(max_length=200, default='UNION FOR DIGITAL PRINTING')
-    logo = models.ImageField(upload_to='company/', blank=True, null=True, validators=[validate_image_file, validate_image_size_5mb])
+    logo = models.ImageField(upload_to='company/', blank=True, null=True, validators=[validate_file_extension, validate_file_size])
     address = models.TextField(blank=True)
     phone = models.CharField(max_length=50, blank=True)
     email = models.EmailField(blank=True)
@@ -152,7 +152,7 @@ class Notification(models.Model):
 
 
 class Attachment(models.Model):
-    file = models.FileField(upload_to='attachments/', validators=[validate_document_file, validate_file_size_10mb])
+    file = models.FileField(upload_to='attachments/', validators=[validate_file_extension, validate_file_size])
     uploaded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     model_name = models.CharField(max_length=100)
     object_id = models.PositiveIntegerField()

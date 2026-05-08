@@ -227,20 +227,27 @@ def add_payment(request, pk):
 def add_design_file(request, pk):
     order = get_object_or_404(Order, pk=pk)
     if request.method == 'POST':
-        form = DesignFileForm(request.POST, request.FILES)
-        if form.is_valid():
+        files = request.FILES.getlist('file')
+        if not files:
+            messages.error(request, _('يرجى اختيار ملف'))
+            return redirect('orders:order_detail', pk=pk)
+        last_version = order.design_files.order_by('-version').first()
+        base_version = (last_version.version + 1) if last_version else 1
+        saved = 0
+        for i, f in enumerate(files):
             try:
-                design_file = form.save(commit=False)
-                design_file.order = order
-                design_file.uploaded_by = request.user
-                last_version = order.design_files.order_by('-version').first()
-                design_file.version = (last_version.version + 1) if last_version else 1
-                design_file.save()
-                messages.success(request, _('تم رفع ملف التصميم بنجاح'))
+                DesignFile.objects.create(
+                    order=order,
+                    file=f,
+                    version=base_version + i,
+                    uploaded_by=request.user,
+                    notes=request.POST.get('notes', ''),
+                )
+                saved += 1
             except Exception as e:
-                messages.error(request, _('حدث خطأ: %s') % str(e))
-        else:
-            messages.error(request, _('يرجى تصحيح الأخطاء'))
+                messages.error(request, _('خطأ في رفع %s: %s') % (f.name, str(e)))
+        if saved:
+            messages.success(request, _('تم رفع %s ملف(ات) بنجاح') % saved)
     return redirect('orders:order_detail', pk=pk)
 
 

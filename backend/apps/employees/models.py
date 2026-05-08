@@ -2,7 +2,7 @@ import datetime
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
-from apps.core.validators import validate_image_file, validate_image_size_5mb
+from apps.core.validators import validate_file_extension, validate_file_size
 
 User = get_user_model()
 
@@ -103,7 +103,7 @@ class Employee(models.Model):
     is_active = models.BooleanField(default=True, verbose_name='نشط')
     photo = models.ImageField(
         upload_to='employees/', blank=True, verbose_name='صورة',
-        validators=[validate_image_file, validate_image_size_5mb]
+        validators=[validate_file_extension, validate_file_size]
     )
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='تاريخ الإنشاء')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='آخر تحديث')

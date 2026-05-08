@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.db import models
-from apps.core.validators import validate_document_file, validate_file_size_10mb
+from apps.core.validators import validate_file_extension, validate_file_size
 
 
 class Department(models.Model):
@@ -146,7 +146,7 @@ class QualityCheck(models.Model):
     result = models.CharField(max_length=20, choices=Result.choices)
     defects = models.TextField(blank=True)
     notes = models.TextField(blank=True)
-    attachments = models.FileField(upload_to='quality_checks/', blank=True, validators=[validate_document_file, validate_file_size_10mb])
+    attachments = models.FileField(upload_to='quality_checks/', blank=True, validators=[validate_file_extension, validate_file_size])
 
     class Meta:
         verbose_name = 'فحص جودة'

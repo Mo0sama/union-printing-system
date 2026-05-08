@@ -403,6 +403,10 @@
                         {{ payment_form.amount }}
                     </div>
                     <div class="mb-3">
+                        <label class="form-label">{% trans 'تاريخ الدفع' %}</label>
+                        {{ payment_form.payment_date }}
+                    </div>
+                    <div class="mb-3">
                         <label class="form-label">{{ payment_form.payment_method.label }}</label>
                         {{ payment_form.payment_method }}
                     </div>

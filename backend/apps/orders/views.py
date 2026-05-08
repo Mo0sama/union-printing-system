@@ -88,7 +88,7 @@ def order_detail(request, pk):
     )
     context = {
         'order': order,
-        'payment_form': OrderPaymentForm(),
+        'payment_form': OrderPaymentForm(initial={'payment_date': timezone.now().date()}),
         'design_file_form': DesignFileForm(),
         'title': _('طلب: %s') % order.order_number,
     }
@@ -203,6 +203,8 @@ def add_payment(request, pk):
                     payment = form.save(commit=False)
                     payment.order = order
                     payment.created_by = request.user
+                    if not payment.payment_date:
+                        payment.payment_date = timezone.now().date()
                     payment.save()
                     order.update_payment_status()
                 messages.success(request, _('تم إضافة الدفعة بنجاح'))

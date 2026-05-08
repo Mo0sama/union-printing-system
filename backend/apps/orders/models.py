@@ -273,7 +273,7 @@ class OrderPayment(models.Model):
         _('المبلغ'), max_digits=12, decimal_places=2
     )
     payment_date = models.DateField(
-        _('تاريخ الدفع'), auto_now_add=True
+        _('تاريخ الدفع'), null=True, blank=True
     )
     payment_method = models.CharField(
         _('طريقة الدفع'), max_length=20,

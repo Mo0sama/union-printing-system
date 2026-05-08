@@ -113,10 +113,13 @@ OrderItemFormSet = forms.inlineformset_factory(
 class OrderPaymentForm(forms.ModelForm):
     class Meta:
         model = OrderPayment
-        fields = ['amount', 'payment_method', 'reference', 'notes']
+        fields = ['amount', 'payment_date', 'payment_method', 'reference', 'notes']
         widgets = {
             'amount': forms.NumberInput(
                 attrs={'class': 'form-control', 'step': '0.01'}
+            ),
+            'payment_date': forms.DateInput(
+                attrs={'class': 'form-control', 'type': 'date'}
             ),
             'payment_method': forms.Select(attrs={'class': 'form-control'}),
             'reference': forms.TextInput(attrs={'class': 'form-control'}),

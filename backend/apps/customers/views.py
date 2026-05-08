@@ -15,6 +15,7 @@ from .forms import (
     CustomerInteractionForm, CustomerPaymentForm,
 )
 from .models import Customer, CustomerInteraction, CustomerPayment
+from .services import adjust_balance, record_customer_payment
 
 
 @app_permission_required('customers_view')
@@ -179,14 +180,15 @@ def add_payment(request, pk):
     if request.method == 'POST':
         form = CustomerPaymentForm(request.POST)
         if form.is_valid():
-            payment = form.save(commit=False)
-            payment.customer = customer
-            payment.created_by = request.user
-            payment.save()
-
-            customer.current_balance -= payment.amount
-            customer.save()
-
+            record_customer_payment(
+                customer=customer,
+                amount=form.cleaned_data['amount'],
+                payment_date=form.cleaned_data.get('payment_date'),
+                payment_method=form.cleaned_data.get('payment_method', 'cash'),
+                reference=form.cleaned_data.get('reference', ''),
+                notes=form.cleaned_data.get('notes', ''),
+                user=request.user,
+            )
             messages.success(request, _('تم تسجيل الدفعة بنجاح.'))
             return redirect('customers:customer_detail', pk=customer.pk)
     else:

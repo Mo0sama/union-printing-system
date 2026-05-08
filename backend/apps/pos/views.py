@@ -15,6 +15,7 @@ from apps.accounting.services import post_cogs, post_pos_revenue
 from apps.employees.models import Employee
 from apps.inventory.models import Material
 from apps.inventory.services import deduct_stock_fifo, reverse_stock_deduction
+from .services import adjust_customer_balance
 from decimal import Decimal
 
 
@@ -218,9 +219,7 @@ def pos_sale_create(request):
         post_pos_revenue(sale, request.user)
 
         if sale.customer:
-            customer = sale.customer
-            customer.current_balance += sale.total
-            customer.save(update_fields=['current_balance'])
+            adjust_customer_balance(sale.customer, sale.total)
 
         return JsonResponse({
             'success': True,
@@ -266,9 +265,7 @@ def pos_sale_refund(request, pk):
         sale.save()
         reverse_stock_deduction('pos', sale.pk, user=request.user)
         if sale.customer:
-            customer = sale.customer
-            customer.current_balance -= sale.total
-            customer.save(update_fields=['current_balance'])
+            adjust_customer_balance(sale.customer, -sale.total)
         messages.success(request, f'تم استرجاع الفاتورة {sale.sale_number}')
     return redirect('pos:pos_sale_detail', pk=sale.pk)
 

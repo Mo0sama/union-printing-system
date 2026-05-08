@@ -22,6 +22,7 @@ from reportlab.platypus import (
 from apps.accounting.services import post_cogs, post_order_revenue
 from apps.core.models import CompanySetting
 from apps.inventory.services import deduct_stock_fifo, reverse_stock_deduction
+from .services import adjust_customer_balance_for_order, adjust_customer_balance_for_payment
 
 from .forms import (
     DeliveryNoteForm, DesignFileForm, OrderFilterForm, OrderForm,
@@ -111,9 +112,7 @@ def order_create(request):
                     formset.save()
                     order.calculate_totals()
                     order.update_payment_status()
-                    customer = order.customer
-                    customer.current_balance += order.total
-                    customer.save(update_fields=['current_balance'])
+                    adjust_customer_balance_for_order(order, order.total)
                 messages.success(request, _('تم إنشاء الطلب بنجاح'))
                 return redirect('orders:order_detail', pk=order.pk)
             except Exception as e:
@@ -160,9 +159,7 @@ def order_edit(request, pk):
                     formset.save()
                     order.calculate_totals()
                     order.update_payment_status()
-                    customer = order.customer
-                    customer.current_balance += order.total - old_total
-                    customer.save(update_fields=['current_balance'])
+                    adjust_customer_balance_for_order(order, order.total - old_total)
                 messages.success(request, _('تم تحديث الطلب بنجاح'))
                 return redirect('orders:order_detail', pk=order.pk)
             except Exception as e:
@@ -188,9 +185,7 @@ def order_edit(request, pk):
 def order_delete(request, pk):
     order = get_object_or_404(Order, pk=pk)
     if request.method == 'POST':
-        customer = order.customer
-        customer.current_balance -= order.total
-        customer.save(update_fields=['current_balance'])
+        adjust_customer_balance_for_order(order, -order.total)
         order.delete()
         messages.success(request, _('تم حذف الطلب بنجاح'))
         return redirect('orders:order_list')
@@ -217,9 +212,7 @@ def add_payment(request, pk):
                         payment.payment_date = timezone.now().date()
                     payment.save()
                     order.update_payment_status()
-                    customer = order.customer
-                    customer.current_balance -= payment.amount
-                    customer.save(update_fields=['current_balance'])
+                    adjust_customer_balance_for_payment(payment)
                 messages.success(request, _('تم إضافة الدفعة بنجاح'))
                 return redirect('orders:payment_receipt', pk=pk, payment_pk=payment.pk)
             except Exception as e:
@@ -281,9 +274,7 @@ def update_order_status(request, pk):
                             post_order_revenue(order, request.user)
                     elif new_status == 'cancelled':
                         reverse_stock_deduction('order', order.pk, user=request.user)
-                        customer = order.customer
-                        customer.current_balance -= order.total
-                        customer.save(update_fields=['current_balance'])
+                        adjust_customer_balance_for_order(order, -order.total)
 
                     order.save()
                 messages.success(request, _('تم تحديث حالة الطلب بنجاح'))

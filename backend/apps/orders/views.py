@@ -208,6 +208,7 @@ def add_payment(request, pk):
                     payment.save()
                     order.update_payment_status()
                 messages.success(request, _('تم إضافة الدفعة بنجاح'))
+                return redirect('orders:payment_receipt', pk=pk, payment_pk=payment.pk)
             except Exception as e:
                 messages.error(request, _('حدث خطأ: %s') % str(e))
         else:
@@ -379,3 +380,17 @@ def order_print(request, pk):
 @permission_required('orders.add_deliverynote', raise_exception=True)
 def add_delivery_note(request, pk):
     return delivery_note_create(request, pk)
+
+
+@login_required
+@permission_required('orders.view_order', raise_exception=True)
+def payment_receipt(request, pk, payment_pk):
+    order = get_object_or_404(Order.objects.prefetch_related('items'), pk=pk)
+    payment = get_object_or_404(OrderPayment, pk=payment_pk, order=order)
+    company = CompanySetting.get_settings()
+    context = {
+        'payment': payment,
+        'company': company,
+        'title': _('سند قبض: %s') % order.order_number,
+    }
+    return render(request, 'orders/payment_receipt.html', context)

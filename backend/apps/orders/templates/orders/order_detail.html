@@ -341,6 +341,7 @@
                                 <th>{% trans 'المبلغ' %}</th>
                                 <th>{% trans 'الطريقة' %}</th>
                                 <th>{% trans 'التاريخ' %}</th>
+                                <th></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -349,10 +350,15 @@
                                 <td>{{ p.amount|currency }}</td>
                                 <td>{{ p.get_payment_method_display }}</td>
                                 <td>{{ p.payment_date|date:'Y-m-d' }}</td>
+                                <td>
+                                    <a href="{% url 'orders:payment_receipt' order.pk p.pk %}" target="_blank" class="btn btn-sm btn-outline-primary" title="{% trans 'طباعة سند قبض' %}">
+                                        <i class="bi bi-receipt"></i>
+                                    </a>
+                                </td>
                             </tr>
                             {% empty %}
                             <tr>
-                                <td colspan="3" class="text-center text-muted">{% trans 'لا توجد دفعات' %}</td>
+                                <td colspan="4" class="text-center text-muted">{% trans 'لا توجد دفعات' %}</td>
                             </tr>
                             {% endfor %}
                         </tbody>

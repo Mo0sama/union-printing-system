@@ -217,6 +217,11 @@ def pos_sale_create(request):
 
         post_pos_revenue(sale, request.user)
 
+        if sale.customer:
+            customer = sale.customer
+            customer.current_balance += sale.total
+            customer.save(update_fields=['current_balance'])
+
         return JsonResponse({
             'success': True,
             'sale_id': sale.id,
@@ -260,6 +265,10 @@ def pos_sale_refund(request, pk):
         sale.status = 'refunded'
         sale.save()
         reverse_stock_deduction('pos', sale.pk, user=request.user)
+        if sale.customer:
+            customer = sale.customer
+            customer.current_balance -= sale.total
+            customer.save(update_fields=['current_balance'])
         messages.success(request, f'تم استرجاع الفاتورة {sale.sale_number}')
     return redirect('pos:pos_sale_detail', pk=sale.pk)
 

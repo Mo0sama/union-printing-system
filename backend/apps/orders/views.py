@@ -279,8 +279,11 @@ def update_order_status(request, pk):
                                 post_cogs('order', order.pk, user=request.user)
                         if new_status == 'confirmed':
                             post_order_revenue(order, request.user)
-                    elif new_status == 'cancelled' and old_status in ('confirmed', 'in_production'):
+                    elif new_status == 'cancelled':
                         reverse_stock_deduction('order', order.pk, user=request.user)
+                        customer = order.customer
+                        customer.current_balance -= order.total
+                        customer.save(update_fields=['current_balance'])
 
                     order.save()
                 messages.success(request, _('تم تحديث حالة الطلب بنجاح'))

@@ -1,4 +1,4 @@
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
@@ -68,7 +68,11 @@ def journal_entry_detail(request, pk):
 @permission_required('accounting.add_journalentry', raise_exception=True)
 def journal_entry_create(request):
     if request.method == 'POST':
-        entry_date = request.POST.get('entry_date')
+        entry_date_str = request.POST.get('entry_date')
+        try:
+            entry_date = datetime.strptime(entry_date_str, '%Y-%m-%d').date()
+        except (ValueError, TypeError):
+            entry_date = timezone.now().date()
         description = request.POST.get('description')
         accounts = request.POST.getlist('account')
         debits = request.POST.getlist('debit')

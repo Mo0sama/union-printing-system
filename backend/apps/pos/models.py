@@ -180,6 +180,10 @@ class POSSaleItem(models.Model):
     description = models.CharField(
         max_length=255, verbose_name='الوصف'
     )
+    material = models.ForeignKey(
+        'inventory.Material', on_delete=models.SET_NULL,
+        null=True, blank=True, verbose_name='الخامة'
+    )
     quantity = models.IntegerField(verbose_name='الكمية')
     unit_price = models.DecimalField(
         max_digits=10, decimal_places=2, verbose_name='سعر الوحدة'

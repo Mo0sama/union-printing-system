@@ -69,6 +69,7 @@ urlpatterns += i18n_patterns(
     path('pos/', include('apps.pos.urls')),
     path('reports/', include('apps.reports.urls')),
     path('calculator/', include('apps.calculator.urls')),
+    path('accounting/', include('apps.accounting.urls')),
     path('core/', include('apps.core.urls')),
     prefix_default_language=False,
 )

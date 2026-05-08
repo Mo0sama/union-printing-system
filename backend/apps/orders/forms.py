@@ -3,6 +3,8 @@ from django.utils.translation import gettext_lazy as _
 
 from apps.core.lookup_utils import set_lookup_choices
 
+from apps.inventory.models import Material
+
 from .models import DeliveryNote, DesignFile, Order, OrderItem, OrderPayment
 
 
@@ -69,6 +71,7 @@ class OrderItemForm(forms.ModelForm):
             'item_type', 'description', 'design_file', 'quantity',
             'unit', 'unit_price', 'discount_percent',
             'production_notes', 'status', 'assigned_to', 'notes',
+            'material',
         ]
         widgets = {
             'item_type': forms.Select(attrs={'class': 'form-control'}),
@@ -88,6 +91,7 @@ class OrderItemForm(forms.ModelForm):
             'status': forms.Select(attrs={'class': 'form-control'}),
             'assigned_to': forms.Select(attrs={'class': 'form-control select2'}),
             'notes': forms.TextInput(attrs={'class': 'form-control'}),
+            'material': forms.Select(attrs={'class': 'form-control select2'}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -95,6 +99,9 @@ class OrderItemForm(forms.ModelForm):
         set_lookup_choices(self, 'item_type', 'order_item_type')
         set_lookup_choices(self, 'unit', 'unit')
         set_lookup_choices(self, 'status', 'order_item_status')
+        self.fields['material'].queryset = Material.objects.filter(is_active=True)
+        self.fields['material'].required = False
+        self.fields['material'].widget.attrs['data-placeholder'] = _('اختر خامة (اختياري)')
 
 
 OrderItemFormSet = forms.inlineformset_factory(

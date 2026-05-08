@@ -1,0 +1,100 @@
+{% extends 'adminlte/base.html' %}
+{% load static i18n humanize %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col">
+            <h1 class="h3">{{ title }}</h1>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <input type="date" name="date_from" class="form-control" value="{{ date_from }}">
+                </div>
+                <div class="col-md-4">
+                    <input type="date" name="date_to" class="form-control" value="{{ date_to }}">
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> {% trans 'عرض' %}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">{% trans 'الإيرادات' %}</h5>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-striped mb-0">
+                        <tbody>
+                            {% for item in income_data %}
+                            <tr>
+                                <td>{{ item.account.name_ar|default:item.account.name }}</td>
+                                <td class="text-start">{{ item.balance|floatformat:2 }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="2" class="text-center">{% trans 'لا توجد إيرادات في هذه الفترة' %}</td></tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr class="fw-bold">
+                                <td>{% trans 'إجمالي الإيرادات' %}</td>
+                                <td class="text-start text-success">{{ total_income|floatformat:2 }}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">{% trans 'المصروفات' %}</h5>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-striped mb-0">
+                        <tbody>
+                            {% for item in expense_data %}
+                            <tr>
+                                <td>{{ item.account.name_ar|default:item.account.name }}</td>
+                                <td class="text-start">{{ item.balance|floatformat:2 }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="2" class="text-center">{% trans 'لا توجد مصروفات في هذه الفترة' %}</td></tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr class="fw-bold">
+                                <td>{% trans 'إجمالي المصروفات' %}</td>
+                                <td class="text-start text-danger">{{ total_expense|floatformat:2 }}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card {% if net_profit >= 0 %}border-success{% else %}border-danger{% endif %}">
+        <div class="card-body text-center">
+            <h4>
+                {% if net_profit >= 0 %}
+                    <span class="text-success">{% trans 'صافي الربح' %}: {{ net_profit|floatformat:2 }}</span>
+                {% else %}
+                    <span class="text-danger">{% trans 'صافي الخسارة' %}: {{ net_profit|floatformat:2 }}</span>
+                {% endif %}
+            </h4>
+        </div>
+    </div>
+</div>
+{% endblock %}

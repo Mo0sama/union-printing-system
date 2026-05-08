@@ -1,0 +1,102 @@
+{% extends 'adminlte/base.html' %}
+{% load static i18n core_tags humanize %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col">
+            <h1 class="h3">{{ title }}</h1>
+        </div>
+        <div class="col-auto">
+            <a href="{% url 'accounting:journal_entry_list' %}" class="btn btn-secondary">
+                <i class="bi bi-arrow-right"></i> {% trans 'عودة' %}
+            </a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">{% trans 'معلومات القيد' %}</h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3 mb-2">
+                    <strong>{% trans 'رقم القيد:' %}</strong> {{ entry.entry_number }}
+                </div>
+                <div class="col-md-2 mb-2">
+                    <strong>{% trans 'التاريخ:' %}</strong> {{ entry.entry_date|date:'Y-m-d' }}
+                </div>
+                <div class="col-md-2 mb-2">
+                    <strong>{% trans 'الحالة:' %}</strong>
+                    {% if entry.status == 'posted' %}
+                        <span class="badge bg-success">{% trans 'مرحل' %}</span>
+                    {% elif entry.status == 'draft' %}
+                        <span class="badge bg-warning text-dark">{% trans 'مسودة' %}</span>
+                    {% else %}
+                        <span class="badge bg-danger">{% trans 'ملغي' %}</span>
+                    {% endif %}
+                </div>
+                <div class="col-md-3 mb-2">
+                    <strong>{% trans 'بواسطة:' %}</strong> {{ entry.created_by }}
+                </div>
+                <div class="col-md-2 mb-2">
+                    <strong>{% trans 'تاريخ الترحيل:' %}</strong> {{ entry.posted_at|date:'Y-m-d H:i'|default:'-' }}
+                </div>
+            </div>
+            <div class="row mt-2">
+                <div class="col-12">
+                    <strong>{% trans 'البيان:' %}</strong> {{ entry.description }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">{% trans 'تفاصيل القيد' %}</h3>
+        </div>
+        <div class="card-body table-responsive p-0">
+            <table class="table table-hover table-striped">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>{% trans 'كود الحساب' %}</th>
+                        <th>{% trans 'الحساب' %}</th>
+                        <th>{% trans 'مدين' %}</th>
+                        <th>{% trans 'دائن' %}</th>
+                        <th>{% trans 'البيان' %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for line in lines %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ line.account.code }}</td>
+                        <td>{{ line.account.name_ar|default:line.account.name }}</td>
+                        <td>{{ line.debit|floatformat:2 }}</td>
+                        <td>{{ line.credit|floatformat:2 }}</td>
+                        <td>{{ line.description }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr class="fw-bold">
+                        <td colspan="3" class="text-start">{% trans 'الإجمالي' %}</td>
+                        <td>{{ entry.total_debit|floatformat:2 }}</td>
+                        <td>{{ entry.total_credit|floatformat:2 }}</td>
+                        <td>
+                            {% if entry.is_balanced %}
+                                <span class="text-success">{% trans 'متوازن' %}</span>
+                            {% else %}
+                                <span class="text-danger">{% trans 'غير متوازن' %}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

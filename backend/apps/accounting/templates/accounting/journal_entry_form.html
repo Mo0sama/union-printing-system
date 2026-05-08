@@ -1,0 +1,183 @@
+{% extends 'adminlte/base.html' %}
+{% load static i18n core_tags humanize %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .line-total { font-weight: 600; }
+    .unbalanced { color: #dc3545; font-weight: bold; }
+    .balanced { color: #28a745; font-weight: bold; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col">
+            <h1 class="h3">{{ title }}</h1>
+        </div>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">{% trans 'معلومات القيد' %}</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">{% trans 'التاريخ' %}</label>
+                        <input type="date" name="entry_date" class="form-control" value="{{ today|date:'Y-m-d' }}" required>
+                    </div>
+                    <div class="col-md-8 mb-3">
+                        <label class="form-label">{% trans 'البيان' %}</label>
+                        <textarea name="description" class="form-control" rows="2" required></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">{% trans 'تفاصيل القيد' %}</h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-success btn-sm" id="addLine">
+                        <i class="bi bi-plus-lg"></i> {% trans 'إضافة سطر' %}
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="linesTable">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>{% trans 'الحساب' %}</th>
+                                <th>{% trans 'مدين' %}</th>
+                                <th>{% trans 'دائن' %}</th>
+                                <th>{% trans 'البيان' %}</th>
+                                <th>{% trans 'حذف' %}</th>
+                            </tr>
+                        </thead>
+                        <tbody id="linesBody">
+                            <tr class="line-row">
+                                <td class="row-counter">1</td>
+                                <td>
+                                    <select name="account" class="form-control select2" required>
+                                        <option value="">---</option>
+                                        {% for a in accounts %}
+                                        <option value="{{ a.pk }}">{{ a.code }} - {{ a.name_ar|default:a.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </td>
+                                <td><input type="number" name="debit" class="form-control debit-input" step="0.01" min="0" value="0"></td>
+                                <td><input type="number" name="credit" class="form-control credit-input" step="0.01" min="0" value="0"></td>
+                                <td><input type="text" name="line_description" class="form-control"></td>
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-outline-danger delete-line" title="حذف">
+                                        <i class="bi bi-x-lg"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr class="fw-bold">
+                                <td colspan="2" class="text-start">{% trans 'الإجمالي' %}</td>
+                                <td id="total-debit">0.00</td>
+                                <td id="total-credit">0.00</td>
+                                <td id="balance-status" class="balanced">{% trans 'متوازن' %}</td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12">
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-check-lg"></i> {% trans 'ترحيل القيد' %}
+                </button>
+                <a href="{% url 'accounting:journal_entry_list' %}" class="btn btn-secondary">
+                    <i class="bi bi-x-lg"></i> {% trans 'إلغاء' %}
+                </a>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const linesBody = document.getElementById('linesBody');
+        const addBtn = document.getElementById('addLine');
+        const totalDebit = document.getElementById('total-debit');
+        const totalCredit = document.getElementById('total-credit');
+        const balanceStatus = document.getElementById('balance-status');
+
+        function recalcTotals() {
+            let debitSum = 0, creditSum = 0;
+            document.querySelectorAll('.line-row').forEach(function(row) {
+                if (row.style.display === 'none') return;
+                debitSum += parseFloat(row.querySelector('.debit-input').value) || 0;
+                creditSum += parseFloat(row.querySelector('.credit-input').value) || 0;
+            });
+            totalDebit.textContent = debitSum.toFixed(2);
+            totalCredit.textContent = creditSum.toFixed(2);
+            const diff = Math.abs(debitSum - creditSum);
+            if (diff > 0.01) {
+                balanceStatus.textContent = 'غير متوازن (الفارق: ' + diff.toFixed(2) + ')';
+                balanceStatus.className = 'unbalanced';
+            } else {
+                balanceStatus.textContent = 'متوازن';
+                balanceStatus.className = 'balanced';
+            }
+        }
+
+        addBtn.addEventListener('click', function() {
+            const count = document.querySelectorAll('.line-row').length;
+            const newRow = document.querySelector('.line-row').cloneNode(true);
+            newRow.querySelector('.row-counter').textContent = count + 1;
+            newRow.querySelectorAll('input').forEach(function(el) { el.value = ''; });
+            newRow.querySelector('select').selectedIndex = 0;
+            newRow.querySelectorAll('input, select').forEach(function(el) {
+                el.addEventListener('input', recalcTotals);
+                el.addEventListener('change', recalcTotals);
+            });
+            newRow.querySelector('.delete-line').addEventListener('click', function() {
+                if (document.querySelectorAll('.line-row').length > 1) {
+                    newRow.remove();
+                    updateRowNumbers();
+                    recalcTotals();
+                }
+            });
+            linesBody.appendChild(newRow);
+        });
+
+        function updateRowNumbers() {
+            document.querySelectorAll('.line-row').forEach(function(row, idx) {
+                row.querySelector('.row-counter').textContent = idx + 1;
+            });
+        }
+
+        document.querySelectorAll('.line-row input, .line-row select').forEach(function(el) {
+            el.addEventListener('input', recalcTotals);
+            el.addEventListener('change', recalcTotals);
+        });
+
+        document.querySelectorAll('.delete-line').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                if (document.querySelectorAll('.line-row').length > 1) {
+                    btn.closest('.line-row').remove();
+                    updateRowNumbers();
+                    recalcTotals();
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

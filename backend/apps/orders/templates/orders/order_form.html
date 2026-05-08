@@ -157,6 +157,7 @@
                                 <th>#</th>
                                 <th>{% trans 'النوع' %}</th>
                                 <th>{% trans 'الوصف' %}</th>
+                                <th>{% trans 'الخامة' %}</th>
                                 <th>{% trans 'الكمية' %}</th>
                                 <th>{% trans 'الوحدة' %}</th>
                                 <th>{% trans 'سعر الوحدة' %}</th>
@@ -172,6 +173,7 @@
                                 <td class="row-counter">{{ forloop.counter }}</td>
                                 <td>{{ f.id }}{{ f.item_type }}{{ f.item_type.errors }}</td>
                                 <td>{{ f.description }}{{ f.description.errors }}</td>
+                                <td>{{ f.material }}{{ f.material.errors }}</td>
                                 <td>{{ f.quantity }}{{ f.quantity.errors }}</td>
                                 <td>{{ f.unit }}</td>
                                 <td>{{ f.unit_price }}{{ f.unit_price.errors }}</td>
@@ -236,6 +238,7 @@ const emptyRow = `{% filter escapejs %}
     <td class="row-counter">__prefix__</td>
     <td>{{ formset.empty_form.item_type }}</td>
     <td>{{ formset.empty_form.description }}</td>
+    <td>{{ formset.empty_form.material }}</td>
     <td>{{ formset.empty_form.quantity }}</td>
     <td>{{ formset.empty_form.unit }}</td>
     <td>{{ formset.empty_form.unit_price }}</td>

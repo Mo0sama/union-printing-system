@@ -35,8 +35,11 @@
         </a>
 
         <div class="nav-section">{% trans 'المخزون والمشتريات' %}</div>
-        <a href="{% url 'inventory:material_list' %}" class="nav-link {% active_url 'inventory:' %}">
+        <a href="{% url 'inventory:material_list' %}" class="nav-link {% active_url 'inventory:material' %}">
             <i class="bi bi-boxes"></i> <span>{% trans 'المخزون' %}</span>
+        </a>
+        <a href="{% url 'inventory:valuation_list' %}" class="nav-link {% active_url 'inventory:valuation' %}">
+            <i class="bi bi-calculator"></i> <span>{% trans 'تقييم المخزون (FIFO)' %}</span>
         </a>
         <a href="{% url 'suppliers:supplier_list' %}" class="nav-link {% active_url 'suppliers:' %}">
             <i class="bi bi-truck"></i> <span>{% trans 'الموردين' %}</span>
@@ -54,6 +57,24 @@
         </a>
         <a href="{% url 'employees:salary_list' %}" class="nav-link {% active_url 'employees:salary' %}">
             <i class="bi bi-cash-stack"></i> <span>{% trans 'الرواتب' %}</span>
+        </a>
+
+        <div class="nav-section">{% trans 'المحاسبة' %}</div>
+        <a href="{% url 'accounting:chart_of_accounts' %}" class="nav-link {% active_url 'accounting:chart_of_accounts' %}">
+            <i class="bi bi-book"></i> <span>{% trans 'دليل الحسابات' %}</span>
+        </a>
+        <a href="{% url 'accounting:journal_entry_list' %}" class="nav-link {% active_url 'accounting:journal' %}">
+            <i class="bi bi-journal-text"></i> <span>{% trans 'القيود المحاسبية' %}</span>
+        </a>
+
+        <a href="{% url 'accounting:profit_loss' %}" class="nav-link {% active_url 'accounting:profit_loss' %}">
+            <i class="bi bi-bar-chart"></i> <span>{% trans 'قائمة الأرباح والخسائر' %}</span>
+        </a>
+        <a href="{% url 'accounting:balance_sheet' %}" class="nav-link {% active_url 'accounting:balance_sheet' %}">
+            <i class="bi bi-layout-text-window"></i> <span>{% trans 'الميزانية العمومية' %}</span>
+        </a>
+        <a href="{% url 'accounting:sales_dashboard' %}" class="nav-link {% active_url 'accounting:sales' %}">
+            <i class="bi bi-graph-up"></i> <span>{% trans 'تقرير المبيعات' %}</span>
         </a>
 
         <div class="nav-section">{% trans 'حاسبة الأسعار' %}</div>

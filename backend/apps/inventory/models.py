@@ -77,6 +77,49 @@ class Batch(models.Model):
         return f'{self.batch_number} - {self.material}'
 
 
+class InventoryValuation(models.Model):
+    class ValuationMethod(models.TextChoices):
+        FIFO = 'fifo', 'FIFO'
+        AVERAGE = 'average', 'متوسط التكلفة'
+
+    batch = models.ForeignKey(
+        Batch, on_delete=models.CASCADE,
+        related_name='valuations', verbose_name='الدفعة'
+    )
+    material = models.ForeignKey(
+        Material, on_delete=models.CASCADE,
+        related_name='valuations', verbose_name='الخامة'
+    )
+    quantity = models.DecimalField(
+        max_digits=12, decimal_places=2, verbose_name='الكمية'
+    )
+    unit_cost = models.DecimalField(
+        max_digits=12, decimal_places=2, verbose_name='تكلفة الوحدة'
+    )
+    total_cost = models.DecimalField(
+        max_digits=12, decimal_places=2, verbose_name='التكلفة الإجمالية'
+    )
+    method = models.CharField(
+        max_length=10, choices=ValuationMethod.choices,
+        default=ValuationMethod.FIFO, verbose_name='طريقة التقييم'
+    )
+    reference_type = models.CharField(
+        max_length=50, null=True, blank=True, verbose_name='نوع المرجع'
+    )
+    reference_id = models.IntegerField(
+        null=True, blank=True, verbose_name='رقم المرجع'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'تقييم مخزون'
+        verbose_name_plural = 'تقييم المخزون'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'{self.material} - {self.quantity} x {self.unit_cost} = {self.total_cost}'
+
+
 class StockMovement(models.Model):
     class MovementType(models.TextChoices):
         PURCHASE_IN = 'purchase_in', 'مشتريات (وارد)'

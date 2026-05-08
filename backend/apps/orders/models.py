@@ -208,6 +208,10 @@ class OrderItem(models.Model):
         choices=ItemType.choices, default=ItemType.PRINTING
     )
     description = models.CharField(_('الوصف'), max_length=500)
+    material = models.ForeignKey(
+        'inventory.Material', on_delete=models.SET_NULL,
+        null=True, blank=True, verbose_name=_('الخامة')
+    )
     design_file = models.FileField(
         _('ملف التصميم'), upload_to='designs/', blank=True
     )

@@ -11,7 +11,10 @@ import json
 
 from .models import POSSession, POSSale, POSSaleItem
 from .forms import POSSessionForm, POSCloseForm, POSSaleForm, POSPaymentForm
+from apps.accounting.services import post_cogs, post_pos_revenue
 from apps.employees.models import Employee
+from apps.inventory.models import Material
+from apps.inventory.services import deduct_stock_fifo, reverse_stock_deduction
 from decimal import Decimal
 
 
@@ -127,13 +130,17 @@ def pos_sale_create(request):
         messages.error(request, 'يجب فتح جلسة بيع أولاً')
         return redirect('pos:pos_session_open')
 
-    if request.method == 'POST' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+    if request.method == 'POST':
         try:
             data = json.loads(request.body)
-        except json.JSONDecodeError:
+        except (json.JSONDecodeError, AttributeError):
             data = request.POST
 
-        items_data = data.get('items', [])
+        items_raw = data.get('items', [])
+        if isinstance(items_raw, str):
+            items_data = json.loads(items_raw)
+        else:
+            items_data = items_raw
         if not items_data:
             return JsonResponse({'success': False, 'error': 'لا توجد أصناف'})
 
@@ -147,13 +154,23 @@ def pos_sale_create(request):
         subtotal = Decimal('0')
         items = []
         for item_data in items_data:
-            qty = Decimal(str(item_data.get('quantity', 1)))
-            price = Decimal(str(item_data.get('unit_price', 0)))
+            material_id = item_data.get('id')
+            qty = Decimal(str(item_data.get('qty', item_data.get('quantity', 1))))
+            material = None
+            if material_id:
+                try:
+                    material = Material.objects.get(pk=material_id)
+                except Material.DoesNotExist:
+                    pass
+            price = Decimal(str(item_data.get('price', item_data.get('unit_price', 0))))
+            if material and not price:
+                price = material.selling_price or Decimal('0')
             total = qty * price
             subtotal += total
             items.append({
-                'item_type': item_data.get('item_type', 'product'),
-                'description': item_data.get('description', ''),
+                'material': material,
+                'item_type': 'material' if material else item_data.get('item_type', 'product'),
+                'description': item_data.get('description', item_data.get('name', material.name if material else '')),
                 'quantity': int(qty),
                 'unit_price': price,
                 'total': total,
@@ -177,8 +194,28 @@ def pos_sale_create(request):
             created_by=request.user,
         )
 
-        for item_data in items:
-            POSSaleItem.objects.create(sale=sale, **item_data)
+        for item in items:
+            sale_item = POSSaleItem.objects.create(
+                sale=sale,
+                material=item['material'],
+                item_type=item['item_type'],
+                description=item['description'],
+                quantity=item['quantity'],
+                unit_price=item['unit_price'],
+                total=item['total'],
+            )
+            if item['material']:
+                deduct_stock_fifo(
+                    material=item['material'],
+                    quantity=sale_item.quantity,
+                    reference_type='pos',
+                    reference_id=sale.pk,
+                    notes=f'{sale.sale_number} - {sale_item.description}',
+                    user=request.user,
+                )
+                post_cogs('pos', sale.pk, user=request.user)
+
+        post_pos_revenue(sale, request.user)
 
         return JsonResponse({
             'success': True,
@@ -222,6 +259,7 @@ def pos_sale_refund(request, pk):
     else:
         sale.status = 'refunded'
         sale.save()
+        reverse_stock_deduction('pos', sale.pk, user=request.user)
         messages.success(request, f'تم استرجاع الفاتورة {sale.sale_number}')
     return redirect('pos:pos_sale_detail', pk=sale.pk)
 

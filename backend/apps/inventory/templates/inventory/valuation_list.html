@@ -1,0 +1,117 @@
+{% extends 'adminlte/base.html' %}
+{% load static i18n humanize %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col">
+            <h1 class="h3">{{ title }}</h1>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <div class="small-box bg-info">
+                <div class="inner">
+                    <h3>{{ total_qty|floatformat:2 }}</h3>
+                    <p>{% trans 'إجمالي الكمية المصروفة' %}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="small-box bg-success">
+                <div class="inner">
+                    <h3>{{ total_cost|floatformat:2 }}</h3>
+                    <p>{% trans 'إجمالي تكلفة COGS' %}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="small-box bg-warning">
+                <div class="inner">
+                    <h3>{{ valuations|length }}</h3>
+                    <p>{% trans 'عدد عمليات التقييم' %}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <select name="material" class="form-control" onchange="this.form.submit()">
+                        <option value="">{% trans 'جميع الخامات' %}</option>
+                        {% for m in materials %}
+                        <option value="{{ m.pk }}" {% if request.GET.material == m.pk|stringformat:'s' %}selected{% endif %}>{{ m.name_ar|default:m.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select name="ref_type" class="form-control" onchange="this.form.submit()">
+                        <option value="">{% trans 'جميع المراجع' %}</option>
+                        <option value="order" {% if request.GET.ref_type == 'order' %}selected{% endif %}>{% trans 'أمر شغل' %}</option>
+                        <option value="pos" {% if request.GET.ref_type == 'pos' %}selected{% endif %}>{% trans 'نقطة بيع' %}</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <input type="date" name="date_from" class="form-control" value="{{ request.GET.date_from }}" placeholder="{% trans 'من تاريخ' %}" onchange="this.form.submit()">
+                </div>
+                <div class="col-md-2">
+                    <input type="date" name="date_to" class="form-control" value="{{ request.GET.date_to }}" placeholder="{% trans 'إلى تاريخ' %}" onchange="this.form.submit()">
+                </div>
+                <div class="col-md-2">
+                    <a href="{% url 'inventory:valuation_list' %}" class="btn btn-secondary w-100">
+                        <i class="bi bi-x-circle"></i> {% trans 'مسح' %}
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body table-responsive p-0">
+            <table class="table table-hover table-striped">
+                <thead>
+                    <tr>
+                        <th>{% trans 'التاريخ' %}</th>
+                        <th>{% trans 'الخامة' %}</th>
+                        <th>{% trans 'الدفعة' %}</th>
+                        <th>{% trans 'الكمية' %}</th>
+                        <th>{% trans 'تكلفة الوحدة' %}</th>
+                        <th>{% trans 'التكلفة الإجمالية' %}</th>
+                        <th>{% trans 'المرجع' %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for v in valuations %}
+                    <tr>
+                        <td>{{ v.created_at|date:'Y-m-d H:i' }}</td>
+                        <td>{{ v.material.name_ar|default:v.material.name }}</td>
+                        <td>{{ v.batch.batch_number }}</td>
+                        <td>{{ v.quantity|floatformat:2 }}</td>
+                        <td>{{ v.unit_cost|floatformat:2 }}</td>
+                        <td>{{ v.total_cost|floatformat:2 }}</td>
+                        <td>
+                            {% if v.reference_type == 'order' %}
+                                <a href="{% url 'orders:order_detail' v.reference_id %}">{% trans 'أمر شغل' %} #{{ v.reference_id }}</a>
+                            {% elif v.reference_type == 'pos' %}
+                                <a href="{% url 'pos:pos_sale_detail' v.reference_id %}">{% trans 'نقطة بيع' %} #{{ v.reference_id }}</a>
+                            {% else %}
+                                {{ v.reference_type|default:'-' }} #{{ v.reference_id|default:'-' }}
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center">{% trans 'لا توجد تقييمات مخزون بعد.' %}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

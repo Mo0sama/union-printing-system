@@ -1,0 +1,94 @@
+{% extends 'adminlte/base.html' %}
+{% load static i18n core_tags humanize %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col">
+            <h1 class="h3">{{ title }}</h1>
+        </div>
+        <div class="col-auto">
+            <a href="{% url 'accounting:journal_entry_create' %}" class="btn btn-primary">
+                <i class="bi bi-plus-lg"></i> {% trans 'قيد جديد' %}
+            </a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <select name="status" class="form-control" onchange="this.form.submit()">
+                        <option value="">{% trans 'جميع الحالات' %}</option>
+                        <option value="draft" {% if request.GET.status == 'draft' %}selected{% endif %}>{% trans 'مسودة' %}</option>
+                        <option value="posted" {% if request.GET.status == 'posted' %}selected{% endif %}>{% trans 'مرحل' %}</option>
+                        <option value="cancelled" {% if request.GET.status == 'cancelled' %}selected{% endif %}>{% trans 'ملغي' %}</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <input type="date" name="date_from" class="form-control" value="{{ request.GET.date_from }}" placeholder="{% trans 'من تاريخ' %}" onchange="this.form.submit()">
+                </div>
+                <div class="col-md-2">
+                    <input type="date" name="date_to" class="form-control" value="{{ request.GET.date_to }}" placeholder="{% trans 'إلى تاريخ' %}" onchange="this.form.submit()">
+                </div>
+                <div class="col-md-2">
+                    <a href="{% url 'accounting:journal_entry_list' %}" class="btn btn-secondary w-100">
+                        <i class="bi bi-x-circle"></i> {% trans 'مسح' %}
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body table-responsive p-0">
+            <table class="table table-hover table-striped">
+                <thead>
+                    <tr>
+                        <th>{% trans 'رقم القيد' %}</th>
+                        <th>{% trans 'التاريخ' %}</th>
+                        <th>{% trans 'البيان' %}</th>
+                        <th>{% trans 'مدين' %}</th>
+                        <th>{% trans 'دائن' %}</th>
+                        <th>{% trans 'الحالة' %}</th>
+                        <th>{% trans 'بواسطة' %}</th>
+                        <th>{% trans 'إجراءات' %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in entries %}
+                    <tr>
+                        <td>{{ entry.entry_number }}</td>
+                        <td>{{ entry.entry_date|date:'Y-m-d' }}</td>
+                        <td>{{ entry.description|truncatewords:5 }}</td>
+                        <td>{{ entry.total_debit|floatformat:2 }}</td>
+                        <td>{{ entry.total_credit|floatformat:2 }}</td>
+                        <td>
+                            {% if entry.status == 'posted' %}
+                                <span class="badge bg-success">{% trans 'مرحل' %}</span>
+                            {% elif entry.status == 'draft' %}
+                                <span class="badge bg-warning text-dark">{% trans 'مسودة' %}</span>
+                            {% else %}
+                                <span class="badge bg-danger">{% trans 'ملغي' %}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ entry.created_by }}</td>
+                        <td>
+                            <a href="{% url 'accounting:journal_entry_detail' entry.pk %}" class="btn btn-info btn-sm">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center">{% trans 'لا توجد قيود بعد.' %}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

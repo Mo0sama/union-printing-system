@@ -19,7 +19,9 @@ from reportlab.platypus import (
     Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 )
 
+from apps.accounting.services import post_cogs, post_order_revenue
 from apps.core.models import CompanySetting
+from apps.inventory.services import deduct_stock_fifo, reverse_stock_deduction
 
 from .forms import (
     DeliveryNoteForm, DesignFileForm, OrderFilterForm, OrderForm,
@@ -240,9 +242,36 @@ def update_order_status(request, pk):
     if request.method == 'POST':
         new_status = request.POST.get('status')
         if new_status in dict(Order.Status.choices):
+            old_status = order.status
             order.status = new_status
-            order.save()
-            messages.success(request, _('تم تحديث حالة الطلب بنجاح'))
+
+            try:
+                with transaction.atomic():
+                    if new_status in ('confirmed', 'in_production') and old_status == 'pending':
+                        for item in order.items.select_related('material').all():
+                            if item.material and item.item_type != 'material':
+                                continue
+                            if item.material:
+                                deduct_stock_fifo(
+                                    material=item.material,
+                                    quantity=item.quantity,
+                                    reference_type='order',
+                                    reference_id=order.pk,
+                                    notes=f'{order.order_number} - {item.description}',
+                                    user=request.user,
+                                )
+                                post_cogs('order', order.pk, user=request.user)
+                        if new_status == 'confirmed':
+                            post_order_revenue(order, request.user)
+                    elif new_status == 'cancelled' and old_status in ('confirmed', 'in_production'):
+                        reverse_stock_deduction('order', order.pk, user=request.user)
+
+                    order.save()
+                messages.success(request, _('تم تحديث حالة الطلب بنجاح'))
+            except ValueError as e:
+                messages.error(request, str(e))
+                return redirect('orders:order_detail', pk=pk)
+
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return JsonResponse({'status': 'ok', 'new_status': order.get_status_display()})
         else:

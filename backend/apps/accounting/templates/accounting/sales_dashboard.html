@@ -1,0 +1,93 @@
+{% extends 'adminlte/base.html' %}
+{% load static i18n humanize %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col">
+            <h1 class="h3">{{ title }}</h1>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <input type="date" name="date_from" class="form-control" value="{{ date_from }}">
+                </div>
+                <div class="col-md-4">
+                    <input type="date" name="date_to" class="form-control" value="{{ date_to }}">
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> {% trans 'عرض' %}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="small-box bg-info">
+                <div class="inner">
+                    <h3>{{ order_count }}</h3>
+                    <p>{% trans 'أوامر الشغل' %}</p>
+                </div>
+                <div class="icon"><i class="bi bi-file-text"></i></div>
+                <div class="small-box-footer">
+                    {% trans 'إجمالي' %}: {{ order_total|floatformat:2 }}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="small-box bg-success">
+                <div class="inner">
+                    <h3>{{ pos_count }}</h3>
+                    <p>{% trans 'فواتير نقطة البيع' %}</p>
+                </div>
+                <div class="icon"><i class="bi bi-cash"></i></div>
+                <div class="small-box-footer">
+                    {% trans 'إجمالي' %}: {{ pos_total|floatformat:2 }}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="small-box bg-warning">
+                <div class="inner">
+                    <h3>{{ grand_total|floatformat:2 }}</h3>
+                    <p>{% trans 'إجمالي المبيعات' %}</p>
+                </div>
+                <div class="icon"><i class="bi bi-graph-up"></i></div>
+                <div class="small-box-footer">
+                    {% trans 'تكلفة المبيعات' %}: {{ cogs|floatformat:2 }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">{% trans 'ملخص الربحية' %}</h5>
+        </div>
+        <div class="card-body">
+            <table class="table table-bordered">
+                <tr>
+                    <td>{% trans 'إجمالي المبيعات' %}</td>
+                    <td class="text-start">{{ grand_total|floatformat:2 }}</td>
+                </tr>
+                <tr>
+                    <td>{% trans 'تكلفة البضاعة المباعة (COGS)' %}</td>
+                    <td class="text-start text-danger">{{ cogs|floatformat:2 }}</td>
+                </tr>
+                <tr class="fw-bold fs-5">
+                    <td>{% trans 'إجمالي الربح' %}</td>
+                    <td class="text-start {% if gross_profit >= 0 %}text-success{% else %}text-danger{% endif %}">
+                        {{ gross_profit|floatformat:2 }}
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

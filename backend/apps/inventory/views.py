@@ -9,7 +9,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.core.paginator import Paginator
 
 from .forms import CategoryForm, MaterialForm, StockAdjustmentForm, StockTransferForm
-from .models import Batch, Category, Material, StockMovement
+from .models import Batch, Category, InventoryValuation, Material, StockMovement
 
 
 @app_permission_required('inventory_view')
@@ -280,3 +280,35 @@ def stock_movement_create(request):
         'title': 'حركة مخزنية جديدة',
     }
     return render(request, 'inventory/batch_form.html', context)
+
+
+@app_permission_required('inventory_view')
+def valuation_list(request):
+    valuations = InventoryValuation.objects.select_related(
+        'material', 'batch'
+    ).all().order_by('-created_at')
+    material_id = request.GET.get('material')
+    ref_type = request.GET.get('ref_type')
+    date_from = request.GET.get('date_from')
+    date_to = request.GET.get('date_to')
+
+    if material_id:
+        valuations = valuations.filter(material_id=material_id)
+    if ref_type:
+        valuations = valuations.filter(reference_type=ref_type)
+    if date_from:
+        valuations = valuations.filter(created_at__date__gte=date_from)
+    if date_to:
+        valuations = valuations.filter(created_at__date__lte=date_to)
+
+    total_cost = sum(v.total_cost for v in valuations)
+    total_qty = sum(v.quantity for v in valuations)
+
+    context = {
+        'valuations': valuations,
+        'materials': Material.objects.filter(is_active=True),
+        'total_cost': total_cost,
+        'total_qty': total_qty,
+        'title': 'تقييم المخزون (FIFO)',
+    }
+    return render(request, 'inventory/valuation_list.html', context)

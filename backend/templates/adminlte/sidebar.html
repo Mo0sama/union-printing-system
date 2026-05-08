@@ -56,6 +56,16 @@
             <i class="bi bi-cash-stack"></i> <span>{% trans 'الرواتب' %}</span>
         </a>
 
+        <div class="nav-section">{% trans 'حاسبة الأسعار' %}</div>
+        <a href="{% url 'calculator:calculator_home' %}" class="nav-link" target="_blank">
+            <i class="bi bi-calculator"></i> <span>{% trans 'حاسبة العملاء' %}</span>
+        </a>
+        {% if user.role == 'admin' or user.role == 'manager' %}
+        <a href="{% url 'admin:app_list' app_label='calculator' %}" class="nav-link">
+            <i class="bi bi-gear"></i> <span>{% trans 'إدارة الأسعار' %}</span>
+        </a>
+        {% endif %}
+
         <div class="nav-section">{% trans 'التقارير' %}</div>
         <a href="{% url 'reports:report_dashboard' %}" class="nav-link {% active_url 'reports:' %}">
             <i class="bi bi-bar-chart"></i> <span>{% trans 'التقارير' %}</span>

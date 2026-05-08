@@ -14,3 +14,4 @@ backend/media/company/*
 *.egg-info/
 dist/
 .env
+data/db.sqlite3

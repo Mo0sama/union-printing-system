@@ -1,0 +1,97 @@
+{% extends 'adminlte/base.html' %}
+{% load static i18n %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block body_class %}calculator-page{% endblock %}
+
+{% block extra_css %}
+<style>
+    .calculator-hero {
+        background: linear-gradient(135deg, #1a1a1a 0%, #e65100 50%, #bf360c 100%);
+        padding: 3rem 1rem;
+        text-align: center;
+        color: white;
+        margin: -1rem -1rem 2rem -1rem;
+    }
+    .calculator-hero h1 { font-size: 2rem; font-weight: 800; }
+    .calculator-hero p { opacity: 0.9; font-size: 1.1rem; }
+    .calc-card {
+        border: none;
+        border-radius: 1rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        transition: transform 0.2s, box-shadow 0.2s;
+        cursor: pointer;
+        height: 100%;
+        overflow: hidden;
+    }
+    .calc-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 40px rgba(230, 81, 0, 0.2);
+    }
+    .calc-card .card-icon {
+        font-size: 3.5rem;
+        color: #e65100;
+        padding: 2rem 0 1rem;
+    }
+    .calc-card .card-body { padding: 1.5rem 2rem 2rem; text-align: center; }
+    .calc-card .card-title { font-weight: 700; font-size: 1.3rem; }
+    .calc-card .card-text { color: #666; font-size: 0.95rem; }
+    .user-links { text-align: center; margin-top: 2rem; }
+    .user-links a { color: #e65100; text-decoration: none; font-weight: 600; }
+    .user-links a:hover { text-decoration: underline; }
+    @media (max-width: 768px) {
+        .calculator-hero h1 { font-size: 1.5rem; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="calculator-hero">
+    <h1>{% trans 'حاسبة الأسعار' %}</h1>
+    <p>{% trans 'احصل على عرض سعر فوري لخدمات الطباعة والهدايا الدعائية' %}</p>
+</div>
+
+<div class="container">
+    <div class="row g-4 justify-content-center">
+        <div class="col-md-5">
+            <a href="{% url 'calculator:printing_calculator' %}" class="text-decoration-none">
+                <div class="card calc-card">
+                    <div class="card-icon text-center">
+                        <i class="bi bi-printer-fill"></i>
+                    </div>
+                    <div class="card-body">
+                        <h3 class="card-title">{% trans 'خدمات الطباعة' %}</h3>
+                        <p class="card-text">{% trans 'بطاقات عمل، بروشورات، بنرات، فولدرات، استيكرات، وأكثر' %}</p>
+                        <span class="btn btn-outline-primary mt-2">{% trans 'احسب السعر' %} <i class="bi bi-arrow-left"></i></span>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-5">
+            <a href="{% url 'calculator:giveaway_calculator' %}" class="text-decoration-none">
+                <div class="card calc-card">
+                    <div class="card-icon text-center">
+                        <i class="bi bi-gift-fill"></i>
+                    </div>
+                    <div class="card-body">
+                        <h3 class="card-title">{% trans 'الهدايا الدعائية' %}</h3>
+                        <p class="card-text">{% trans 'أقلام، فلاش ميموري، دفاتر، أكواب، شنط، وأكثر' %}</p>
+                        <span class="btn btn-outline-primary mt-2">{% trans 'احسب السعر' %} <i class="bi bi-arrow-left"></i></span>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <div class="user-links">
+        {% if user.is_authenticated and user.role == 'client' %}
+            <a href="{% url 'calculator:my_quotes' %}"><i class="bi bi-file-text"></i> {% trans 'عروض أسعاري' %}</a>
+        {% else %}
+            <a href="{% url 'calculator:client_register' %}">{% trans 'سجل حساب عميل' %}</a>
+            {% trans '|' %}
+            <a href="{% url 'login' %}">{% trans 'تسجيل الدخول' %}</a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

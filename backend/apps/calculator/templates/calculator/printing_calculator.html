@@ -1,0 +1,327 @@
+{% extends 'adminlte/base.html' %}
+{% load static i18n %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .calc-container { max-width: 1200px; margin: 0 auto; }
+    .category-section { margin-bottom: 2.5rem; }
+    .category-title { font-size: 1.5rem; font-weight: 700; color: #333; border-bottom: 3px solid #e65100; padding-bottom: 0.5rem; margin-bottom: 1.5rem; }
+    .product-card { border: 1px solid #e0e0e0; border-radius: 0.75rem; padding: 1.25rem; margin-bottom: 1rem; transition: all 0.2s; background: #fff; }
+    .product-card:hover { border-color: #e65100; box-shadow: 0 2px 12px rgba(230,81,0,0.1); }
+    .product-card.selected { border-color: #e65100; background: #fff8f3; }
+    .product-name { font-weight: 700; font-size: 1.1rem; margin-bottom: 0.25rem; }
+    .product-desc { color: #666; font-size: 0.9rem; margin-bottom: 0.75rem; }
+    .tier-display { font-size: 0.85rem; color: #888; }
+    .tier-display span { display: inline-block; background: #f5f5f5; padding: 0.15rem 0.5rem; border-radius: 0.25rem; margin: 0.15rem; }
+    .qty-input { max-width: 120px; display: inline-block; }
+    .item-total { font-weight: 700; color: #e65100; font-size: 1.1rem; min-width: 80px; display: inline-block; text-align: right; }
+    .cart-sidebar { position: sticky; top: 1rem; }
+    .cart-item { border-bottom: 1px solid #eee; padding: 0.75rem 0; }
+    .cart-item:last-child { border-bottom: none; }
+    .summary-row { display: flex; justify-content: space-between; padding: 0.4rem 0; font-size: 0.95rem; }
+    .summary-row.total { font-size: 1.3rem; font-weight: 800; color: #e65100; border-top: 2px solid #e65100; padding-top: 0.75rem; margin-top: 0.5rem; }
+    .discount-badge { background: #28a745; color: #fff; padding: 0.2rem 0.6rem; border-radius: 1rem; font-size: 0.8rem; }
+    .calc-header { background: linear-gradient(135deg, #1a1a1a 0%, #e65100 50%, #bf360c 100%); padding: 2rem 1rem; text-align: center; color: white; margin: -1rem -1rem 2rem -1rem; }
+    .calc-header h1 { font-size: 1.75rem; font-weight: 800; }
+    .calc-header .breadcrumb-custom a { color: rgba(255,255,255,0.8); text-decoration: none; }
+    .calc-header .breadcrumb-custom a:hover { text-decoration: underline; }
+    .cart-empty { text-align: center; padding: 3rem 1rem; color: #999; }
+    .cart-empty i { font-size: 3rem; display: block; margin-bottom: 1rem; }
+    @media (max-width: 768px) {
+        .cart-sidebar { position: static; margin-top: 2rem; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="calc-header">
+    <div class="breadcrumb-custom mb-2">
+        <a href="{% url 'calculator:calculator_home' %}">{% trans 'الرئيسية' %}</a> / <span>{% trans 'خدمات الطباعة' %}</span>
+    </div>
+    <h1>{% trans 'حاسبة أسعار الطباعة' %}</h1>
+    <p>{% trans 'اختر المنتجات والكميات للحصول على عرض سعر فوري' %}</p>
+</div>
+
+<div class="calc-container">
+    <div class="row">
+        <div class="col-lg-8">
+            {% for category in categories %}
+            <div class="category-section">
+                <h2 class="category-title"><i class="bi {{ category.icon }} ms-2"></i>{{ category.name_ar }}</h2>
+                {% for product in category.products.all %}
+                {% if product.is_active %}
+                <div class="product-card" data-product-id="{{ product.id }}" data-product-name="{{ product.name_ar }}">
+                    <div class="row align-items-center">
+                        <div class="col-md-5">
+                            <div class="product-name">{{ product.name_ar }}</div>
+                            {% if product.description %}
+                            <div class="product-desc">{{ product.description }}</div>
+                            {% endif %}
+                            <div class="tier-display">
+                                {% for tier in product.pricing_tiers.all %}
+                                <span>{{ tier.qty_from }}-{{ tier.qty_to }}: {{ tier.unit_price }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small mb-1">{% trans 'الكمية' %}</label>
+                            <input type="number" class="form-control form-control-sm qty-input" value="0" min="0" data-product-id="{{ product.id }}">
+                        </div>
+                        <div class="col-md-3 text-md-end">
+                            <span class="item-total" data-product-id="{{ product.id }}">0.00</span>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+            {% empty %}
+            <div class="alert alert-info">{% trans 'لا توجد منتجات متاحة حالياً' %}</div>
+            {% endfor %}
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card cart-sidebar">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0"><i class="bi bi-cart3 me-1"></i> {% trans 'عرض السعر' %}</h5>
+                </div>
+                <div class="card-body" id="cartBody">
+                    <div class="cart-empty" id="cartEmpty">
+                        <i class="bi bi-cart-x"></i>
+                        <p>{% trans 'اختر المنتجات والكميات' %}</p>
+                    </div>
+                    <div id="cartItems" style="display:none;"></div>
+                    <div id="cartSummary" style="display:none;">
+                        <hr>
+                        <div class="summary-row">
+                            <span>{% trans 'المجموع الفرعي' %}</span>
+                            <span id="subtotalDisplay">0.00</span>
+                        </div>
+                        <div class="summary-row" id="discountRow" style="display:none;">
+                            <span>{% trans 'خصم العميل' %} (<span id="discountPercent">0</span>%)</span>
+                            <span class="text-success" id="discountDisplay">-0.00</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>{% trans 'الضريبة' %} (<span id="taxPercent">14</span>%)</span>
+                            <span id="taxDisplay">0.00</span>
+                        </div>
+                        <div class="summary-row total">
+                            <span>{% trans 'الإجمالي النهائي' %}</span>
+                            <span id="totalDisplay">0.00</span>
+                        </div>
+                        <button class="btn btn-primary w-100 mt-3" id="requestQuoteBtn">
+                            <i class="bi bi-send me-1"></i> {% trans 'طلب عرض سعر' %}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Request Quote Modal -->
+<div class="modal fade" id="quoteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{% trans 'طلب عرض سعر' %}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="quoteForm">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">{% trans 'الاسم' %} <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="quoteName" value="{{ user.get_full_name|default:'' }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">{% trans 'البريد الإلكتروني' %} <span class="text-danger">*</span></label>
+                        <input type="email" class="form-control" id="quoteEmail" value="{{ user.email|default:'' }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">{% trans 'رقم الهاتف' %} <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="quotePhone" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">{% trans 'الشركة' %}</label>
+                        <input type="text" class="form-control" id="quoteCompany">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">{% trans 'ملاحظات' %}</label>
+                        <textarea class="form-control" id="quoteNotes" rows="2"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans 'إلغاء' %}</button>
+                    <button type="submit" class="btn btn-primary" id="submitQuoteBtn">
+                        <i class="bi bi-check2"></i> {% trans 'إرسال الطلب' %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Success Modal -->
+<div class="modal fade" id="successModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body text-center py-5">
+                <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
+                <h4 class="mt-3">{% trans 'تم إرسال طلبك بنجاح!' %}</h4>
+                <p class="text-muted">{% trans 'رقم عرض السعر' %}: <strong id="quoteNumberDisplay"></strong></p>
+                <p>{% trans 'سيتم التواصل معك قريباً' %}</p>
+                <a href="{% url 'calculator:calculator_home' %}" class="btn btn-primary mt-2">{% trans 'العودة للرئيسية' %}</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function getCartItems() {
+    const items = [];
+    document.querySelectorAll('.product-card').forEach(card => {
+        const input = card.querySelector('.qty-input');
+        const qty = parseInt(input.value) || 0;
+        if (qty > 0) {
+            items.push({
+                product_id: parseInt(input.dataset.productId),
+                quantity: qty,
+            });
+        }
+    });
+    return items;
+}
+
+function updateCart() {
+    const items = getCartItems();
+    const cartEmpty = document.getElementById('cartEmpty');
+    const cartItems = document.getElementById('cartItems');
+    const cartSummary = document.getElementById('cartSummary');
+
+    if (items.length === 0) {
+        cartEmpty.style.display = '';
+        cartItems.style.display = 'none';
+        cartSummary.style.display = 'none';
+        return;
+    }
+
+    fetch('{% url "calculator:api_calculate" %}', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}'},
+        body: JSON.stringify({type: 'printing', items: items})
+    })
+    .then(r => r.json())
+    .then(data => {
+        cartEmpty.style.display = 'none';
+        cartItems.style.display = '';
+        cartSummary.style.display = '';
+
+        let html = '';
+        data.items.forEach(item => {
+            html += '<div class="cart-item">';
+            html += '<div class="fw-bold small">' + item.product_name + '</div>';
+            html += '<div class="d-flex justify-content-between"><span>x' + item.quantity + '</span><span class="fw-bold">' + item.line_total.toFixed(2) + '</span></div>';
+            html += '<div class="text-muted small">' + item.unit_price.toFixed(2) + ' {% trans "للحبة" %}</div>';
+            html += '</div>';
+        });
+        cartItems.innerHTML = html;
+        document.getElementById('subtotalDisplay').textContent = data.subtotal.toFixed(2);
+        if (data.client_discount_percent > 0) {
+            document.getElementById('discountRow').style.display = '';
+            document.getElementById('discountPercent').textContent = data.client_discount_percent;
+            document.getElementById('discountDisplay').textContent = '-' + data.discount_amount.toFixed(2);
+        } else {
+            document.getElementById('discountRow').style.display = 'none';
+        }
+        document.getElementById('taxDisplay').textContent = data.tax_amount.toFixed(2);
+        document.getElementById('totalDisplay').textContent = data.total.toFixed(2);
+    });
+}
+
+document.querySelectorAll('.qty-input').forEach(input => {
+    input.addEventListener('input', function() {
+        const pid = this.dataset.productId;
+        const qty = parseInt(this.value) || 0;
+        const totalSpan = document.querySelector('.item-total[data-product-id="' + pid + '"]');
+        if (qty > 0) {
+            fetch('{% url "calculator:api_calculate" %}', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}'},
+                body: JSON.stringify({type: 'printing', items: [{product_id: parseInt(pid), quantity: qty}]})
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.items && data.items[0]) {
+                    totalSpan.textContent = data.items[0].line_total.toFixed(2);
+                }
+            });
+        } else {
+            totalSpan.textContent = '0.00';
+        }
+        updateCart();
+    });
+});
+
+document.getElementById('requestQuoteBtn').addEventListener('click', function() {
+    if (getCartItems().length === 0) {
+        alert('{% trans "يرجى اختيار منتج واحد على الأقل" %}');
+        return;
+    }
+    var myModal = new bootstrap.Modal(document.getElementById('quoteModal'));
+    myModal.show();
+});
+
+document.getElementById('quoteForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const name = document.getElementById('quoteName').value.trim();
+    const email = document.getElementById('quoteEmail').value.trim();
+    const phone = document.getElementById('quotePhone').value.trim();
+    const company = document.getElementById('quoteCompany').value.trim();
+    const notes = document.getElementById('quoteNotes').value.trim();
+
+    if (!name || !email || !phone) {
+        alert('{% trans "يرجى ملء الحقول المطلوبة" %}');
+        return;
+    }
+
+    const btn = document.getElementById('submitQuoteBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> {% trans "جارٍ الإرسال..." %}';
+
+    const items = getCartItems();
+
+    fetch('{% url "calculator:save_quote" %}', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}'},
+        body: JSON.stringify({
+            type: 'printing',
+            items: items,
+            contact_name: name,
+            contact_email: email,
+            contact_phone: phone,
+            company: company,
+            notes: notes,
+        })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            bootstrap.Modal.getInstance(document.getElementById('quoteModal')).hide();
+            document.getElementById('quoteNumberDisplay').textContent = data.quote_number;
+            new bootstrap.Modal(document.getElementById('successModal')).show();
+        } else {
+            alert(data.error || '{% trans "حدث خطأ" %}');
+        }
+    })
+    .catch(() => { alert('{% trans "حدث خطأ في الاتصال" %}'); })
+    .finally(() => {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-check2"></i> {% trans "إرسال الطلب" %}';
+    });
+});
+</script>
+{% endblock %}

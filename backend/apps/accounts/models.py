@@ -10,12 +10,14 @@ class User(AbstractUser):
         SUPERVISOR = 'supervisor', _('مشرف')
         CASHIER = 'cashier', _('كاشير')
         STAFF = 'staff', _('موظف')
+        CLIENT = 'client', _('عميل')
 
     class Language(models.TextChoices):
         ARABIC = 'ar', _('العربية')
         ENGLISH = 'en', _('English')
 
     phone = models.CharField(_('رقم الهاتف'), max_length=20, blank=True)
+    client_discount_percent = models.DecimalField(_('نسبة خصم العميل'), max_digits=5, decimal_places=2, default=0)
     employee_id = models.ForeignKey(
         'employees.Employee', on_delete=models.SET_NULL,
         null=True, blank=True, verbose_name=_('الموظف')

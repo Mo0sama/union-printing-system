@@ -1,0 +1,132 @@
+{% extends 'adminlte/base.html' %}
+{% load static i18n %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="h3">{% trans 'عرض سعر' %}: {{ quote.quote_number }}</h1>
+        <div>
+            <a href="{% url 'calculator:my_quotes' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-right"></i> {% trans 'العودة' %}
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">{% trans 'معلومات العميل' %}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-2">
+                            <strong>{% trans 'الاسم' %}:</strong> {{ quote.contact_name }}
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <strong>{% trans 'البريد الإلكتروني' %}:</strong> {{ quote.contact_email }}
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <strong>{% trans 'رقم الهاتف' %}:</strong> {{ quote.contact_phone }}
+                        </div>
+                        {% if quote.company %}
+                        <div class="col-md-6 mb-2">
+                            <strong>{% trans 'الشركة' %}:</strong> {{ quote.company }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">{% trans 'البنود' %}</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-bordered mb-0">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>{% trans 'المنتج' %}</th>
+                                    <th>{% trans 'الخيار' %}</th>
+                                    <th>{% trans 'الكمية' %}</th>
+                                    <th>{% trans 'سعر الوحدة' %}</th>
+                                    <th>{% trans 'الإجمالي' %}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in quote.items.all %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>{{ item.product_name }}</td>
+                                    <td>{{ item.option_name|default:'-' }}</td>
+                                    <td>{{ item.quantity }}</td>
+                                    <td>{{ item.unit_price }}</td>
+                                    <td class="fw-bold">{{ item.line_total }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">{% trans 'ملخص' %}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>{% trans 'النوع' %}:</span>
+                        <span class="fw-bold">{{ quote.get_quote_type_display }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>{% trans 'الحالة' %}:</span>
+                        {% if quote.status == 'submitted' %}
+                        <span class="badge bg-warning text-dark">{% trans 'مُرسل' %}</span>
+                        {% elif quote.status == 'approved' %}
+                        <span class="badge bg-success">{% trans 'مقبول' %}</span>
+                        {% elif quote.status == 'rejected' %}
+                        <span class="badge bg-danger">{% trans 'مرفوض' %}</span>
+                        {% else %}
+                        <span class="badge bg-secondary">{% trans 'مسودة' %}</span>
+                        {% endif %}
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>{% trans 'المجموع الفرعي' %}:</span>
+                        <span>{{ quote.subtotal }}</span>
+                    </div>
+                    {% if quote.discount_amount > 0 %}
+                    <div class="d-flex justify-content-between mb-2 text-success">
+                        <span>{% trans 'الخصم' %} ({{ quote.discount_percent }}%):</span>
+                        <span>-{{ quote.discount_amount }}</span>
+                    </div>
+                    {% endif %}
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>{% trans 'الضريبة' %} ({{ quote.tax_percent }}%):</span>
+                        <span>{{ quote.tax_amount }}</span>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between fw-bold" style="font-size: 1.2rem; color: #e65100;">
+                        <span>{% trans 'الإجمالي' %}:</span>
+                        <span>{{ quote.total }}</span>
+                    </div>
+                    {% if quote.notes %}
+                    <hr>
+                    <div>
+                        <strong>{% trans 'ملاحظات' %}:</strong>
+                        <p class="text-muted mt-1">{{ quote.notes }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

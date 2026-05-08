@@ -1,11 +1,48 @@
+import json
+
 from django.conf import settings
 from django.conf.urls.i18n import i18n_patterns
 from django.conf.urls.static import static
 from django.contrib import admin
+from django.http import HttpResponse
 from django.shortcuts import render
 from django.urls import include, path
 from django.views.generic import RedirectView
 from apps.accounts import views as accounts_views
+
+
+def manifest_view(request):
+    manifest = {
+        "name": "Union for Printing Services",
+        "short_name": "Union Printing",
+        "description": "حاسبة الأسعار - Union for Digital Printing Services",
+        "start_url": "/calculator/",
+        "scope": "/",
+        "display": "standalone",
+        "background_color": "#1a1a1a",
+        "theme_color": "#e65100",
+        "orientation": "portrait-primary",
+        "lang": "ar",
+        "dir": "rtl",
+        "icons": [
+            {
+                "src": "/static/images/icon-192x192.png",
+                "sizes": "192x192",
+                "type": "image/png",
+                "purpose": "any maskable",
+            },
+            {
+                "src": "/static/images/icon-512x512.png",
+                "sizes": "512x512",
+                "type": "image/png",
+                "purpose": "any maskable",
+            },
+        ],
+    }
+    return HttpResponse(
+        json.dumps(manifest, ensure_ascii=False),
+        content_type="application/manifest+json; charset=utf-8",
+    )
 
 
 def handler403(request, exception=None):
@@ -14,6 +51,7 @@ def handler403(request, exception=None):
 urlpatterns = [
     path('i18n/', include('django.conf.urls.i18n')),
     path('admin/', admin.site.urls),
+    path('manifest.json', manifest_view, name='manifest'),
 ]
 
 urlpatterns += i18n_patterns(

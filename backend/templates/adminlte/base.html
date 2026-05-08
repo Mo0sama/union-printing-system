@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{{ company_settings.company_name }}{% endblock %}</title>
     <link rel="icon" type="image/png" href="{% static 'images/favicon.png' %}">
-    <link rel="manifest" href="{% static 'manifest.json' %}">
+    <link rel="manifest" href="{% url 'manifest' %}">
     <meta name="theme-color" content="#e65100">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">

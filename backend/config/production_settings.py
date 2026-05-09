@@ -13,9 +13,7 @@ ALLOWED_HOSTS = [
     'localhost', '127.0.0.1',
 ]
 
-SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
-if not SECRET_KEY:
-    raise ImproperlyConfigured('DJANGO_SECRET_KEY environment variable must be set')
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY') or SECRET_KEY
 
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATIC_URL = '/static/'

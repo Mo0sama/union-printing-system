@@ -11,10 +11,9 @@ def sanitize_excel_value(value):
 
 
 ALLOWED_EXTENSIONS = (
-    '.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.bmp',
+    '.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp',
     '.pdf', '.ai', '.eps', '.cdr', '.psd', '.tif', '.tiff', '.indd',
-    '.doc', '.docx', '.xls', '.xlsx', '.csv', '.txt',
-    '.mp4', '.avi', '.mov', '.mkv', '.zip', '.rar', '.7z',
+    '.csv', '.txt',
 )
 
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 MB

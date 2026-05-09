@@ -60,7 +60,7 @@ CONTENT_SECURITY_POLICY = {
     "DIRECTIVES": {
         "default-src": ["'self'"],
         "style-src": ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://fonts.googleapis.com", "https://fonts.gstatic.com"],
-        "script-src": ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://code.jquery.com"],
+        "script-src": ["'self'", "https://cdn.jsdelivr.net", "https://code.jquery.com"],
         "font-src": ["'self'", "https://cdn.jsdelivr.net", "https://fonts.gstatic.com"],
         "img-src": ["'self'", "data:", "blob:"],
         "connect-src": ["'self'"],

@@ -1,22 +1,22 @@
 import openpyxl
-from apps.core.validators import sanitize_excel_value
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
-from apps.accounts.decorators import app_permission_required
-from django.db.models import Q, Sum
+from django.core.paginator import Paginator
+from django.db.models import Q
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.translation import gettext_lazy as _
-from django.core.paginator import Paginator
 
+from apps.accounts.decorators import app_permission_required
+from apps.core.validators import sanitize_excel_value
 from apps.orders.models import Order, OrderPayment
 
 from .forms import (
-    CustomerContactForm, CustomerForm,
-    CustomerInteractionForm, CustomerPaymentForm,
+    CustomerForm,
+    CustomerInteractionForm,
+    CustomerPaymentForm,
 )
-from .models import Customer, CustomerInteraction, CustomerPayment
-from .services import adjust_balance, record_customer_payment
+from .models import Customer, CustomerPayment
+from .services import record_customer_payment
 
 
 @app_permission_required('customers_view')

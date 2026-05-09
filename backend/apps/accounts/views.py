@@ -1,20 +1,25 @@
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import (
-    authenticate, login, logout, update_session_auth_hash,
+    login,
+    logout,
+    update_session_auth_hash,
 )
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
+from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.translation import gettext_lazy as _
-from django.db import transaction
 
 from .forms import (
-    CustomPasswordChangeForm, LoginForm, ProfileEditForm, UserCreationForm,
+    CustomPasswordChangeForm,
+    LoginForm,
+    ProfileEditForm,
+    UserCreationForm,
 )
 from .models import User
-from .permissions import PERMISSION_GROUPS, ALL_PERM_CODENAMES, ROLE_PRESETS
+from .permissions import ALL_PERM_CODENAMES, PERMISSION_GROUPS, ROLE_PRESETS
 
 
 def login_view(request):

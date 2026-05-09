@@ -1,8 +1,6 @@
 from django.contrib.auth.decorators import user_passes_test
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import redirect
-from django.contrib import messages
-from django.utils.translation import gettext_lazy as _
 
 
 def app_permission_required(perm_codename, login_url=None):

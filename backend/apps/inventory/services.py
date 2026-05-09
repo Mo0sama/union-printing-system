@@ -1,7 +1,9 @@
 from decimal import Decimal
+
 from django.db import transaction
 from django.db.models import F
-from .models import Batch, Material, StockMovement, InventoryValuation
+
+from .models import Batch, InventoryValuation, Material, StockMovement
 
 
 def deduct_stock_fifo(material, quantity, reference_type=None, reference_id=None, notes='', user=None):

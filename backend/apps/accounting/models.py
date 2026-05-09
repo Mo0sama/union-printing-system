@@ -1,3 +1,5 @@
+from datetime import date
+
 from django.conf import settings
 from django.db import models
 from django.utils.translation import gettext_lazy as _
@@ -56,7 +58,7 @@ class JournalEntry(models.Model):
     entry_number = models.CharField(
         _('رقم القيد'), max_length=30, unique=True, editable=False
     )
-    entry_date = models.DateField(_('تاريخ القيد'))
+    entry_date = models.DateField(_('تاريخ القيد'), default=date.today)
     description = models.TextField(_('البيان'))
     reference_type = models.CharField(
         _('نوع المرجع'), max_length=50, null=True, blank=True

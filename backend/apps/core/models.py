@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.db import models
+
 from .validators import validate_file_extension, validate_file_size
 
 User = get_user_model()

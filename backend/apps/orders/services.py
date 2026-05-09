@@ -1,9 +1,9 @@
-from decimal import Decimal
 from django.db import transaction
-from django.utils import timezone
-from .models import Order, OrderPayment
+
+from apps.accounting.services import post_cogs, post_order_revenue
 from apps.inventory.services import deduct_stock_fifo, reverse_stock_deduction
-from apps.accounting.services import post_order_revenue, post_pos_revenue, post_cogs
+
+from .models import OrderPayment
 
 
 def update_order_payment_status(order):
@@ -83,10 +83,10 @@ def confirm_order(order, user=None):
                 user=user
             )
             post_cogs('order', order.pk, user=user)
-    
+
     # Post revenue
     post_order_revenue(order, user)
-    
+
     order.status = order.Status.CONFIRMED
     order.save()
     return order
@@ -100,12 +100,12 @@ def cancel_order(order, user=None):
     # Reverse inventory if order was confirmed/in_production
     if order.status in (order.Status.CONFIRMED, order.Status.IN_PRODUCTION):
         reverse_stock_deduction('order', order.pk, user=user)
-    
+
     # Adjust customer balance (remove the order total)
     customer = order.customer
     customer.current_balance -= order.total
     customer.save(update_fields=['current_balance'])
-    
+
     order.status = order.Status.CANCELLED
     order.save()
     return order

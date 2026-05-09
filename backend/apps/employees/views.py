@@ -1,15 +1,14 @@
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.decorators import login_required, permission_required
+from datetime import date
+
 from django.contrib import messages
-from django.db.models import Q, Sum, Count, Avg, F, Value, DecimalField
+from django.contrib.auth.decorators import login_required, permission_required
+from django.db.models import DecimalField, Q, Sum, Value
 from django.db.models.functions import Coalesce
-from django.utils import timezone
-from datetime import date, timedelta, datetime
-from .models import (Employee, Attendance, EmployeeLeave, EmployeeSalary,
-                     EmployeeAdvance)
-from .forms import (EmployeeForm, AttendanceForm, BulkAttendanceForm,
-                    LeaveForm, SalaryForm, AdvanceForm)
 from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
+
+from .forms import AdvanceForm, AttendanceForm, BulkAttendanceForm, EmployeeForm, LeaveForm, SalaryForm
+from .models import Attendance, Employee, EmployeeAdvance, EmployeeLeave, EmployeeSalary
 
 
 @login_required
@@ -35,7 +34,6 @@ def employee_list(request):
     elif status == 'inactive':
         employees = employees.filter(is_active=False)
 
-    department_choices = Employee.DEPARTMENT_CHOICES if hasattr(Employee, 'DEPARTMENT_CHOICES') else []
     from .models import DEPARTMENT_CHOICES
     context = {
         'employees': employees,
@@ -266,7 +264,7 @@ def leave_create(request):
     if request.method == 'POST':
         form = LeaveForm(request.POST)
         if form.is_valid():
-            leave = form.save()
+            form.save()
             messages.success(request, 'تم تقديم طلب الإجازة بنجاح')
             return redirect('employees:leave_list')
     else:

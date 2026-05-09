@@ -7,4 +7,4 @@ class CoreConfig(AppConfig):
     verbose_name = 'Core'
 
     def ready(self):
-        import apps.core.signals
+        pass

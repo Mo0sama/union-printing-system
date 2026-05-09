@@ -1,0 +1,45 @@
+[tool.ruff]
+target-version = "py310"
+line-length = 120
+
+[tool.ruff.lint]
+select = [
+    "F",   # pyflakes: logic errors
+    "E",   # pycodestyle: error
+    "W",   # pycodestyle: warning
+    "I",   # isort: import sorting
+    "N",   # pep8-naming
+    "UP",  # pyupgrade
+    "B",   # flake8-bugbear
+    "SIM", # flake8-simplify
+    "ARG", # flake8-unused-arguments
+    "C4",  # flake8-comprehensions
+    "RUF", # ruff-specific
+]
+ignore = [
+    "E501",  # line too long (handled by formatter)
+    "E741",  # ambiguous variable name
+    "N802",  # function name should be lowercase
+    "N803",  # argument name should be lowercase
+    "N806",  # variable in function should be lowercase
+    "N815",  # class attribute should be lowercase
+    "N816",  # class attribute should be lowercase
+    "RUF012",  # mutable class attrs - too noisy for Django Meta/admin patterns
+    "F403",  # star import - needed for production_settings.py pattern
+    "F405",  # star import undefined - see above
+    "ARG001",  # unused args - often needed for Django callbacks
+]
+
+[tool.ruff.lint.per-file-ignores]
+"apps/*/migrations/*" = ["ALL"]
+"*tests*" = ["ARG001", "ARG002", "ARG003", "N802", "N803", "N806"]
+"config/wsgi_pa.py" = ["E402"]
+"check_logo.py" = ["E402", "E702"]
+"**/management/commands/*" = ["ARG002"]
+"apps/core/models.py" = ["RUF059"]
+"apps/accounts/management/commands/*" = ["RUF059"]
+"apps/core/admin.py" = ["ARG002"]
+"apps/calculator/admin.py" = ["ARG002"]
+
+[tool.ruff.format]
+quote-style = "single"

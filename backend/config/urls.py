@@ -8,6 +8,7 @@ from django.http import HttpResponse
 from django.shortcuts import render
 from django.urls import include, path
 from django.views.generic import RedirectView
+
 from apps.accounts import views as accounts_views
 
 

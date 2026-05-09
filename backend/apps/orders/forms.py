@@ -2,7 +2,6 @@ from django import forms
 from django.utils.translation import gettext_lazy as _
 
 from apps.core.lookup_utils import set_lookup_choices
-
 from apps.inventory.models import Material
 
 from .models import DeliveryNote, DesignFile, Order, OrderItem, OrderPayment

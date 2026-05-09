@@ -1,11 +1,13 @@
 from decimal import Decimal
+
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.utils import timezone
 
 from apps.customers.models import Customer
 from apps.employees.models import Employee
-from .models import POSSession, POSSale, POSSaleItem
+
+from .models import POSSession
 from .services import adjust_customer_balance
 
 User = get_user_model()
@@ -19,6 +21,9 @@ class POSBalanceTests(TestCase):
             full_name='Test Cashier',
             phone='01000000003',
             position='cashier',
+            department='sales',
+            base_salary=Decimal('5000'),
+            hire_date=timezone.now().date(),
         )
         self.customer = Customer.objects.create(
             name='POS Customer', phone='01000000001', created_by=self.user

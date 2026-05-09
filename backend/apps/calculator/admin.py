@@ -1,9 +1,15 @@
 from django.contrib import admin
 
 from .models import (
-    CalculatorQuote, CalculatorQuoteItem, GiveawayCategory,
-    GiveawayOption, GiveawayPricingTier, GiveawayProduct,
-    PricingTier, ServiceCategory, ServiceProduct,
+    CalculatorQuote,
+    CalculatorQuoteItem,
+    GiveawayCategory,
+    GiveawayOption,
+    GiveawayPricingTier,
+    GiveawayProduct,
+    PricingTier,
+    ServiceCategory,
+    ServiceProduct,
 )
 
 

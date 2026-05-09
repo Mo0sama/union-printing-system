@@ -1,5 +1,7 @@
 import os
+
 from django.core.exceptions import ImproperlyConfigured
+
 from .settings import *
 
 DEBUG = False
@@ -78,6 +80,9 @@ else:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'noreply@unionprinting.com')
 
+_LOGS_DIR = BASE_DIR / 'logs'
+_LOGS_DIR.mkdir(exist_ok=True)
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -91,7 +96,7 @@ LOGGING = {
         'file': {
             'level': 'ERROR',
             'class': 'logging.FileHandler',
-            'filename': BASE_DIR / 'logs' / 'django_errors.log',
+            'filename': _LOGS_DIR / 'django_errors.log',
             'formatter': 'verbose',
         },
     },

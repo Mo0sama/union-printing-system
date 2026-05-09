@@ -1,34 +1,28 @@
-import json
 from datetime import timedelta
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
+from django.core.paginator import Paginator
 from django.db import transaction
-from django.http import HttpResponse, JsonResponse
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.template.loader import render_to_string
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
-from django.core.paginator import Paginator
-from django.urls import reverse
-from reportlab.lib import colors
-from reportlab.lib.pagesizes import A4
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.units import mm
-from reportlab.platypus import (
-    Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
-)
 
 from apps.accounting.services import post_cogs, post_order_revenue
 from apps.core.models import CompanySetting
 from apps.inventory.services import deduct_stock_fifo, reverse_stock_deduction
-from .services import adjust_customer_balance_for_order, adjust_customer_balance_for_payment
 
 from .forms import (
-    DeliveryNoteForm, DesignFileForm, OrderFilterForm, OrderForm,
-    OrderItemFormSet, OrderPaymentForm,
+    DeliveryNoteForm,
+    DesignFileForm,
+    OrderFilterForm,
+    OrderForm,
+    OrderItemFormSet,
+    OrderPaymentForm,
 )
-from .models import DeliveryNote, DesignFile, Order, OrderItem, OrderPayment
+from .models import DeliveryNote, DesignFile, Order, OrderPayment
+from .services import adjust_customer_balance_for_order, adjust_customer_balance_for_payment
 
 
 @login_required

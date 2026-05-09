@@ -2,9 +2,9 @@ from django.conf import settings
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+from apps.core.validators import validate_file_extension, validate_file_size
 from apps.customers.models import Customer
 from apps.quotes.models import Quote
-from apps.core.validators import validate_file_extension, validate_file_size
 
 
 class Order(models.Model):

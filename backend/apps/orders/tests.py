@@ -1,11 +1,12 @@
 from decimal import Decimal
+
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.utils import timezone
 
 from apps.customers.models import Customer
-from apps.inventory.models import Category as InvCategory, Material, Batch
-from .models import Order, OrderItem, OrderPayment
+
+from .models import Order, OrderPayment
 from .services import (
     adjust_customer_balance_for_order,
     adjust_customer_balance_for_payment,

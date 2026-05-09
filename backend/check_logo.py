@@ -1,6 +1,10 @@
 import os
+
+import django
+
 os.environ['DJANGO_SETTINGS_MODULE'] = 'config.settings'
-import django; django.setup()
+django.setup()
+
 from apps.core.models import CompanySetting
 
 s = CompanySetting.get_settings()

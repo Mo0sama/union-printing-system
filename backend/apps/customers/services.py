@@ -1,6 +1,6 @@
-from decimal import Decimal
 from django.db import transaction
-from .models import Customer, CustomerPayment
+
+from .models import CustomerPayment
 
 
 def adjust_balance(customer, delta_amount):

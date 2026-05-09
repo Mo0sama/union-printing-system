@@ -1,16 +1,16 @@
-from datetime import date, datetime, timedelta
+from datetime import date, datetime
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
 from django.db import transaction
-from django.db.models import Sum, Q, Value, DecimalField
+from django.db.models import DecimalField, Sum, Value
 from django.db.models.functions import Coalesce
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
+from apps.inventory.models import InventoryValuation
 from apps.orders.models import Order
 from apps.pos.models import POSSale
-from apps.inventory.models import InventoryValuation
 
 from .models import Account, JournalEntry, JournalLine
 
@@ -112,7 +112,7 @@ def journal_entry_create(request):
             messages.success(request, f'تم إنشاء القيد {entry.entry_number} بنجاح')
             return redirect('accounting:journal_entry_detail', pk=entry.pk)
         except Exception as e:
-            messages.error(request, f'حدث خطأ: {str(e)}')
+            messages.error(request, f'حدث خطأ: {e!s}')
             return redirect('accounting:journal_entry_create')
 
     accounts = Account.objects.filter(is_active=True).order_by('code')

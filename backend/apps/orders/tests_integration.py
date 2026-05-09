@@ -1,20 +1,21 @@
 from decimal import Decimal
+
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.utils import timezone
 
+from apps.accounting.models import Account, JournalEntry, JournalLine
+from apps.accounting.services import post_cogs, post_order_revenue
 from apps.customers.models import Customer
-from apps.inventory.models import Category as InvCategory, Material, Batch
+from apps.inventory.models import Batch, Material
+from apps.inventory.models import Category as InvCategory
+from apps.inventory.services import deduct_stock_fifo
 from apps.orders.models import Order, OrderItem, OrderPayment
 from apps.orders.services import (
     adjust_customer_balance_for_order,
     adjust_customer_balance_for_payment,
     update_order_payment_status,
 )
-from apps.inventory.services import deduct_stock_fifo, reverse_stock_deduction
-from apps.accounting.models import Account, JournalEntry, JournalLine
-from apps.accounting.services import post_order_revenue, post_cogs
-from apps.core.models import CompanySetting
 
 User = get_user_model()
 
@@ -40,11 +41,16 @@ class FullOrderFlowIntegrationTest(TestCase):
             unit_price=Decimal('0.5'),
             purchase_date=timezone.now().date(),
         )
-        # Create COA accounts needed for posting
+        # Initialize current_stock to match batch totals
+        Material.objects.filter(pk=self.material.pk).update(current_stock=Decimal('1000'))
+        self.material.refresh_from_db()
+        # Create COA accounts needed for posting (codes match service lookups)
+        Account.objects.create(code='41', name_ar='إيرادات', account_type='income')
+        Account.objects.create(code='51', name_ar='تكلفة البضاعة المباعة', account_type='expense')
         Account.objects.create(code='1101', name_ar='النقدية', account_type='asset')
-        Account.objects.create(code='4101', name_ar='ايرانات الطباعة', account_type='income')
-        Account.objects.create(code='5101', name_ar='تكلفة الخامات', account_type='expense')
+        Account.objects.create(code='1104', name_ar='عملاء', account_type='asset')
         Account.objects.create(code='1105', name_ar='المخزون', account_type='asset')
+        Account.objects.create(code='2104', name_ar='ضريبة المبيعات', account_type='liability')
 
     def test_full_cycle_create_payment_revenue(self):
         # 1. Create order
@@ -96,7 +102,7 @@ class FullOrderFlowIntegrationTest(TestCase):
             total=Decimal('500'),
             created_by=self.user,
         )
-        item = OrderItem.objects.create(
+        OrderItem.objects.create(
             order=order,
             description='A4 Paper x500',
             quantity=500,
@@ -126,6 +132,7 @@ class FullOrderFlowIntegrationTest(TestCase):
     def test_cancel_order_reverses_everything(self):
         order = Order.objects.create(
             customer=self.customer,
+            delivery_date=timezone.now().date() + timezone.timedelta(days=7),
             order_date=timezone.now().date(),
             subtotal=Decimal('200'),
             total=Decimal('200'),

@@ -17,3 +17,5 @@ dist/
 
 data/db.sqlite3
 data/backups/
+logs/
+backend/logs/

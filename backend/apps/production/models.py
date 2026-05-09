@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+
 from apps.core.validators import validate_file_extension, validate_file_size
 
 

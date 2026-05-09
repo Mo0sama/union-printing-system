@@ -1,11 +1,9 @@
-from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
-from apps.accounts.decorators import app_permission_required
-from django.db.models import Sum, Count, Avg, Q, Value, DecimalField, F, CharField
+
+from django.db.models import Avg, Count, DecimalField, F, Q, Sum, Value
 from django.db.models.functions import Coalesce, TruncDay, TruncMonth, TruncYear
-from django.utils import timezone
-from datetime import date, timedelta, datetime
-from decimal import Decimal
+from django.shortcuts import render
+
+from apps.accounts.decorators import app_permission_required
 
 from .forms import DateRangeForm, ReportFilterForm
 
@@ -71,8 +69,8 @@ def sales_report(request):
 @app_permission_required('reports_view')
 def revenue_report(request):
     form = DateRangeForm(request.GET or None)
+    from apps.orders.models import OrderPayment
     from apps.pos.models import POSSale
-    from apps.orders.models import Order, OrderPayment
 
     sales_qs = POSSale.objects.filter(status='completed')
     payment_qs = OrderPayment.objects.all()
@@ -89,7 +87,9 @@ def revenue_report(request):
 
     period = request.GET.get('group_by', 'month')
 
-    from django.db.models.functions import TruncDay as TD, TruncMonth as TM, TruncYear as TY
+    from django.db.models.functions import TruncDay as TD
+    from django.db.models.functions import TruncMonth as TM
+    from django.db.models.functions import TruncYear as TY
 
     if period == 'day':
         trunc_fn = TD('sale_date')
@@ -137,7 +137,6 @@ def revenue_report(request):
 @app_permission_required('reports_view')
 def expenses_report(request):
     form = DateRangeForm(request.GET or None)
-    from apps.orders.models import Order  # Assuming Orders track costs
 
     start = end = None
     if form.is_valid():
@@ -148,7 +147,7 @@ def expenses_report(request):
 
     salary_costs = 0
     adv_total = 0
-    from apps.employees.models import EmployeeSalary, EmployeeAdvance
+    from apps.employees.models import EmployeeAdvance, EmployeeSalary
     salary_qs = EmployeeSalary.objects.all()
     adv_qs = EmployeeAdvance.objects.all()
     if start:
@@ -233,8 +232,8 @@ def profit_loss_report(request):
 @app_permission_required('reports_view')
 def customer_report(request):
     form = DateRangeForm(request.GET or None)
-    from apps.pos.models import POSSale
     from apps.customers.models import Customer
+    from apps.pos.models import POSSale
 
     sales_qs = POSSale.objects.filter(status='completed')
     start = end = None
@@ -325,7 +324,7 @@ def inventory_report(request):
 
 @app_permission_required('reports_view')
 def employee_report(request):
-    from apps.employees.models import Employee, Attendance, EmployeeSalary, EmployeeLeave
+    from apps.employees.models import Employee, EmployeeSalary
 
     department = request.GET.get('department', '')
 

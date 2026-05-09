@@ -13,11 +13,14 @@ from django.views.decorators.http import require_POST
 from apps.accounts.models import User
 from apps.core.models import CompanySetting
 
-from .forms import ClientRegistrationForm, QuoteSaveForm
+from .forms import ClientRegistrationForm
 from .models import (
-    CalculatorQuote, CalculatorQuoteItem, GiveawayCategory,
-    GiveawayPricingTier, GiveawayProduct, PricingTier,
-    ServiceCategory, ServiceProduct,
+    CalculatorQuote,
+    CalculatorQuoteItem,
+    GiveawayCategory,
+    GiveawayProduct,
+    ServiceCategory,
+    ServiceProduct,
 )
 
 

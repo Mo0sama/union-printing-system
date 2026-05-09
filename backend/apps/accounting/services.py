@@ -1,4 +1,5 @@
 from decimal import Decimal
+
 from django.db import transaction
 from django.utils import timezone
 
@@ -6,7 +7,6 @@ from .models import Account, JournalEntry, JournalLine
 
 
 def post_order_revenue(order, user):
-    from apps.orders.models import Order
 
     if JournalEntry.objects.filter(reference_type='order', reference_id=order.pk).exists():
         return None
@@ -27,9 +27,6 @@ def post_order_revenue(order, user):
 
         revenue_items = order.items.filter(item_type__in=['printing', 'laser', 'engraving'])
         other_items = order.items.exclude(item_type__in=['printing', 'laser', 'engraving'])
-
-        revenue_total = sum(item.total for item in revenue_items) if revenue_items else Decimal('0')
-        other_total = sum(item.total for item in other_items) if other_items else Decimal('0')
 
         discount_amount = Decimal('0')
         if order.discount_type == 'percentage':

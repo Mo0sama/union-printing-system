@@ -1,9 +1,10 @@
 from decimal import Decimal
+
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.utils import timezone
 
-from .models import Category, Material, Batch
+from .models import Batch, Category, Material
 from .services import deduct_stock_fifo, reverse_stock_deduction
 
 User = get_user_model()
@@ -38,6 +39,10 @@ class InventoryServiceTests(TestCase):
             unit_price=Decimal('12'),
             purchase_date=timezone.now().date(),
         )
+
+        # Initialize current_stock to match batch totals
+        Material.objects.filter(pk=self.material.pk).update(current_stock=Decimal('200'))
+        self.material.refresh_from_db()
 
     def test_initial_stock(self):
         self.material.refresh_from_db()

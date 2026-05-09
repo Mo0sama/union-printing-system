@@ -1,16 +1,22 @@
 from django import forms
 from django.contrib.auth.forms import (
     AuthenticationForm as BaseAuthenticationForm,
-    UserCreationForm as BaseUserCreationForm,
-    UserChangeForm as BaseUserChangeForm,
+)
+from django.contrib.auth.forms import (
     PasswordChangeForm as BasePasswordChangeForm,
+)
+from django.contrib.auth.forms import (
+    UserChangeForm as BaseUserChangeForm,
+)
+from django.contrib.auth.forms import (
+    UserCreationForm as BaseUserCreationForm,
 )
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from django.utils.translation import gettext_lazy as _
 
 from .models import User
-from .permissions import PERMISSION_GROUPS, ALL_PERM_CODENAMES, ROLE_PRESETS
+from .permissions import ALL_PERM_CODENAMES
 
 
 class LoginForm(BaseAuthenticationForm):

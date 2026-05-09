@@ -1,22 +1,21 @@
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.decorators import login_required, permission_required
-from apps.accounts.decorators import app_permission_required
+import json
+from decimal import Decimal
+
 from django.contrib import messages
-from django.db.models import Sum, Count, Q, Value, DecimalField
+from django.db.models import DecimalField, Q, Sum, Value
 from django.db.models.functions import Coalesce
 from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
-from datetime import date, datetime
-import json
 
-from .models import POSSession, POSSale, POSSaleItem
-from .forms import POSSessionForm, POSCloseForm, POSSaleForm, POSPaymentForm
 from apps.accounting.services import post_cogs, post_pos_revenue
-from apps.employees.models import Employee
+from apps.accounts.decorators import app_permission_required
 from apps.inventory.models import Material
 from apps.inventory.services import deduct_stock_fifo, reverse_stock_deduction
+
+from .forms import POSCloseForm, POSSessionForm
+from .models import POSSale, POSSaleItem, POSSession
 from .services import adjust_customer_balance
-from decimal import Decimal
 
 
 @app_permission_required('pos_view')
@@ -138,10 +137,7 @@ def pos_sale_create(request):
             data = request.POST
 
         items_raw = data.get('items', [])
-        if isinstance(items_raw, str):
-            items_data = json.loads(items_raw)
-        else:
-            items_data = items_raw
+        items_data = json.loads(items_raw) if isinstance(items_raw, str) else items_raw
         if not items_data:
             return JsonResponse({'success': False, 'error': 'لا توجد أصناف'})
 
@@ -159,10 +155,9 @@ def pos_sale_create(request):
             qty = Decimal(str(item_data.get('qty', item_data.get('quantity', 1))))
             material = None
             if material_id:
-                try:
+                from contextlib import suppress
+                with suppress(Material.DoesNotExist):
                     material = Material.objects.get(pk=material_id)
-                except Material.DoesNotExist:
-                    pass
             price = Decimal(str(item_data.get('price', item_data.get('unit_price', 0))))
             if material and not price:
                 price = material.selling_price or Decimal('0')

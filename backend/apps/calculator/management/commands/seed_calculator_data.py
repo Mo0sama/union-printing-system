@@ -1,8 +1,12 @@
 from django.core.management.base import BaseCommand
 
 from apps.calculator.models import (
-    GiveawayCategory, GiveawayPricingTier, GiveawayProduct,
-    PricingTier, ServiceCategory, ServiceProduct,
+    GiveawayCategory,
+    GiveawayPricingTier,
+    GiveawayProduct,
+    PricingTier,
+    ServiceCategory,
+    ServiceProduct,
 )
 
 

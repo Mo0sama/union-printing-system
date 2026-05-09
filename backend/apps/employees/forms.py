@@ -1,6 +1,8 @@
 from django import forms
+
 from apps.core.lookup_utils import set_lookup_choices
-from .models import Employee, Attendance, EmployeeLeave, EmployeeSalary, EmployeeAdvance
+
+from .models import Attendance, Employee, EmployeeAdvance, EmployeeLeave, EmployeeSalary
 
 
 class EmployeeForm(forms.ModelForm):

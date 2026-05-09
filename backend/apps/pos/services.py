@@ -1,7 +1,9 @@
 from django.db import transaction
-from .models import POSSale, POSSaleItem
+
+from apps.accounting.services import post_cogs
 from apps.inventory.services import deduct_stock_fifo, reverse_stock_deduction
-from apps.accounting.services import post_cogs, post_pos_revenue
+
+from .models import POSSaleItem
 
 
 def adjust_customer_balance(customer, delta):

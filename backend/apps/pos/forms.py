@@ -1,6 +1,8 @@
 from django import forms
+
 from apps.core.lookup_utils import set_lookup_choices
-from .models import POSSession, POSSale
+
+from .models import POSSale, POSSession
 
 
 class POSSessionForm(forms.ModelForm):

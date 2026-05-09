@@ -1,14 +1,13 @@
-from datetime import datetime
 
 from django import forms
 from django.contrib import messages
-from django.contrib.admin.views.decorators import staff_member_required
-from apps.accounts.decorators import app_permission_required
 from django.contrib.auth.decorators import login_required
-from django.db.models import Count, F, Q, Sum
+from django.db.models import F, Q, Sum
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
+
+from apps.accounts.decorators import app_permission_required
 
 from .models import ActivityLog, CompanySetting, Notification
 
@@ -265,6 +264,7 @@ def _handle_lookup_action(request, action, pk, item_type):
 def advanced_settings(request):
     from apps.inventory.models import Category
     from apps.production.models import Department, Machine
+
     from .models import Lookup
 
     categories = Category.objects.all()
@@ -294,15 +294,9 @@ def advanced_settings(request):
             elif item_type in lookup_type_map:
                 _handle_lookup_action(request, action, pk, item_type)
         except Exception as e:
-            messages.error(request, f'حدث خطأ: {str(e)}')
+            messages.error(request, f'حدث خطأ: {e!s}')
 
         return redirect('core:advanced_settings')
-
-    sections = [
-        ('category', 'التصنيفات', 'categories', categories),
-        ('department', 'أقسام الإنتاج', 'departments', departments),
-        ('machine', 'الماكينات', 'machines', machines),
-    ]
 
     context = {
         'categories': categories, 'departments': departments, 'machines': machines,

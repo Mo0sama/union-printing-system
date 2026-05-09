@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import POSSession, POSSale, POSSaleItem
+
+from .models import POSSale, POSSaleItem, POSSession
 
 
 class POSSaleItemInline(admin.TabularInline):

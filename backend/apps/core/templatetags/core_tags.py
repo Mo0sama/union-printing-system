@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from django import template
-from django.urls import resolve, Resolver404
+from django.urls import Resolver404, resolve
 from django.utils import formats
 
 register = template.Library()
@@ -18,9 +18,7 @@ def active_url(context, url_name):
             prefix = url_name[:-1]
             if match.namespace and match.namespace.startswith(prefix):
                 return 'active'
-        elif match.url_name == url_name:
-            return 'active'
-        elif match.namespace and f'{match.namespace}:{match.url_name}' == url_name:
+        elif match.url_name == url_name or (match.namespace and f'{match.namespace}:{match.url_name}' == url_name):
             return 'active'
     except Resolver404:
         pass

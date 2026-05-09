@@ -23,4 +23,5 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'config.production_settings'
 os.environ['PA_DOMAIN'] = 'mossama.pythonanywhere.com'
 
 from django.core.wsgi import get_wsgi_application
+
 application = get_wsgi_application()

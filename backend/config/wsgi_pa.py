@@ -12,6 +12,8 @@ env_path = Path(path) / '.env'
 if env_path.exists():
     load_dotenv(env_path)
 
+os.environ.setdefault('DJANGO_SECRET_KEY', 'DYhN1YKUWkwygrbuRWV86qnxQLS8ttixddY3L1KhdDWs6rpzEBt2U84e3ImxJkUlIH0')
+
 os.environ['DJANGO_SETTINGS_MODULE'] = 'config.production_settings'
 os.environ['PA_DOMAIN'] = 'mossama.pythonanywhere.com'
 

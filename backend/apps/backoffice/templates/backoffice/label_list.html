@@ -69,14 +69,14 @@
                         {% for label in labels %}
                         <tr class="{% if not label.is_active or not label.value_ar %}inactive{% endif %}">
                             <td class="key-cell">{{ label.key }}</td>
-                            <td class="value-cell">{{ label.value_ar|default:'<span class="text-muted">(افتراضي)</span>' }}</td>
+                            <td class="value-cell">{{ label.value_ar|default:label.default_value }}</td>
                             <td><span class="badge bg-secondary badge-app">{{ label.app_label }}</span></td>
                             <td>{{ label.description|truncatechars:40 }}</td>
                             <td>
-                                {% if label.is_active and label.value_ar %}
-                                <span class="badge bg-success">{% trans 'مفعل' %}</span>
+                                {% if label.value_ar != label.default_value %}
+                                <span class="badge bg-warning text-dark">{% trans 'معدل' %}</span>
                                 {% else %}
-                                <span class="badge bg-secondary">{% trans 'افتراضي' %}</span>
+                                <span class="badge bg-success">{% trans 'افتراضي' %}</span>
                                 {% endif %}
                             </td>
                             <td class="text-nowrap">

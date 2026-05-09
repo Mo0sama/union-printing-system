@@ -15,14 +15,14 @@ def superuser_required(view):
 @superuser_required
 def dashboard(request):
     total_labels = SystemLabel.objects.exclude(app_label__in=EXCLUDED_APPS).count()
-    active_overrides = SystemLabel.objects.filter(is_active=True).exclude(value_ar='').exclude(app_label__in=EXCLUDED_APPS).count()
+    customized = SystemLabel.objects.filter(is_active=True).exclude(app_label__in=EXCLUDED_APPS).exclude(value_ar='').exclude(value_ar=models.F('default_value')).count()
     apps_list = (
         SystemLabel.objects.exclude(app_label__in=EXCLUDED_APPS)
         .values('app_label')
         .annotate(total=Count('id'))
         .order_by('app_label')
     )
-    recent = SystemLabel.objects.filter(is_active=True).exclude(value_ar='').order_by('-updated_at')[:10]
+    recent = SystemLabel.objects.filter(is_active=True).exclude(value_ar='').exclude(value_ar=models.F('default_value')).order_by('-updated_at')[:10]
 
     return render(request, 'backoffice/dashboard.html', {
         'total_labels': total_labels,

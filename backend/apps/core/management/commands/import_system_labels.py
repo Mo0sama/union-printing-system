@@ -8,15 +8,29 @@ from apps.core.models import SystemLabel
 def set_label(key, value_ar, app_label, description=""):
     if not value_ar:
         return
-    SystemLabel.objects.update_or_create(
+    obj, created = SystemLabel.objects.get_or_create(
         key=key,
         defaults=dict(
-            value_ar="",
+            value_ar=value_ar,
+            default_value=value_ar,
             app_label=app_label,
-            description=description + f" (الافتراضي: {value_ar})",
+            description=description,
             is_active=True,
         ),
     )
+    if not created:
+        changed = False
+        if obj.default_value != value_ar:
+            obj.default_value = value_ar
+            changed = True
+        if obj.app_label != app_label:
+            obj.app_label = app_label
+            changed = True
+        if obj.description != description:
+            obj.description = description
+            changed = True
+        if changed:
+            obj.save(update_fields=['default_value', 'app_label', 'description'])
 
 
 class Command(BaseCommand):

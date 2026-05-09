@@ -155,6 +155,7 @@ class Notification(models.Model):
 class SystemLabel(models.Model):
     key = models.CharField(max_length=200, unique=True, verbose_name='المفتاح')
     value_ar = models.TextField(verbose_name='النص (عربي)', blank=True)
+    default_value = models.TextField(verbose_name='القيمة الافتراضية', blank=True)
     app_label = models.CharField(max_length=50, verbose_name='التطبيق', blank=True, db_index=True)
     description = models.TextField(verbose_name='الوصف', blank=True)
     is_active = models.BooleanField(default=True, verbose_name='مفعل')

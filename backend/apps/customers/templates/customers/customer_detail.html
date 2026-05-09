@@ -254,7 +254,7 @@
                             <td><span class="badge badge-status badge-{{ order.status }}">{{ order.get_status_display }}</span></td>
                             <td>
                                 <a href="{% url 'orders:order_detail' order.pk %}" class="btn btn-sm btn-outline-info">
-                                    <i class="bi bi-eye"></i>
+                                    <i class="bi bi-eye"></i> {% trans 'عرض' %}
                                 </a>
                             </td>
                         </tr>

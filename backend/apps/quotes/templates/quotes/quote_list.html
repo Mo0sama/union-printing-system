@@ -88,20 +88,20 @@
                         <td>
                             <div class="btn-group">
                                 <a href="{% url 'quotes:quote_detail' quote.pk %}" class="btn btn-sm btn-info" title="{% trans 'عرض' %}">
-                                    <i class="bi bi-eye"></i>
+                                    <i class="bi bi-eye"></i> {% trans 'عرض' %}
                                 </a>
                                 {% if perms.quotes.change_quote %}
                                 <a href="{% url 'quotes:quote_edit' quote.pk %}" class="btn btn-sm btn-warning" title="{% trans 'تعديل' %}">
-                                    <i class="bi bi-pencil"></i>
+                                    <i class="bi bi-pencil"></i> {% trans 'تعديل' %}
                                 </a>
                                 {% endif %}
                                 {% if perms.quotes.delete_quote %}
                                 <a href="{% url 'quotes:quote_delete' quote.pk %}" class="btn btn-sm btn-danger" title="{% trans 'حذف' %}">
-                                    <i class="bi bi-trash"></i>
+                                    <i class="bi bi-trash"></i> {% trans 'حذف' %}
                                 </a>
                                 {% endif %}
                                 <a href="{% url 'quotes:quote_print_pdf' quote.pk %}" class="btn btn-sm btn-secondary" target="_blank" title="{% trans 'طباعة' %}">
-                                    <i class="bi bi-printer"></i>
+                                    <i class="bi bi-printer"></i> {% trans 'طباعة' %}
                                 </a>
                             </div>
                         </td>

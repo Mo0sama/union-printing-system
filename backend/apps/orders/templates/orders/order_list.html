@@ -104,21 +104,21 @@
                         </td>
                         <td>{{ order.order_date|date:'Y-m-d' }}</td>
                         <td>
-                            <div class="btn-group">
-                                <a href="{% url 'orders:order_detail' order.pk %}" class="btn btn-sm btn-info" title="{% trans 'عرض' %}">
-                                    <i class="bi bi-eye"></i>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{% url 'orders:order_detail' order.pk %}" class="btn btn-info" title="{% trans 'عرض' %}">
+                                    <i class="bi bi-eye"></i> {% trans 'عرض' %}
                                 </a>
                                 {% if perms.orders.change_order %}
-                                <a href="{% url 'orders:order_edit' order.pk %}" class="btn btn-sm btn-warning" title="{% trans 'تعديل' %}">
-                                    <i class="bi bi-pencil"></i>
+                                <a href="{% url 'orders:order_edit' order.pk %}" class="btn btn-warning" title="{% trans 'تعديل' %}">
+                                    <i class="bi bi-pencil"></i> {% trans 'تعديل' %}
                                 </a>
                                 {% endif %}
-                                <a href="{% url 'orders:order_print' order.pk %}" class="btn btn-sm btn-secondary" target="_blank" title="{% trans 'طباعة' %}">
-                                    <i class="bi bi-printer"></i>
+                                <a href="{% url 'orders:order_print' order.pk %}" class="btn btn-secondary" target="_blank" title="{% trans 'طباعة' %}">
+                                    <i class="bi bi-printer"></i> {% trans 'طباعة' %}
                                 </a>
                                 {% if perms.orders.delete_order %}
-                                <a href="{% url 'orders:order_delete' order.pk %}" class="btn btn-sm btn-danger" title="{% trans 'حذف' %}">
-                                    <i class="bi bi-trash"></i>
+                                <a href="{% url 'orders:order_delete' order.pk %}" class="btn btn-danger" title="{% trans 'حذف' %}">
+                                    <i class="bi bi-trash"></i> {% trans 'حذف' %}
                                 </a>
                                 {% endif %}
                             </div>

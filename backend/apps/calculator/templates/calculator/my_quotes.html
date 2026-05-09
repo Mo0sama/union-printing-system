@@ -47,7 +47,7 @@
                             <td>{{ quote.created_at|date:'Y-m-d' }}</td>
                             <td>
                                 <a href="{% url 'calculator:my_quote_detail' quote.pk %}" class="btn btn-sm btn-outline-primary">
-                                    <i class="bi bi-eye"></i>
+                                    <i class="bi bi-eye"></i> {% trans 'عرض' %}
                                 </a>
                             </td>
                         </tr>

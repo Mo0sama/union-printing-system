@@ -104,7 +104,7 @@ body.pos-mode { background: #0f172a; overflow: hidden; }
     <div class="pos-cart-panel" id="pos-cart-panel">
         <div class="pos-cart-header">
             <span><i class="bi bi-cart3 me-1"></i> {% trans 'الفاتورة الحالية' %}</span>
-            <button class="btn btn-sm btn-outline-danger" onclick="clearCart()" title="{% trans 'إفراغ' %}"><i class="bi bi-trash3"></i></button>
+            <button class="btn btn-sm btn-outline-danger" onclick="clearCart()" title="{% trans 'إفراغ' %}"><i class="bi bi-trash3"></i> {% trans 'إفراغ' %}</button>
         </div>
         <div class="pos-customer-bar">
             <i class="bi bi-person text-muted"></i>
@@ -114,7 +114,7 @@ body.pos-mode { background: #0f172a; overflow: hidden; }
                 <option value="{{ c.id }}">{{ c.name }}</option>
                 {% endfor %}
             </select>
-            <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#quickCustomerModal"><i class="bi bi-plus-lg"></i></button>
+            <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#quickCustomerModal"><i class="bi bi-plus-lg"></i> {% trans 'عميل' %}</button>
         </div>
         <div class="pos-cart-items" id="pos-cart-items">
             <div class="pos-empty-cart" id="empty-cart-msg">

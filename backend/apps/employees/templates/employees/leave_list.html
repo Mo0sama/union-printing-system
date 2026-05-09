@@ -69,8 +69,8 @@
                   </td>
                   <td>
                     {% if leave.status == 'pending' %}
-                    <a href="{% url 'employees:leave_approve' leave.pk %}?action=approved" class="btn btn-success btn-sm" title="{% trans 'اعتماد' %}"><i class="bi bi-check-lg"></i></a>
-                    <a href="{% url 'employees:leave_approve' leave.pk %}?action=rejected" class="btn btn-danger btn-sm" title="{% trans 'رفض' %}"><i class="bi bi-x-lg"></i></a>
+                    <a href="{% url 'employees:leave_approve' leave.pk %}?action=approved" class="btn btn-success btn-sm" title="{% trans 'اعتماد' %}"><i class="bi bi-check-lg"></i> {% trans 'اعتماد' %}</a>
+                    <a href="{% url 'employees:leave_approve' leave.pk %}?action=rejected" class="btn btn-danger btn-sm" title="{% trans 'رفض' %}"><i class="bi bi-x-lg"></i> {% trans 'رفض' %}</a>
                     {% else %}
                     <span class="text-muted">---</span>
                     {% endif %}

@@ -139,7 +139,7 @@
                 <td>${i.price}</td>
                 <td><input type="number" value="${i.qty}" min="1" class="form-control form-control-sm" style="width:70px" onchange="updateQty(${i.id}, this.value)"></td>
                 <td>${(i.price * i.qty).toFixed(2)}</td>
-                <td><button type="button" class="btn btn-danger btn-sm" onclick="removeFromCart(${i.id})"><i class="bi bi-trash"></i></button></td>
+                <td><button type="button" class="btn btn-danger btn-sm" onclick="removeFromCart(${i.id})"><i class="bi bi-trash"></i> {% trans 'حذف' %}</button></td>
             </tr>`
         ).join('');
         const total = cart.reduce((sum, i) => sum + i.price * i.qty, 0);

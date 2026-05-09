@@ -86,10 +86,10 @@
                         <td>{{ material.location|default:'-' }}</td>
                         <td class="text-nowrap">
                             <a href="{% url 'inventory:material_detail' material.pk %}" class="btn btn-info btn-sm" title="{% trans 'عرض' %}">
-                                <i class="bi bi-eye"></i>
+                                <i class="bi bi-eye"></i> {% trans 'عرض' %}
                             </a>
                             <a href="{% url 'inventory:material_edit' material.pk %}" class="btn btn-warning btn-sm" title="{% trans 'تعديل' %}">
-                                <i class="bi bi-pencil"></i>
+                                <i class="bi bi-pencil"></i> {% trans 'تعديل' %}
                             </a>
                         </td>
                     </tr>

@@ -81,14 +81,14 @@
                         </td>
                         <td class="text-nowrap">
                             <a href="{% url 'pos:pos_sale_detail' sale.pk %}" class="btn btn-sm btn-info" title="{% trans 'عرض' %}">
-                                <i class="bi bi-eye"></i>
+                                <i class="bi bi-eye"></i> {% trans 'عرض' %}
                             </a>
                             <a href="{% url 'pos:pos_receipt' sale.pk %}" class="btn btn-sm btn-secondary" title="{% trans 'طباعة الإيصال' %}" target="_blank">
-                                <i class="bi bi-printer"></i>
+                                <i class="bi bi-printer"></i> {% trans 'طباعة' %}
                             </a>
                             {% if sale.status == 'completed' %}
                             <a href="{% url 'pos:pos_sale_refund' sale.pk %}" class="btn btn-sm btn-warning confirm-delete" title="{% trans 'استرجاع' %}" data-confirm="{% trans 'هل تريد استرجاع هذه الفاتورة؟' %}">
-                                <i class="bi bi-arrow-return-left"></i>
+                                <i class="bi bi-arrow-return-left"></i> {% trans 'استرجاع' %}
                             </a>
                             {% endif %}
                         </td>

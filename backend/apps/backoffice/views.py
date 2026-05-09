@@ -1,18 +1,24 @@
-from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib import messages
+from django.contrib.auth.decorators import user_passes_test
 from django.shortcuts import render, redirect, get_object_or_404
-from django.urls import reverse
 from django.db.models import Count, Q
 
 from apps.core.models import SystemLabel
 
+EXCLUDED_APPS = {'admin', 'auth', 'contenttypes', 'sessions', 'axes'}
 
-@staff_member_required
+
+def superuser_required(view):
+    return user_passes_test(lambda u: u.is_superuser)(view)
+
+
+@superuser_required
 def dashboard(request):
-    total_labels = SystemLabel.objects.count()
-    active_overrides = SystemLabel.objects.filter(is_active=True).exclude(value_ar='').count()
+    total_labels = SystemLabel.objects.exclude(app_label__in=EXCLUDED_APPS).count()
+    active_overrides = SystemLabel.objects.filter(is_active=True).exclude(value_ar='').exclude(app_label__in=EXCLUDED_APPS).count()
     apps_list = (
-        SystemLabel.objects.values('app_label')
+        SystemLabel.objects.exclude(app_label__in=EXCLUDED_APPS)
+        .values('app_label')
         .annotate(total=Count('id'))
         .order_by('app_label')
     )
@@ -26,13 +32,13 @@ def dashboard(request):
     })
 
 
-@staff_member_required
+@superuser_required
 def label_list(request):
     app = request.GET.get('app', '')
     search = request.GET.get('q', '')
     show_all = request.GET.get('show_all', False)
 
-    qs = SystemLabel.objects.all()
+    qs = SystemLabel.objects.exclude(app_label__in=EXCLUDED_APPS)
     if app:
         qs = qs.filter(app_label=app)
     if search:
@@ -41,7 +47,8 @@ def label_list(request):
         qs = qs.filter(is_active=True)
 
     apps_list = (
-        SystemLabel.objects.values('app_label')
+        SystemLabel.objects.exclude(app_label__in=EXCLUDED_APPS)
+        .values('app_label')
         .annotate(total=Count('id'))
         .order_by('app_label')
     )
@@ -55,7 +62,7 @@ def label_list(request):
     })
 
 
-@staff_member_required
+@superuser_required
 def label_edit(request, key):
     label = get_object_or_404(SystemLabel, key=key)
 
@@ -77,7 +84,7 @@ def label_edit(request, key):
     })
 
 
-@staff_member_required
+@superuser_required
 def label_reset(request, key):
     label = get_object_or_404(SystemLabel, key=key)
     label.value_ar = ''
@@ -87,7 +94,7 @@ def label_reset(request, key):
     return redirect('backoffice:label_list')
 
 
-@staff_member_required
+@superuser_required
 def import_labels(request):
     from django.core.management import call_command
     from io import StringIO

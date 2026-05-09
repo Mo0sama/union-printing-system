@@ -111,9 +111,11 @@
         <a href="{% url 'core:advanced_settings' %}" class="nav-link {% active_url 'core:advanced_settings' %}">
             <i class="bi bi-sliders"></i> <span>{% trans 'الإعدادات المتقدمة' %}</span>
         </a>
+        {% if user.is_superuser %}
         <a href="{% url 'backoffice:dashboard' %}" class="nav-link {% active_url 'backoffice:' %}">
             <i class="bi bi-toggles"></i> <span>{% trans 'التحكم في النظام' %}</span>
         </a>
+        {% endif %}
         {% if user.is_superuser %}
         <a href="/admin/" class="nav-link" target="_blank">
             <i class="bi bi-shield-lock"></i> <span>{% trans 'لوحة التحكم' %}</span>

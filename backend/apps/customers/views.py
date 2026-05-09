@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import openpyxl
 from django.contrib import messages
 from django.core.paginator import Paginator
@@ -265,6 +267,6 @@ def customer_export(request):
     response = HttpResponse(
         content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     )
-    response['Content-Disposition'] = f'attachment; filename="customers_{__import__("datetime").datetime.now().strftime("%Y%m%d")}.xlsx"'
+    response['Content-Disposition'] = f'attachment; filename="customers_{datetime.now().strftime("%Y%m%d")}.xlsx"'
     wb.save(response)
     return response

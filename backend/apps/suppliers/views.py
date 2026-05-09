@@ -116,9 +116,15 @@ def purchase_order_list(request):
     if status:
         orders = orders.filter(status=status)
     if date_from:
-        orders = orders.filter(order_date__gte=datetime.strptime(date_from, '%Y-%m-%d').date())
+        try:
+            orders = orders.filter(order_date__gte=datetime.strptime(date_from, '%Y-%m-%d').date())
+        except ValueError:
+            pass
     if date_to:
-        orders = orders.filter(order_date__lte=datetime.strptime(date_to, '%Y-%m-%d').date())
+        try:
+            orders = orders.filter(order_date__lte=datetime.strptime(date_to, '%Y-%m-%d').date())
+        except ValueError:
+            pass
     if search:
         orders = orders.filter(Q(po_number__icontains=search) | Q(supplier__company_name__icontains=search))
 
@@ -270,9 +276,15 @@ def supplier_ledger(request, pk):
 
     payments = supplier.payments.all()
     if date_from:
-        payments = payments.filter(payment_date__gte=datetime.strptime(date_from, '%Y-%m-%d').date())
+        try:
+            payments = payments.filter(payment_date__gte=datetime.strptime(date_from, '%Y-%m-%d').date())
+        except ValueError:
+            pass
     if date_to:
-        payments = payments.filter(payment_date__lte=datetime.strptime(date_to, '%Y-%m-%d').date())
+        try:
+            payments = payments.filter(payment_date__lte=datetime.strptime(date_to, '%Y-%m-%d').date())
+        except ValueError:
+            pass
 
     for p in payments:
         transactions.append({

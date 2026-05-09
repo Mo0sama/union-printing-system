@@ -15,7 +15,6 @@ def superuser_required(view):
 @superuser_required
 def dashboard(request):
     total_labels = SystemLabel.objects.exclude(app_label__in=EXCLUDED_APPS).count()
-    customized = SystemLabel.objects.filter(is_active=True).exclude(app_label__in=EXCLUDED_APPS).exclude(value_ar='').exclude(value_ar=F('default_value')).count()
     active_overrides = SystemLabel.objects.filter(is_active=True).exclude(app_label__in=EXCLUDED_APPS).exclude(value_ar='').exclude(value_ar=F('default_value')).count()
     apps_list = (
         SystemLabel.objects.exclude(app_label__in=EXCLUDED_APPS)

@@ -1,4 +1,5 @@
 import json
+from contextlib import suppress
 from decimal import Decimal
 
 from django.contrib import messages
@@ -7,6 +8,7 @@ from django.db.models.functions import Coalesce
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+from django.views.decorators.http import require_POST
 
 from apps.accounting.services import post_cogs, post_pos_revenue
 from apps.accounts.decorators import app_permission_required
@@ -155,7 +157,6 @@ def pos_sale_create(request):
             qty = Decimal(str(item_data.get('qty', item_data.get('quantity', 1))))
             material = None
             if material_id:
-                from contextlib import suppress
                 with suppress(Material.DoesNotExist):
                     material = Material.objects.get(pk=material_id)
             price = Decimal(str(item_data.get('price', item_data.get('unit_price', 0))))
@@ -248,6 +249,7 @@ def pos_sale_detail(request, pk):
     return render(request, 'pos/pos_sale_detail.html', context)
 
 
+@require_POST
 @app_permission_required('pos_refund')
 def pos_sale_refund(request, pk):
     sale = get_object_or_404(POSSale, pk=pk)
@@ -312,7 +314,6 @@ def pos_receipt(request, pk):
 
 @app_permission_required('pos_view')
 def pos_get_items(request):
-    from apps.inventory.models import Material
     q = request.GET.get('q', '')
     products = Material.objects.filter(
         Q(name__icontains=q) | Q(code__icontains=q)

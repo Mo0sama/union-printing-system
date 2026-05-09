@@ -172,9 +172,15 @@ def stock_movement_list(request):
     if movement_type:
         movements = movements.filter(movement_type=movement_type)
     if date_from:
-        movements = movements.filter(created_at__date__gte=datetime.strptime(date_from, '%Y-%m-%d').date())
+        try:
+            movements = movements.filter(created_at__date__gte=datetime.strptime(date_from, '%Y-%m-%d').date())
+        except ValueError:
+            pass
     if date_to:
-        movements = movements.filter(created_at__date__lte=datetime.strptime(date_to, '%Y-%m-%d').date())
+        try:
+            movements = movements.filter(created_at__date__lte=datetime.strptime(date_to, '%Y-%m-%d').date())
+        except ValueError:
+            pass
 
     context = {
         'movements': movements,

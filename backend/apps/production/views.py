@@ -57,9 +57,15 @@ def production_job_list(request):
     if machine_id:
         jobs = jobs.filter(machine_id=machine_id)
     if date_from:
-        jobs = jobs.filter(created_at__date__gte=datetime.strptime(date_from, '%Y-%m-%d').date())
+        try:
+            jobs = jobs.filter(created_at__date__gte=datetime.strptime(date_from, '%Y-%m-%d').date())
+        except ValueError:
+            pass
     if date_to:
-        jobs = jobs.filter(created_at__date__lte=datetime.strptime(date_to, '%Y-%m-%d').date())
+        try:
+            jobs = jobs.filter(created_at__date__lte=datetime.strptime(date_to, '%Y-%m-%d').date())
+        except ValueError:
+            pass
     if search:
         jobs = jobs.filter(
             Q(job_number__icontains=search) |
@@ -280,9 +286,15 @@ def production_report(request):
     jobs = ProductionJob.objects.all()
 
     if date_from:
-        jobs = jobs.filter(created_at__date__gte=datetime.strptime(date_from, '%Y-%m-%d').date())
+        try:
+            jobs = jobs.filter(created_at__date__gte=datetime.strptime(date_from, '%Y-%m-%d').date())
+        except ValueError:
+            pass
     if date_to:
-        jobs = jobs.filter(created_at__date__lte=datetime.strptime(date_to, '%Y-%m-%d').date())
+        try:
+            jobs = jobs.filter(created_at__date__lte=datetime.strptime(date_to, '%Y-%m-%d').date())
+        except ValueError:
+            pass
     if department_id:
         jobs = jobs.filter(department_id=department_id)
 

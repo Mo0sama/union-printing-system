@@ -21,14 +21,6 @@ if not SECRET_KEY:
 
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATIC_URL = '/static/'
-STORAGES = {
-    'default': {
-        'BACKEND': 'django.core.files.storage.FileSystemStorage',
-    },
-    'staticfiles': {
-        'BACKEND': 'whitenoise.storage.CompressedStaticFilesStorage',
-    },
-}
 
 MIDDLEWARE.insert(1, 'csp.middleware.CSPMiddleware')
 

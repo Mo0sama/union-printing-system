@@ -1,7 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test
 from django.shortcuts import render, redirect, get_object_or_404
-from django.db.models import Count, Q
+from django.db.models import Count, F, Q
 
 from apps.core.models import SystemLabel
 
@@ -15,14 +15,15 @@ def superuser_required(view):
 @superuser_required
 def dashboard(request):
     total_labels = SystemLabel.objects.exclude(app_label__in=EXCLUDED_APPS).count()
-    customized = SystemLabel.objects.filter(is_active=True).exclude(app_label__in=EXCLUDED_APPS).exclude(value_ar='').exclude(value_ar=models.F('default_value')).count()
+    customized = SystemLabel.objects.filter(is_active=True).exclude(app_label__in=EXCLUDED_APPS).exclude(value_ar='').exclude(value_ar=F('default_value')).count()
+    active_overrides = SystemLabel.objects.filter(is_active=True).exclude(app_label__in=EXCLUDED_APPS).exclude(value_ar='').exclude(value_ar=F('default_value'))
     apps_list = (
         SystemLabel.objects.exclude(app_label__in=EXCLUDED_APPS)
         .values('app_label')
         .annotate(total=Count('id'))
         .order_by('app_label')
     )
-    recent = SystemLabel.objects.filter(is_active=True).exclude(value_ar='').exclude(value_ar=models.F('default_value')).order_by('-updated_at')[:10]
+    recent = SystemLabel.objects.filter(is_active=True).exclude(value_ar='').exclude(value_ar=F('default_value')).order_by('-updated_at')[:10]
 
     return render(request, 'backoffice/dashboard.html', {
         'total_labels': total_labels,

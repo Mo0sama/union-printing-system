@@ -15,7 +15,7 @@ def manifest_view(request):
     manifest = {
         "name": "Union for Printing Services",
         "short_name": "Union Printing",
-        "description": "حاسبة الأسعار - Union for Digital Printing Services",
+        "description": "\u0645\u0643\u062a\u0628 \u0627\u0644\u0627\u062a\u062d\u0627\u062f \u0644\u0644\u0637\u0628\u0627\u0639\u0629 - Union for Digital Printing Services",
         "start_url": "/calculator/",
         "scope": "/",
         "display": "standalone",
@@ -47,6 +47,7 @@ def manifest_view(request):
 
 def handler403(request, exception=None):
     return render(request, 'adminlte/403.html', status=403)
+
 
 urlpatterns = [
     path('i18n/', include('django.conf.urls.i18n')),

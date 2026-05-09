@@ -13,7 +13,9 @@ ALLOWED_HOSTS = [
     'localhost', '127.0.0.1',
 ]
 
-SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY') or SECRET_KEY
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
+if not SECRET_KEY:
+    raise ImproperlyConfigured('DJANGO_SECRET_KEY environment variable must be set')
 
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATIC_URL = '/static/'
@@ -51,21 +53,29 @@ AXES_COOLOFF_TIME = 0.5  # 30 minutes
 AXES_LOCK_OUT_BY_COMBINATION_USER_AND_IP = True
 AXES_RESET_ON_SUCCESS = True
 
-# CSP
-CSP_DEFAULT_SRC = ("'self'",)
-CSP_STYLE_SRC = ("'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://fonts.googleapis.com", "https://fonts.gstatic.com")
-CSP_SCRIPT_SRC = ("'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://code.jquery.com")
-CSP_FONT_SRC = ("'self'", "https://cdn.jsdelivr.net", "https://fonts.gstatic.com")
-CSP_IMG_SRC = ("'self'", "data:", "blob:")
-CSP_CONNECT_SRC = ("'self'",)
+# CSP (django-csp v4.x format)
+CONTENT_SECURITY_POLICY = {
+    "DIRECTIVES": {
+        "default-src": ["'self'"],
+        "style-src": ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://fonts.googleapis.com", "https://fonts.gstatic.com"],
+        "script-src": ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://code.jquery.com"],
+        "font-src": ["'self'", "https://cdn.jsdelivr.net", "https://fonts.gstatic.com"],
+        "img-src": ["'self'", "data:", "blob:"],
+        "connect-src": ["'self'"],
+    }
+}
 
-# Email
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
-EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
-EMAIL_USE_TLS = True
+# Email: use SMTP only if credentials are configured in .env
+# Free PythonAnywhere blocks outbound SMTP, so defaults to console
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+if EMAIL_HOST_USER and EMAIL_HOST_PASSWORD:
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
+    EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
+    EMAIL_USE_TLS = True
+else:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'noreply@unionprinting.com')
 
 LOGGING = {

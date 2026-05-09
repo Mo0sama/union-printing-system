@@ -11,8 +11,13 @@ if path not in sys.path:
 env_path = Path(path) / '.env'
 if env_path.exists():
     load_dotenv(env_path)
-
+os.environ.setdefault('EMAIL_HOST_USER', 'mido.xx@gmail.com')
+os.environ.setdefault('EMAIL_HOST_PASSWORD', 'htcf voue drym cmvn')
+os.environ.setdefault('DEFAULT_FROM_EMAIL', 'mido.xx@gmail.com')
+os.environ.setdefault('EMAIL_HOST', 'smtp.gmail.com')
+os.environ.setdefault('EMAIL_PORT', '587')
 os.environ.setdefault('DJANGO_SECRET_KEY', 'DYhN1YKUWkwygrbuRWV86qnxQLS8ttixddY3L1KhdDWs6rpzEBt2U84e3ImxJkUlIH0')
+
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'config.production_settings'
 os.environ['PA_DOMAIN'] = 'mossama.pythonanywhere.com'

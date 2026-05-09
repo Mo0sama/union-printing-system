@@ -11,7 +11,7 @@ def adjust_customer_balance(customer, delta):
     customer.save(update_fields=['current_balance'])
 
 
-def process_sale_items(sale, items_data):
+def process_sale_items(sale, items_data, user=None):
     for item_data in items_data:
         sale_item = POSSaleItem.objects.create(
             sale=sale,
@@ -29,15 +29,16 @@ def process_sale_items(sale, items_data):
                 reference_type='pos',
                 reference_id=sale.pk,
                 notes=f'{sale.sale_number} - {sale_item.description}',
+                user=user,
             )
-            post_cogs('pos', sale.pk)
+            post_cogs('pos', sale.pk, user=user)
 
 
-def refund_sale(sale):
+def refund_sale(sale, user=None):
     with transaction.atomic():
         sale.status = 'refunded'
         sale.save()
-        reverse_stock_deduction('pos', sale.pk)
+        reverse_stock_deduction('pos', sale.pk, user=user)
         if sale.customer:
             adjust_customer_balance(sale.customer, -sale.total)
     return sale

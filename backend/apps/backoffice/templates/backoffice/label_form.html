@@ -26,7 +26,10 @@
 
                         <div class="mb-3">
                             <label class="form-label">{% trans 'النص (عربي)' %}</label>
-                            <textarea name="value_ar" class="form-control" rows="3" dir="rtl">{{ label.value_ar }}</textarea>
+                            <textarea name="value_ar" class="form-control" rows="3" dir="rtl">{{ label.value_ar|default:label.default_value }}</textarea>
+                            {% if label.default_value %}
+                            <div class="form-text">{% trans 'القيمة الافتراضية' %}: {{ label.default_value }}</div>
+                            {% endif %}
                             <div class="form-text">{% trans 'اترك فارغاً لاستخدام القيمة الافتراضية' %}</div>
                         </div>
 

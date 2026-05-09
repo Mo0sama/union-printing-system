@@ -73,6 +73,7 @@ urlpatterns += i18n_patterns(
     path('calculator/', include('apps.calculator.urls')),
     path('accounting/', include('apps.accounting.urls')),
     path('core/', include('apps.core.urls')),
+    path('backoffice/', include('apps.backoffice.urls')),
     prefix_default_language=False,
 )
 

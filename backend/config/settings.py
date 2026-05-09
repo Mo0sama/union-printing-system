@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'apps.reports',
     'apps.calculator',
     'apps.accounting',
+    'apps.backoffice',
     'axes',
 ]
 
@@ -70,6 +71,7 @@ TEMPLATES = [
                 'apps.core.context_processors.current_language',
                 'apps.core.context_processors.today_date',
                 'apps.core.context_processors.unread_notifications',
+                'apps.core.context_processors.system_labels',
             ],
         },
     },

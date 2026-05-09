@@ -1,0 +1,115 @@
+{% extends 'adminlte/base.html' %}
+{% load static i18n core_tags %}
+
+{% block title %}{% trans 'التحكم في النظام' %}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stat-card { border-radius: 12px; padding: 1.5rem; text-align: center; height: 100%; }
+    .stat-card .number { font-size: 2rem; font-weight: 800; }
+    .stat-card .label { font-size: 0.85rem; opacity: 0.8; margin-top: 0.25rem; }
+    .section-card { border-radius: 8px; transition: all 0.2s; cursor: pointer; }
+    .section-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .section-card a { text-decoration: none; color: inherit; display: block; padding: 1.25rem; }
+    .recent-item { padding: 0.5rem 0; border-bottom: 1px solid #eee; font-size: 0.85rem; }
+    .recent-item:last-child { border-bottom: none; }
+    .key-text { font-family: monospace; font-size: 0.75rem; color: #6c757d; word-break: break-all; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="h3">{% trans 'التحكم في النظام' %}</h1>
+            <p class="text-muted">{% trans 'إدارة تسميات النظام وإعداداته' %}</p>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="stat-card bg-primary text-white">
+                <div class="number">{{ total_labels }}</div>
+                <div class="label">{% trans 'إجمالي تسميات النظام' %}</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card bg-success text-white">
+                <div class="number">{{ active_overrides }}</div>
+                <div class="label">{% trans 'تسميات معدلة' %}</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card bg-info text-white">
+                <div class="number">{{ apps_list|length }}</div>
+                <div class="label">{% trans 'التطبيقات' %}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">{% trans 'التطبيقات' %}</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        {% for app in apps_list %}
+                        <a href="{% url 'backoffice:label_list' %}?app={{ app.app_label }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                            {{ app.app_label }}
+                            <span class="badge bg-primary rounded-pill">{{ app.total }}</span>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">{% trans 'آخر التعديلات' %}</h5>
+                </div>
+                <div class="card-body p-0">
+                    {% if recent %}
+                    <div style="padding: 0.75rem;">
+                        {% for item in recent %}
+                        <div class="recent-item d-flex justify-content-between align-items-start">
+                            <div>
+                                <div>{{ item.value_ar|truncatechars:40 }}</div>
+                                <div class="key-text">{{ item.key }}</div>
+                            </div>
+                            <a href="{% url 'backoffice:label_edit' item.key %}" class="btn btn-sm btn-outline-primary ms-2">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center text-muted p-4">
+                        {% trans 'لا توجد تسميات معدلة بعد' %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="mb-0">{% trans 'الإجراءات السريعة' %}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'backoffice:label_list' %}" class="btn btn-primary">
+                            <i class="bi bi-tags"></i> {% trans 'عرض جميع التسميات' %}
+                        </a>
+                        <a href="{% url 'backoffice:import_labels' %}" class="btn btn-warning">
+                            <i class="bi bi-arrow-repeat"></i> {% trans 'إعادة استيراد التسميات' %}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

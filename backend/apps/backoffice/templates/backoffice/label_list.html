@@ -1,0 +1,106 @@
+{% extends 'adminlte/base.html' %}
+{% load static i18n core_tags %}
+
+{% block title %}{% trans 'تسميات النظام' %}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .table th { font-weight: 600; font-size: 0.85rem; }
+    .table td { font-size: 0.85rem; vertical-align: middle; }
+    .key-cell { font-family: monospace; font-size: 0.75rem; word-break: break-all; max-width: 250px; }
+    .value-cell { max-width: 200px; }
+    .search-box { max-width: 400px; }
+    .badge-app { font-size: 0.7rem; }
+    tr.inactive { opacity: 0.6; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col">
+            <h1 class="h3">{% trans 'تسميات النظام' %}</h1>
+            <p class="text-muted">{% trans 'تعديل أي نص في النظام' %}</p>
+        </div>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-body">
+            <form method="get" class="row g-2 align-items-end">
+                <div class="col-auto">
+                    <select name="app" class="form-select form-select-sm" onchange="this.form.submit()">
+                        <option value="">{% trans 'جميع التطبيقات' %}</option>
+                        {% for a in apps_list %}
+                        <option value="{{ a.app_label }}" {% if current_app == a.app_label %}selected{% endif %}>{{ a.app_label }} ({{ a.total }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col">
+                    <input type="text" name="q" class="form-control form-control-sm" placeholder="{% trans 'بحث...' %}" value="{{ search }}">
+                </div>
+                <div class="col-auto">
+                    <div class="form-check">
+                        <input type="checkbox" name="show_all" value="1" class="form-check-input" id="showAll" onchange="this.form.submit()" {% if show_all %}checked{% endif %}>
+                        <label class="form-check-label" for="showAll">{% trans 'عرض الكل' %}</label>
+                    </div>
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-sm btn-primary"><i class="bi bi-search"></i></button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>{% trans 'المفتاح' %}</th>
+                            <th>{% trans 'النص الحالي' %}</th>
+                            <th>{% trans 'التطبيق' %}</th>
+                            <th>{% trans 'الوصف' %}</th>
+                            <th>{% trans 'حالة' %}</th>
+                            <th>{% trans 'إجراءات' %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for label in labels %}
+                        <tr class="{% if not label.is_active or not label.value_ar %}inactive{% endif %}">
+                            <td class="key-cell">{{ label.key }}</td>
+                            <td class="value-cell">{{ label.value_ar|default:'<span class="text-muted">(افتراضي)</span>' }}</td>
+                            <td><span class="badge bg-secondary badge-app">{{ label.app_label }}</span></td>
+                            <td>{{ label.description|truncatechars:40 }}</td>
+                            <td>
+                                {% if label.is_active and label.value_ar %}
+                                <span class="badge bg-success">{% trans 'مفعل' %}</span>
+                                {% else %}
+                                <span class="badge bg-secondary">{% trans 'افتراضي' %}</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-nowrap">
+                                <a href="{% url 'backoffice:label_edit' label.key %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                {% if label.value_ar %}
+                                <a href="{% url 'backoffice:label_reset' label.key %}" class="btn btn-sm btn-outline-danger" onclick="return confirm('{% trans 'إعادة التعيين؟' %}')">
+                                    <i class="bi bi-arrow-counterclockwise"></i>
+                                </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted p-4">
+                                {% trans 'لا توجد تسميات. قم باستيراد التسميات أولاً.' %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

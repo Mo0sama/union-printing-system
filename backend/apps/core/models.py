@@ -152,6 +152,24 @@ class Notification(models.Model):
         return f'{self.get_notification_type_display()} - {self.title}'
 
 
+class SystemLabel(models.Model):
+    key = models.CharField(max_length=200, unique=True, verbose_name='المفتاح')
+    value_ar = models.TextField(verbose_name='النص (عربي)', blank=True)
+    app_label = models.CharField(max_length=50, verbose_name='التطبيق', blank=True, db_index=True)
+    description = models.TextField(verbose_name='الوصف', blank=True)
+    is_active = models.BooleanField(default=True, verbose_name='مفعل')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'تسمية النظام'
+        verbose_name_plural = 'تسميات النظام'
+        ordering = ['app_label', 'key']
+
+    def __str__(self):
+        return f'{self.key}: {self.value_ar or "(افتراضي)"}'
+
+
 class Attachment(models.Model):
     file = models.FileField(upload_to='attachments/', validators=[validate_file_extension, validate_file_size])
     uploaded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)

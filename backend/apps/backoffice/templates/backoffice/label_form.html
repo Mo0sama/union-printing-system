@@ -1,0 +1,80 @@
+{% extends 'adminlte/base.html' %}
+{% load static i18n core_tags %}
+
+{% block title %}{% trans 'تعديل التسمية' %}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col">
+            <h1 class="h3">{% trans 'تعديل التسمية' %}</h1>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+                            <label class="form-label">{% trans 'المفتاح' %}</label>
+                            <input type="text" class="form-control" value="{{ label.key }}" readonly>
+                            <div class="form-text">{% trans 'معرف فريد لهذه التسمية' %}</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">{% trans 'النص (عربي)' %}</label>
+                            <textarea name="value_ar" class="form-control" rows="3" dir="rtl">{{ label.value_ar }}</textarea>
+                            <div class="form-text">{% trans 'اترك فارغاً لاستخدام القيمة الافتراضية' %}</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">{% trans 'الوصف' %}</label>
+                            <textarea name="description" class="form-control" rows="2">{{ label.description }}</textarea>
+                        </div>
+
+                        <div class="mb-3 form-check form-switch">
+                            <input type="checkbox" name="is_active" value="1" class="form-check-input" id="activeSwitch" {% if label.is_active %}checked{% endif %}>
+                            <label class="form-check-label" for="activeSwitch">{% trans 'مفعل' %}</label>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-lg"></i> {% trans 'حفظ' %}
+                            </button>
+                            <a href="{% url 'backoffice:label_list' %}" class="btn btn-secondary">
+                                {% trans 'إلغاء' %}
+                            </a>
+                            {% if label.value_ar %}
+                            <a href="{% url 'backoffice:label_reset' label.key %}" class="btn btn-outline-danger ms-auto" onclick="return confirm('{% trans 'إعادة التعيين إلى القيمة الافتراضية؟' %}')">
+                                <i class="bi bi-arrow-counterclockwise"></i> {% trans 'إعادة تعيين' %}
+                            </a>
+                            {% endif %}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">{% trans 'معلومات' %}</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="mb-0">
+                        <dt>{% trans 'التطبيق' %}</dt>
+                        <dd>{{ label.app_label }}</dd>
+                        <dt>{% trans 'تاريخ الإنشاء' %}</dt>
+                        <dd>{{ label.created_at|date:'Y-m-d H:i' }}</dd>
+                        <dt>{% trans 'آخر تحديث' %}</dt>
+                        <dd>{{ label.updated_at|date:'Y-m-d H:i' }}</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

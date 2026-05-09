@@ -84,3 +84,9 @@ def date_format(value, arg=None):
     if arg:
         return datetime.strftime(value, arg)
     return formats.date_format(value, 'DATE_FORMAT')
+
+
+@register.simple_tag(takes_context=True)
+def sys_label(context, key, default=""):
+    labels = context.get('system_labels', {})
+    return labels.get(key, default)

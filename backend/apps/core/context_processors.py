@@ -31,3 +31,16 @@ def unread_notifications(request):
     return {
         'unread_notifications': count,
     }
+
+
+from django.core.cache import cache
+
+
+def system_labels(request):
+    labels = cache.get('system_labels_all')
+    if labels is None:
+        from .models import SystemLabel
+        qs = SystemLabel.objects.filter(is_active=True).exclude(value_ar='')
+        labels = {obj.key: obj.value_ar for obj in qs}
+        cache.set('system_labels_all', labels, 300)
+    return {'system_labels': labels}

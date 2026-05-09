@@ -11,9 +11,9 @@ def set_label(key, value_ar, app_label, description=""):
     SystemLabel.objects.update_or_create(
         key=key,
         defaults=dict(
-            value_ar=value_ar,
+            value_ar="",
             app_label=app_label,
-            description=description,
+            description=description + f" (الافتراضي: {value_ar})",
             is_active=True,
         ),
     )

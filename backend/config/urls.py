@@ -10,14 +10,17 @@ from django.urls import include, path
 from django.views.generic import RedirectView
 
 from apps.accounts import views as accounts_views
+from apps.core.models import CompanySetting
 
 
 def manifest_view(request):
+    company = CompanySetting.get_settings()
+    name = company.company_name or "Union for Printing Services"
     manifest = {
-        "name": "Union for Printing Services",
-        "short_name": "Union Printing",
-        "description": "\u0645\u0643\u062a\u0628 \u0627\u0644\u0627\u062a\u062d\u0627\u062f \u0644\u0644\u0637\u0628\u0627\u0639\u0629 - Union for Digital Printing Services",
-        "start_url": "/calculator/",
+        "name": name,
+        "short_name": name[:30],
+        "description": str(company),
+        "start_url": "/core/",
         "scope": "/",
         "display": "standalone",
         "background_color": "#1a1a1a",
